@@ -830,6 +830,9 @@
                         </Property>
                         <Property name="text" type="java.lang.String" value="Ch&#x1ecd;n &#x1ea3;nh"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="button5ActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="com.petshop.swing.textfield.TextFieldRounded" name="textFieldRounded2">
                       <Properties>

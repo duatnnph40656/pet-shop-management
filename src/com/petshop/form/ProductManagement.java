@@ -403,6 +403,11 @@ public class ProductManagement extends javax.swing.JPanel {
 
         button5.setBackground(new java.awt.Color(204, 255, 255));
         button5.setText("Chọn ảnh");
+        button5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                button5ActionPerformed(evt);
+            }
+        });
 
         textFieldRounded2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         textFieldRounded2.setLabelText("Giá bán (VND)");
@@ -697,6 +702,10 @@ public class ProductManagement extends javax.swing.JPanel {
         PopupCategoryProduct obj = new PopupCategoryProduct();
         GlassPanePopup.showPopup(obj);
     }//GEN-LAST:event_btnPopupCProductActionPerformed
+
+    private void button5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button5ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_button5ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
