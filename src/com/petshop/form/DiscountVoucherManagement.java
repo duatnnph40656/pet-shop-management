@@ -15,6 +15,18 @@ public class DiscountVoucherManagement extends javax.swing.JPanel {
      */
     public DiscountVoucherManagement() {
         initComponents();
+        comm();
+        comm1();
+    }
+
+    public void comm() {
+        combobox1.addItem("aaaaa");
+        combobox1.addItem("vvvvv");
+    }
+
+    public void comm1() {
+        comboboxRounded1.addItem("aaaaa");
+        comboboxRounded1.addItem("vvvvv");
     }
 
     /**
@@ -26,19 +38,39 @@ public class DiscountVoucherManagement extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        combobox1 = new com.petshop.swing.combobox.Combobox();
+        comboboxRounded1 = new com.petshop.swing.combobox.ComboboxRounded();
+
+        comboboxRounded1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "aaa" }));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(135, 135, 135)
+                        .addComponent(combobox1, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(111, 111, 111)
+                        .addComponent(comboboxRounded1, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(59, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(74, 74, 74)
+                .addComponent(combobox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(62, 62, 62)
+                .addComponent(comboboxRounded1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(72, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private com.petshop.swing.combobox.Combobox combobox1;
+    private com.petshop.swing.combobox.ComboboxRounded comboboxRounded1;
     // End of variables declaration//GEN-END:variables
 }

@@ -19,39 +19,43 @@ public class CategoryProduct {
     private String categoryProductCode;
     private String categoryProductName;
     private Date createdAt;
-    private boolean deleted;
-    private boolean status;
+    private boolean isDeleted;
+    private boolean isStatus;
 
     // Biến đếm tĩnh để sinh mã duy nhất cho mỗi đối tượng
     private static int counter = 1;
 
-    public CategoryProduct(String categoryProductCode, String categoryProductName) {
-        this.categoryProductCode = categoryProductCode;
-        this.categoryProductName = categoryProductName;
+    public CategoryProduct() {
     }
 
-    public CategoryProduct(String categoryProductCode, String categoryProductName, Date createdAt, boolean status) {
+    public CategoryProduct(String categoryProductCode, String categoryProductName, boolean Status) {
+        this.categoryProductCode = categoryProductCode;
+        this.categoryProductName = categoryProductName;
+        this.isStatus = Status;
+    }
+
+    public CategoryProduct(String categoryProductCode, String categoryProductName, Date createdAt, boolean isStatus) {
         this.categoryProductCode = categoryProductCode;
         this.categoryProductName = categoryProductName;
         this.createdAt = createdAt;
-        this.status = status;
+        this.isStatus = isStatus;
     }
     
-    public CategoryProduct(int id, String categoryProductCode, String categoryProductName, Date createdAt, boolean deleted, boolean status) {
+    public CategoryProduct(int id, String categoryProductCode, String categoryProductName, Date createdAt, boolean isDeleted, boolean isStatus) {
         this.id = id;
         this.categoryProductCode = categoryProductCode;
         this.categoryProductName = categoryProductName;
         this.createdAt = createdAt;
-        this.deleted = deleted;
-        this.status = status;
+        this.isDeleted = isDeleted;
+        this.isStatus = isStatus;
     }
     
     
     // Constructor
-    public CategoryProduct(String categoryProductName, boolean status) {
+    public CategoryProduct(String categoryProductName, boolean isStatus) {
         this.categoryProductName = categoryProductName;
-        this.status = status;
-        this.deleted = false; // Khởi tạo mặc định là chưa xóa
+        this.isStatus = isStatus;
+        this.isDeleted = false; // Khởi tạo mặc định là chưa xóa
         this.createdAt = new Date(); // Ngày tạo mặc định là ngày hiện tại
         this.categoryProductCode = generateCategoryProductCode(); // Gán mã tự động
     }
@@ -68,6 +72,10 @@ public class CategoryProduct {
     // Getter và setter
     public int getId() {
         return id;
+    }
+
+    public void setCategoryProductCode(String categoryProductCode) {
+        this.categoryProductCode = categoryProductCode;
     }
 
     public void setId(int id) {
@@ -95,19 +103,25 @@ public class CategoryProduct {
     }
 
     public boolean isDeleted() {
-        return deleted;
+        return isDeleted;
     }
 
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
+    public void setDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     public boolean isStatus() {
-        return status;
+        return isStatus;
     }
 
-    public void setStatus(boolean status) {
-        this.status = status;
+    public void setStatus(boolean isStatus) {
+        this.isStatus = isStatus;
     }
 
+    @Override
+    public String toString() {
+        return categoryProductName; // Hiển thị tên danh mục trong JComboBox
+    }
+
+    
 }

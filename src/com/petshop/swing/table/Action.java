@@ -5,10 +5,23 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class Action extends javax.swing.JPanel {
+public class Action<T> extends javax.swing.JPanel {
 
-    public Action(ModelAction data) {
+    private ConfirmListener<T> listener; // Listener để giao tiếp với frame chính
+
+    public void setConfirmListener(ConfirmListener<T> listener) {
+        this.listener = listener;
+    }
+
+    public Action(ModelAction<T> data) {
         initComponents();
+        cmdDelete.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                data.getEvent().delete(data.getModel());
+            }
+        });
+
     }
 
     @Override

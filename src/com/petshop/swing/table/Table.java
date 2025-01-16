@@ -68,17 +68,32 @@ public class Table extends JTable {
 
     @Override
     public TableCellEditor getCellEditor(int row, int col) {
-        // Automatically select the last column
-        if (col == getColumnCount() - 1) {
+        if (getValueAt(row, col) instanceof ModelAction) {
             return new TableCellAction();
-        } else {
-            return super.getCellEditor(row, col);
         }
+        return super.getCellEditor(row, col);
     }
 
     public void addRow(Object[] row) {
         DefaultTableModel mod = (DefaultTableModel) getModel();
         mod.addRow(row);
+    }
+
+    public void setRowCount(int rowCount) {
+        DefaultTableModel model = (DefaultTableModel) getModel();
+        int currentRowCount = model.getRowCount();
+
+        if (rowCount < currentRowCount) {
+            // Xóa các hàng thừa
+            for (int i = currentRowCount - 1; i >= rowCount; i--) {
+                model.removeRow(i);
+            }
+        } else if (rowCount > currentRowCount) {
+            // Thêm các hàng mới với giá trị null
+            for (int i = currentRowCount; i < rowCount; i++) {
+                model.addRow(new Object[model.getColumnCount()]);
+            }
+        }
     }
 
     public void fixTable(JScrollPane scroll) {

@@ -28,14 +28,20 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
     /**
      * Creates new form PopupCategoryProduct
      */
-    private final CategoryProductDAO dao;
+    private CategoryProductDAO categoryDao;
+    private DefaultTableModel model;
 
     public PopupCategoryProduct() {
         initComponents();
         setOpaque(false);
-        dao = new CategoryProductDAO();
         tbCategoryProduct.fixTable(jProduct);
-        findAll(dao.findAll());
+        init();
+    }
+
+    void init() {
+        model = new DefaultTableModel();
+        categoryDao = new CategoryProductDAO();
+        this.findAll(categoryDao.getListCategoryProduct());
     }
 
     @Override
@@ -49,12 +55,11 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
     }
 
     private void findAll(List<CategoryProduct> list) {
-        DefaultTableModel tbModel = (DefaultTableModel) tbCategoryProduct.getModel();
-        tbModel.setRowCount(0);
-        int stt = 1; // Bắt đầu STT từ 1
-
+        model = (DefaultTableModel) tbCategoryProduct.getModel();
+        model.setRowCount(0);
+        int stt = 1;
         for (CategoryProduct c : list) {
-            tbModel.addRow(new Object[]{
+            model.addRow(new Object[]{
                 stt++, // STT
                 c.getCategoryProductCode(),
                 c.getCategoryProductName(),
@@ -67,8 +72,8 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
     private CategoryProduct readForm() {
         String cProductCode = txtCode.getText();
         String cProductName = txtName.getText();
-
-        return new CategoryProduct(cProductCode, cProductName);
+        boolean cStatus = true;
+        return new CategoryProduct(cProductCode, cProductName, cStatus);
     }
 
     private void showMessageSuccess(String message) {
@@ -80,14 +85,13 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
         DialogMessageError error = new DialogMessageError(message);
         GlassPanePopup.showPopup(error);
     }
-    
-    private void showMessageFail(String message){
+
+    private void showMessageFail(String message) {
         DialogMessageFail fail = new DialogMessageFail(message);
         GlassPanePopup.showPopup(fail);
     }
 
     private boolean check() {
-        // Kiểm tra nếu trường mã và tên bị rỗng
         if (txtCode.getText().isEmpty()) {
             showMessageError("Mã không được để trống");
             return false;
@@ -96,18 +100,18 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
             showMessageError("Tên không được để trống");
             return false;
         }
-        return true; // Trả về true nếu tất cả đều hợp lệ
+        return true;
     }
 
     private void insert() {
         if (!check()) {
             return;
         }
-        if (dao.insert(readForm())) {
-            showMessageSuccess("Thêm thành công");
-            findAll(dao.findAll());
+        if (categoryDao.addCategoryProduct(readForm())) {
+            this.showMessageSuccess("Thêm thành công!");
+            this.findAll(categoryDao.getListCategoryProduct());
         } else {
-            showMessageFail("Thêm thất bại");
+            this.showMessageFail("Thêm thất bại!!");
         }
     }
 

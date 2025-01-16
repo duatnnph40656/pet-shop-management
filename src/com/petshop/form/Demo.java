@@ -4,13 +4,14 @@
  */
 package com.petshop.form;
 
+import com.petshop.models.Product;
 import com.petshop.swing.jnafilechooser.api.JnaFileChooser;
 import com.petshop.swing.datechooser.EventDateChooser;
 import com.petshop.swing.datechooser.SelectedAction;
 import com.petshop.swing.datechooser.SelectedDate;
-
-
-
+import com.petshop.swing.model.ModelStudent;
+import com.petshop.swing.table.EventAction;
+import javax.swing.ImageIcon;
 
 /**
  *
@@ -21,19 +22,33 @@ public class Demo extends javax.swing.JFrame {
     /**
      * Creates new form Demo
      */
-    
-    
     public Demo() {
         initComponents();
-        dateChooser2.addEventDateChooser(new EventDateChooser() {
+        table1.fixTable(jScrollPane1);
+        initTableData();
+    }
+
+    private void initTableData() {
+        EventAction<ModelStudent> eventAction = new EventAction<ModelStudent>() {
             @Override
-            public void dateSelected(SelectedAction action, SelectedDate date) {
-                System.out.println(date.getDay() + "-" + date.getMonth() + "-" + date.getYear());
-                if (action.getAction() == SelectedAction.DAY_SELECTED) {
-                    dateChooser2.hidePopup();
-                }
+            public void delete(ModelStudent model) {
+                throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
             }
-        });
+
+            @Override
+            public void update(ModelStudent model) {
+                throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            }
+        };
+
+        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
+        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
+        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
+        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
+        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
+        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
+        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
+
     }
 
     /**
@@ -46,59 +61,43 @@ public class Demo extends javax.swing.JFrame {
     private void initComponents() {
 
         dateChooser2 = new com.petshop.swing.datechooser.DateChooser();
-        jButton6 = new javax.swing.JButton();
-        txtDate1 = new javax.swing.JTextField();
-
-        dateChooser2.setTextRefernce(txtDate1);
+        jScrollPane1 = new javax.swing.JScrollPane();
+        table1 = new com.petshop.swing.table.Table();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jButton6.setText("jButton6");
-        jButton6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton6ActionPerformed(evt);
+        table1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
             }
-        });
-
-        txtDate1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtDate1ActionPerformed(evt);
-            }
-        });
+        ));
+        jScrollPane1.setViewportView(table1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(166, 166, 166)
-                .addComponent(txtDate1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton6)
-                .addContainerGap(619, Short.MAX_VALUE))
+                .addGap(74, 74, 74)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 566, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(352, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(107, 107, 107)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton6)
-                    .addComponent(txtDate1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(456, Short.MAX_VALUE))
+                .addGap(84, 84, 84)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(272, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        // TODO add your handling code here:
-        dateChooser2.showPopup();
-    }//GEN-LAST:event_jButton6ActionPerformed
-
-    private void txtDate1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtDate1ActionPerformed
-        // TODO add your handling code here:
-        dateChooser2.showPopup();
-    }//GEN-LAST:event_txtDate1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -130,14 +129,14 @@ public class Demo extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                    new Demo().setVisible(true);
+                new Demo().setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.datechooser.DateChooser dateChooser2;
-    private javax.swing.JButton jButton6;
-    private javax.swing.JTextField txtDate1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private com.petshop.swing.table.Table table1;
     // End of variables declaration//GEN-END:variables
 }

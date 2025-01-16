@@ -6,59 +6,71 @@ package com.petshop.daos;
 
 import com.petshop.connect.DBConnect;
 import com.petshop.models.CategoryProduct;
+import com.petshop.models.Product;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  *
- * @author dut
+ * @author duat
  */
 public class CategoryProductDAO {
 
-    private Connection conn;
-    private String sql = null;
+    private Connection conn = null;
+    private PreparedStatement ps = null;
+    private ResultSet rs = null;
+    private String sql = "";
 
     public CategoryProductDAO() {
         conn = DBConnect.getConnection();
     }
 
-    public List<CategoryProduct> findAll() {
+    public List<CategoryProduct> getListCategoryProduct() {
+        sql = "	SELECT \n"
+                + "    c.id,\n"
+                + "    c.category_code,\n"
+                + "    c.category_name,\n"
+                + "    c.created_at,\n"
+                + "    c.is_deleted,\n"
+                + "    c.is_status\n"
+                + "FROM \n"
+                + "    [categories] c\n"
+                + "WHERE \n"
+                + "    c.is_deleted = 0 AND c.is_status = 1";
         List<CategoryProduct> list = new ArrayList<>();
-        sql = "SELECT * FROM category_products WHERE is_deleted = 0;";
-
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                // Create a new CategoryProduct with the retrieved fields
-                CategoryProduct cProduct = new CategoryProduct(
-                        rs.getString("category_product_code"),
-                        rs.getString("category_product_name"),
-                        rs.getDate("created_at"),
-                        rs.getBoolean("is_status")
-                );
-                // Set additional fields not covered by the constructor
-                list.add(cProduct);
+                CategoryProduct c = new CategoryProduct();
+                c.setId(rs.getInt("id"));
+                c.setCategoryProductCode(rs.getString("category_code"));
+                c.setCategoryProductName(rs.getString("category_name"));
+                c.setCreatedAt(rs.getDate("created_at"));
+                c.setDeleted(rs.getBoolean("is_deleted"));
+                c.setStatus(rs.getBoolean("is_status"));
+                list.add(c);
             }
+            return list;
         } catch (Exception e) {
-            e.printStackTrace(); // Log the exception for debugging
+            e.fillInStackTrace();
         }
-
-        return list;
+        return null;
     }
 
-    ;
-    
-     public boolean insert(CategoryProduct cProduct) {
-        sql = "INSERT INTO category_products(category_product_code, category_product_name) VALUES (?,?)";
+    public boolean addCategoryProduct(CategoryProduct c) {
+        sql = "INSERT INTO categories(category_code, category_name, is_deleted, is_status) VALUES (?,?,?,?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            // Set các giá trị cho câu lệnh INSERT
-            ps.setString(1, cProduct.getCategoryProductCode());
-            ps.setString(2, cProduct.getCategoryProductName());
-            // Thực thi câu lệnh và kiểm tra xem có thành công không
+            ps.setString(1, c.getCategoryProductCode());
+            ps.setString(2, c.getCategoryProductName());
+            ps.setBoolean(3, c.isDeleted());
+            ps.setBoolean(4, c.isStatus());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            e.printStackTrace(); // Log lỗi nếu có
-            return false; // Trả về false nếu có lỗi
+            e.printStackTrace();
         }
+        return false;
     }
+
+    
+    
 }
