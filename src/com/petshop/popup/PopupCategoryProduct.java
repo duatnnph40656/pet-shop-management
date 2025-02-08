@@ -5,10 +5,13 @@
 package com.petshop.popup;
 
 import com.petshop.daos.CategoryProductDAO;
+import com.petshop.event.ConfirmListener;
 import com.petshop.models.CategoryProduct;
+import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogMessageError;
 import com.petshop.swing.message.DialogMessageFail;
 import com.petshop.swing.message.DialogMessageSuccess;
+import com.petshop.ultils.Ultil;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -31,17 +34,37 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
     private CategoryProductDAO categoryDao;
     private DefaultTableModel model;
 
+    private ConfirmListener listener;
+
+    // Đăng ký ConfirmListener
+    public void setConfirmListener(ConfirmListener listener) {
+        this.listener = listener;
+    }
+
     public PopupCategoryProduct() {
         initComponents();
         setOpaque(false);
         tbCategoryProduct.fixTable(jProduct);
         init();
+        btnThem.addActionListener(evt -> {
+            if (listener != null) {
+                listener.onConfirm();
+            }
+
+        });
+        btnHuy.addActionListener(evt -> {
+            if (listener != null) {
+                listener.onCancel();
+            }
+            raven.glasspanepopup.GlassPanePopup.closePopupLast();
+        });
     }
 
     void init() {
         model = new DefaultTableModel();
         categoryDao = new CategoryProductDAO();
         this.findAll(categoryDao.getListCategoryProduct());
+        resetCode();
     }
 
     @Override
@@ -75,6 +98,11 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
         boolean cStatus = true;
         return new CategoryProduct(cProductCode, cProductName, cStatus);
     }
+    
+    public void resetCode(){
+        txtCode.setText("LSP" + Ultil.generateRandomCode());
+        txtName.setText("");
+    }
 
     private void showMessageSuccess(String message) {
         DialogMessageSuccess success = new DialogMessageSuccess(message);
@@ -89,6 +117,25 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
     private void showMessageFail(String message) {
         DialogMessageFail fail = new DialogMessageFail(message);
         GlassPanePopup.showPopup(fail);
+    }
+
+    public void showMessageConfirm(String message, Runnable onConfirmAction) {
+        DialogConfirm confirm = new DialogConfirm(message);
+        confirm.setConfirmListener(new ConfirmListener() {
+            @Override
+            public void onConfirm() {
+                if (onConfirmAction != null) {
+                    onConfirmAction.run(); // Thực hiện hành động truyền vào
+                }
+                raven.glasspanepopup.GlassPanePopup.closePopup("confirm");
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+        raven.glasspanepopup.GlassPanePopup.showPopup(confirm, "confirm"); // Hiển thị popup
     }
 
     private boolean check() {
@@ -110,6 +157,7 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
         if (categoryDao.addCategoryProduct(readForm())) {
             this.showMessageSuccess("Thêm thành công!");
             this.findAll(categoryDao.getListCategoryProduct());
+            resetCode();
         } else {
             this.showMessageFail("Thêm thất bại!!");
         }
@@ -264,7 +312,7 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
 
     private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemActionPerformed
         // TODO add your handling code here:
-        insert();
+       this.showMessageConfirm("Xác nhận thêm mới!!", () -> {insert();});
     }//GEN-LAST:event_btnThemActionPerformed
 
 

@@ -4,6 +4,15 @@
  */
 package com.petshop.form;
 
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamException;
+import com.github.sarxos.webcam.WebcamPanel;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.Result;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
 import com.petshop.models.Product;
 import com.petshop.swing.jnafilechooser.api.JnaFileChooser;
 import com.petshop.swing.datechooser.EventDateChooser;
@@ -11,7 +20,13 @@ import com.petshop.swing.datechooser.SelectedAction;
 import com.petshop.swing.datechooser.SelectedDate;
 import com.petshop.swing.model.ModelStudent;
 import com.petshop.swing.table.EventAction;
+import java.awt.Dimension;
+import java.awt.Window;
+import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -19,36 +34,62 @@ import javax.swing.ImageIcon;
  */
 public class Demo extends javax.swing.JFrame {
 
+    private Webcam webcam;
+
     /**
      * Creates new form Demo
      */
     public Demo() {
         initComponents();
-        table1.fixTable(jScrollPane1);
-        initTableData();
+        startWebcam();
     }
 
-    private void initTableData() {
-        EventAction<ModelStudent> eventAction = new EventAction<ModelStudent>() {
-            @Override
-            public void delete(ModelStudent model) {
-                throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    private void startWebcam() {
+        new Thread(() -> {
+            webcam = Webcam.getDefault();
+            if (webcam == null) {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy webcam!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
             }
 
-            @Override
-            public void update(ModelStudent model) {
-                throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            // Chọn độ phân giải cao nhất
+            Dimension[] sizes = webcam.getViewSizes();
+            webcam.setViewSize(sizes[sizes.length - 1]);
+
+            webcam.open();
+            System.out.println("📸 Webcam đang hoạt động, chờ quét mã vạch...");
+
+            while (webcam.isOpen()) {
+                BufferedImage image = webcam.getImage();
+                if (image != null) {
+                    jLabel1.setIcon(new ImageIcon(image)); // Cập nhật ảnh lên JLabel
+
+                    // Quét mã vạch
+                    String barcode = decodeBarcode(image);
+                    if (barcode != null) {
+                        txtBarCode.setText(barcode); // Hiển thị mã vạch lên JTextField
+                        System.out.println("📌 Mã vạch: " + barcode);
+                        break;
+                    }
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-        };
+        }).start();
+    }
 
-        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
-        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
-        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
-        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
-        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
-        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
-        table1.addRow(new ModelStudent(null, "Jonh", "Male", "Java", 300).toRowTable(eventAction));
-
+    private String decodeBarcode(BufferedImage image) {
+        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(
+                new BufferedImageLuminanceSource(image)));
+        try {
+            Result result = new MultiFormatReader().decode(bitmap);
+            return result.getText();
+        } catch (NotFoundException e) {
+            return null; // Không tìm thấy mã vạch
+        }
     }
 
     /**
@@ -61,44 +102,59 @@ public class Demo extends javax.swing.JFrame {
     private void initComponents() {
 
         dateChooser2 = new com.petshop.swing.datechooser.DateChooser();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        table1 = new com.petshop.swing.table.Table();
+        button1 = new com.petshop.swing.Button();
+        jLabel1 = new javax.swing.JLabel();
+        txtBarCode = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        table1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+        button1.setText("button1");
+        button1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                button1ActionPerformed(evt);
             }
-        ));
-        jScrollPane1.setViewportView(table1);
+        });
+
+        jLabel1.setText("jLabel1");
+
+        txtBarCode.setText("jTextField1");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(74, 74, 74)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 566, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(352, Short.MAX_VALUE))
+                .addGap(28, 28, 28)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 382, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(149, 149, 149))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(txtBarCode, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(73, 73, 73))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(84, 84, 84)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(272, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(101, 101, 101)
+                        .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(43, 43, 43)
+                        .addComponent(txtBarCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(39, 39, 39)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 384, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void button1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button1ActionPerformed
+    }//GEN-LAST:event_button1ActionPerformed
     /**
      * @param args the command line arguments
      */
@@ -125,6 +181,9 @@ public class Demo extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(Demo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -135,8 +194,9 @@ public class Demo extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private com.petshop.swing.Button button1;
     private com.petshop.swing.datechooser.DateChooser dateChooser2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private com.petshop.swing.table.Table table1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JTextField txtBarCode;
     // End of variables declaration//GEN-END:variables
 }

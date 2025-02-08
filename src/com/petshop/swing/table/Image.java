@@ -17,7 +17,7 @@ public class Image extends javax.swing.JPanel {
     public Image(ModelImage image) {
         initComponents();
         pic.setImage(image.getImage());
-        lbName.setText(image.getTenSPCT());
+        lbName.setText(image.getNameProduct());
     }
 
     /**

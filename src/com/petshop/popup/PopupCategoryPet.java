@@ -4,11 +4,24 @@
  */
 package com.petshop.popup;
 
+import com.petshop.daos.TypePetDAO;
+import com.petshop.event.ConfirmListener;
+import com.petshop.models.Product;
+import com.petshop.models.TypePet;
+import com.petshop.swing.message.DialogConfirm;
+import com.petshop.swing.message.DialogMessageError;
+import com.petshop.swing.message.DialogMessageFail;
+import com.petshop.swing.message.DialogMessageSuccess;
 import com.petshop.swing.popup.GlassPanePopup;
+import com.petshop.swing.table.EventAction;
+import com.petshop.swing.table.ModelAction;
+import com.petshop.ultils.Ultil;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.RoundRectangle2D;
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -19,9 +32,39 @@ public class PopupCategoryPet extends javax.swing.JPanel {
     /**
      * Creates new form PopupCategoryPet
      */
+    private final TypePetDAO tDao;
+    private DefaultTableModel model;
+
+    private ConfirmListener listener;
+
+    // Đăng ký ConfirmListener
+    public void setConfirmListener(ConfirmListener listener) {
+        this.listener = listener;
+    }
+
     public PopupCategoryPet() {
         initComponents();
         tbTypePet.fixTable(jProduct);
+
+        tDao = new TypePetDAO();
+        model = new DefaultTableModel();
+
+        this.getListTypePet(tDao.getList());
+
+        txtCode.setText("TP" + Ultil.generateRandomCode());
+        
+        btnThem.addActionListener(evt -> {
+            if (listener != null) {
+                listener.onConfirm();
+            }
+            
+        });
+        btnHuy.addActionListener(evt -> {
+            if (listener != null) {
+                listener.onCancel();
+            }
+            raven.glasspanepopup.GlassPanePopup.closePopupLast();
+        });
     }
 
     @Override
@@ -32,6 +75,127 @@ public class PopupCategoryPet extends javax.swing.JPanel {
         g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 15, 15));
         g2.dispose();
         super.paintComponent(grphcs);
+    }
+
+    private void showMessageSuccess(String message) {
+        DialogMessageSuccess success = new DialogMessageSuccess(message);
+        raven.glasspanepopup.GlassPanePopup.showPopup(success);
+    }
+
+    private void showMessageError(String message) {
+        DialogMessageError error = new DialogMessageError(message);
+        raven.glasspanepopup.GlassPanePopup.showPopup(error);
+    }
+
+    private void showMessageFail(String message) {
+        DialogMessageFail fail = new DialogMessageFail(message);
+        raven.glasspanepopup.GlassPanePopup.showPopup(fail);
+    }
+
+    public void showMessageConfirm(String message, Runnable onConfirmAction) {
+        DialogConfirm confirm = new DialogConfirm(message);
+        confirm.setConfirmListener(new ConfirmListener() {
+            @Override
+            public void onConfirm() {
+                if (onConfirmAction != null) {
+                    onConfirmAction.run(); // Thực hiện hành động truyền vào
+                }
+                raven.glasspanepopup.GlassPanePopup.closePopup("confirm");
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+        raven.glasspanepopup.GlassPanePopup.showPopup(confirm, "confirm"); // Hiển thị popup
+    }
+
+    public void getListTypePet(List<TypePet> list) {
+        int stt = 1;
+        tbTypePet.setRowCount(0);
+
+        for (TypePet t : list) {
+            ModelAction<TypePet> actionData = new ModelAction<>(t,
+                    new EventAction<TypePet>() {
+                @Override
+                public void delete(TypePet typePet) {
+                    showMessageConfirm("Xác nhận xóa!", () -> {
+                        deleteTypePet();
+                    });
+                }
+
+                @Override
+                public void update(TypePet typePet) {
+
+                }
+            }
+            );
+            if (t.isStatus()) {
+                tbTypePet.addRow(new Object[]{
+                    t.getId(),
+                    stt++,
+                    t.getTypePetCode(),
+                    t.getTypePetName(),
+                    t.getCreatedAt(),
+                    t.isStatus() ? "Hoạt động" : "Không hoạt động",
+                    actionData
+                });
+                stt++;
+            }
+        }
+        // Ẩn cột ID
+        tbTypePet.getColumnModel()
+                .getColumn(0).setMinWidth(0); // Giả sử cột ID là cột 1
+        tbTypePet.getColumnModel()
+                .getColumn(0).setMaxWidth(0);
+        tbTypePet.getColumnModel()
+                .getColumn(0).setWidth(0);
+    }
+
+    public boolean checkT() {
+        if (txtCode.getText().isEmpty()) {
+            showMessageError("Mã không được để trống!!");
+            return false;
+        } else if (txtName.getText().isEmpty()) {
+            showMessageFail("Tên trống");
+            return false;
+        }
+        return true;
+    }
+
+    public void resetForm() {
+        txtCode.setText("TP" + Ultil.generateRandomCode());
+        txtName.setText("");
+    }
+
+    public void insertTypePet() {
+        if (!checkT()) {
+            return;
+        }
+        String tCode = txtCode.getText();
+        String tName = txtName.getText();
+        TypePet t = new TypePet(tCode, tName, false, true);
+        if (tDao.insertTypePet(t)) {
+            showMessageSuccess("Thêm thành công");
+            this.getListTypePet(tDao.getList());
+            this.resetForm();
+        } else {
+            this.showMessageFail("Thêm thất bại");
+        }
+
+    }
+
+    public void deleteTypePet() {
+        int selectedRow = tbTypePet.getSelectedRow();
+        if (selectedRow != -1) {
+            int id = (int) tbTypePet.getValueAt(selectedRow, 0);
+            tDao.deleteTypePet(id);
+            showMessageSuccess("Xóa thành công");
+            this.getListTypePet(tDao.getList());
+        } else {
+            showMessageFail("Chưa chọn thông tin để xóa!!");
+        }
     }
 
     /**
@@ -133,11 +297,11 @@ public class PopupCategoryPet extends javax.swing.JPanel {
 
             },
             new String [] {
-                "STT", "Mã L.Thú Cưng", "Tên L.Thú Cưng", "Ngày tạo", "Trạng thái", "Thao tác"
+                "", "STT", "Mã L.Thú Cưng", "Tên L.Thú Cưng", "Ngày tạo", "Trạng thái", "Thao tác"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, true, true
+                true, false, false, false, false, true, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -146,7 +310,7 @@ public class PopupCategoryPet extends javax.swing.JPanel {
         });
         jProduct.setViewportView(tbTypePet);
         if (tbTypePet.getColumnModel().getColumnCount() > 0) {
-            tbTypePet.getColumnModel().getColumn(0).setMaxWidth(50);
+            tbTypePet.getColumnModel().getColumn(1).setMaxWidth(50);
         }
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -184,6 +348,9 @@ public class PopupCategoryPet extends javax.swing.JPanel {
 
     private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemActionPerformed
         // TODO add your handling code here:
+        showMessageConfirm("Xác nhận thêm mới!!", () -> {
+            insertTypePet();
+        });
     }//GEN-LAST:event_btnThemActionPerformed
 
 
