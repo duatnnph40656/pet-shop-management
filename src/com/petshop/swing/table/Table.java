@@ -84,16 +84,24 @@ public class Table extends JTable {
         int currentRowCount = model.getRowCount();
 
         if (rowCount < currentRowCount) {
+            // Dừng chỉnh sửa trước khi xóa hàng
+            if (isEditing()) {
+                getCellEditor().stopCellEditing();
+            }
+
             // Xóa các hàng thừa
             for (int i = currentRowCount - 1; i >= rowCount; i--) {
                 model.removeRow(i);
             }
         } else if (rowCount > currentRowCount) {
-            // Thêm các hàng mới với giá trị null
+            // Thêm hàng mới với giá trị rỗng
             for (int i = currentRowCount; i < rowCount; i++) {
-                model.addRow(new Object[model.getColumnCount()]);
+                model.addRow(new Object[getColumnCount()]);
             }
         }
+
+        // Cập nhật lại JTable sau khi thay đổi
+        model.fireTableDataChanged();
     }
 
     public void fixTable(JScrollPane scroll) {

@@ -41,26 +41,12 @@ public class ProductDAO {
                 + "ON \n"
                 + "    p.id_category = c.id\n"
                 + "WHERE \n"
-                + "    p.is_deleted = 0 AND p.is_status = 1;";
+                + "    p.is_deleted = 0;";
 
         List<Product> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Product product = new Product();
-                product.setId(rs.getInt("id"));
-                product.setProductCode(rs.getString("product_code"));
-                product.setProductName(rs.getString("product_name"));
-                product.setPriceBase(rs.getBigDecimal("price_base"));
-                product.setCreatedAt(rs.getTimestamp("created_at"));
-                product.setDeleted(rs.getBoolean("is_deleted"));
-                product.setStatus(rs.getBoolean("is_status"));
-
-                CategoryProduct categoryProduct = new CategoryProduct();
-                categoryProduct.setCategoryProductName(rs.getString("category_name"));
-
-                product.setCategoryProduct(categoryProduct);
-
-                list.add(product);
+                list.add(mapProduct(rs));
             }
 
         } catch (Exception e) {
@@ -122,39 +108,31 @@ public class ProductDAO {
     }
 
     public List<Product> searchProduct(String keyword) {
-        String sql = "SELECT \n"
-                + "    p.id,\n"
-                + "    p.product_code,\n"
-                + "    p.product_name,\n"
-                + "    c.category_name,\n"
-                + "    p.price_base,\n"
-                + "    p.created_at,\n"
-                + "    p.is_deleted,\n"
-                + "    p.is_status\n"
-                + "FROM \n"
-                + "    [products] p\n"
-                + "JOIN \n"
-                + "    [categories] c\n"
-                + "ON \n"
-                + "    p.id_category = c.id\n"
-                + "WHERE \n"
-                + "    p.is_deleted = 0 \n"
-                + "    AND p.is_status = 1\n"
-                + "    AND p.product_name LIKE ?;";
+        String sql = "SELECT "
+                + "    p.id, "
+                + "    p.product_code, "
+                + "    p.product_name, "
+                + "    c.category_name, "
+                + "    p.price_base, "
+                + "    p.created_at, "
+                + "    p.is_deleted, "
+                + "    p.is_status "
+                + "FROM "
+                + "    [products] p "
+                + "JOIN "
+                + "    [categories] c "
+                + "ON "
+                + "    p.id_category = c.id "
+                + "WHERE "
+                + "    p.is_deleted = 0 "
+                + "    AND (p.product_name LIKE ? OR p.product_code LIKE ?)";
         List<Product> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, "%" + keyword + "%");
+            ps.setString(2, "%" + keyword + "%");
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                System.out.println("ID: " + rs.getInt("id"));
-                System.out.println("Product Code: " + rs.getString("product_code"));
-                System.out.println("Product Name: " + rs.getString("product_name"));
-                System.out.println("Category Name: " + rs.getString("category_name"));
-                System.out.println("Price Base: " + rs.getBigDecimal("price_base"));
-                System.out.println("Created At: " + rs.getTimestamp("created_at"));
-                System.out.println("Is Deleted: " + rs.getBoolean("is_deleted"));
-                System.out.println("Is Status: " + rs.getBoolean("is_status"));
-                System.out.println("-----------------------------");
+                list.add(mapProduct(rs));
             }
             return list;
         } catch (Exception e) {
@@ -164,8 +142,11 @@ public class ProductDAO {
     }
 
     public List<Product> selectProductByCategoryId(int categoryId) {
-        String sql = "SELECT * FROM products "
-                + "WHERE id_category = ? AND is_status = 1 AND is_deleted = 0";
+        String sql = "SELECT p.*, c.category_name " // Lấy cả category_name
+                + "FROM products p "
+                + "JOIN categories c ON p.id_category = c.id " // JOIN bảng categories
+                + "WHERE p.id_category = ? AND p.is_deleted = 0";
+
         List<Product> products = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, categoryId); // Gán tham số categoryId
@@ -179,6 +160,7 @@ public class ProductDAO {
                     // Gán đối tượng CategoryProduct
                     CategoryProduct category = new CategoryProduct();
                     category.setId(rs.getInt("id_category"));
+                    category.setCategoryProductName(rs.getString("category_name")); // Gán typeProductName
                     product.setCategoryProduct(category);
 
                     product.setPriceBase(rs.getBigDecimal("price_base"));
@@ -193,5 +175,22 @@ public class ProductDAO {
             e.printStackTrace();
         }
         return products;
+    }
+
+    private Product mapProduct(ResultSet rs) throws SQLException {
+        Product product = new Product();
+        product.setId(rs.getInt("id"));
+        product.setProductCode(rs.getString("product_code"));
+        product.setProductName(rs.getString("product_name"));
+        product.setPriceBase(rs.getBigDecimal("price_base"));
+        product.setCreatedAt(rs.getTimestamp("created_at"));
+        product.setDeleted(rs.getBoolean("is_deleted"));
+        product.setStatus(rs.getBoolean("is_status"));
+
+        CategoryProduct categoryProduct = new CategoryProduct();
+        categoryProduct.setCategoryProductName(rs.getString("category_name"));
+
+        product.setCategoryProduct(categoryProduct);
+        return product;
     }
 }

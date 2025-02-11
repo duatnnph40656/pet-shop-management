@@ -29,7 +29,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="materialTabbed1" alignment="0" max="32767" attributes="0"/>
+          <Component id="materialTabbed1" alignment="1" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -85,8 +85,8 @@
                           <Component id="jPanel10" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jPanel5" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jPanel5" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="42" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -375,7 +375,7 @@
                           </Group>
                           <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                           <Component id="jScrollPane3" min="-2" pref="174" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace pref="21" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -768,7 +768,7 @@
                       <Component id="jPanel6" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel7" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="42" max="32767" attributes="0"/>
+                      <EmptySpace pref="30" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -848,22 +848,22 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
-                                      <Component id="textFieldRounded1" min="-2" pref="138" max="-2" attributes="0"/>
+                                      <Component id="txtServiceCode" min="-2" pref="138" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                                      <Component id="textFieldRounded2" min="-2" pref="174" max="-2" attributes="0"/>
+                                      <Component id="txtServiceName" min="-2" pref="174" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Component id="textFieldRounded3" min="-2" pref="76" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="comboboxRounded4" min="-2" pref="123" max="-2" attributes="0"/>
+                                      <Component id="txtDuration" min="-2" pref="76" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+                                      <Component id="cbbTimeUnit" min="-2" pref="122" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" attributes="0">
-                                      <Component id="comboboxRounded3" min="-2" pref="193" max="-2" attributes="0"/>
+                                      <Component id="cbbTypeService" min="-2" pref="193" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="button2" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
-                                      <Component id="textFieldRounded4" max="32767" attributes="0"/>
+                                      <Component id="txtPriceService" min="-2" pref="290" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -878,17 +878,21 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="3" attributes="0">
-                                          <Component id="textFieldRounded1" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="textFieldRounded2" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="textFieldRounded3" alignment="3" min="-2" max="-2" attributes="0"/>
-                                          <Component id="comboboxRounded4" alignment="3" min="-2" pref="46" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="cbbTimeUnit" alignment="0" min="-2" pref="44" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="3" attributes="0">
+                                              <Component id="txtServiceCode" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="txtServiceName" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="txtDuration" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          </Group>
                                       </Group>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="comboboxRounded3" min="-2" pref="46" max="-2" attributes="0"/>
-                                          <Component id="textFieldRounded4" min="-2" max="-2" attributes="0"/>
-                                          <Component id="button2" alignment="1" min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="1" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="txtPriceService" min="-2" max="-2" attributes="0"/>
+                                              <Component id="button2" alignment="1" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Component id="cbbTypeService" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
@@ -900,19 +904,14 @@
                     </DimensionLayout>
                   </Layout>
                   <SubComponents>
-                    <Component class="com.petshop.swing.textfield.TextFieldRounded" name="textFieldRounded1">
+                    <Component class="com.petshop.swing.textfield.TextFieldRounded" name="txtServiceCode">
                       <Properties>
                         <Property name="labelText" type="java.lang.String" value="M&#xe3; d&#x1ecb;ch v&#x1ee5;"/>
                       </Properties>
                     </Component>
-                    <Component class="com.petshop.swing.textfield.TextFieldRounded" name="textFieldRounded2">
+                    <Component class="com.petshop.swing.textfield.TextFieldRounded" name="txtServiceName">
                       <Properties>
                         <Property name="labelText" type="java.lang.String" value="T&#xea;n d&#x1ecb;ch v&#x1ee5;"/>
-                      </Properties>
-                    </Component>
-                    <Component class="com.petshop.swing.combobox.ComboboxRounded" name="comboboxRounded3">
-                      <Properties>
-                        <Property name="labeText" type="java.lang.String" value="Lo&#x1ea1;i d&#x1ecb;ch v&#x1ee5;"/>
                       </Properties>
                     </Component>
                     <Component class="com.petshop.swing.Button" name="button2">
@@ -924,21 +923,19 @@
                           <Image iconType="3" name="/com/petshop/icon/icons8-add-24 (1).png"/>
                         </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="button2ActionPerformed"/>
+                      </Events>
                     </Component>
-                    <Component class="com.petshop.swing.combobox.ComboboxRounded" name="comboboxRounded4">
-                      <Properties>
-                        <Property name="labeText" type="java.lang.String" value="&#x110;&#x1a1;n v&#x1ecb; th&#x1edd;i gian"/>
-                      </Properties>
-                    </Component>
-                    <Component class="com.petshop.swing.textfield.TextFieldRounded" name="textFieldRounded3">
+                    <Component class="com.petshop.swing.textfield.TextFieldRounded" name="txtDuration">
                       <Properties>
                         <Property name="labelText" type="java.lang.String" value="Th&#x1edd;i gian"/>
                       </Properties>
                       <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="textFieldRounded3ActionPerformed"/>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtDurationActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="com.petshop.swing.textfield.TextFieldRounded" name="textFieldRounded4">
+                    <Component class="com.petshop.swing.textfield.TextFieldRounded" name="txtPriceService">
                       <Properties>
                         <Property name="labelText" type="java.lang.String" value="Gi&#xe1; d&#x1ecb;ch v&#x1ee5;"/>
                       </Properties>
@@ -950,7 +947,7 @@
 
                       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
                       <SubComponents>
-                        <Component class="com.petshop.swing.textarea.TextArea" name="textArea1">
+                        <Component class="com.petshop.swing.textarea.TextArea" name="txtDescribeService">
                           <Properties>
                             <Property name="columns" type="int" value="20"/>
                             <Property name="rows" type="int" value="5"/>
@@ -958,6 +955,16 @@
                         </Component>
                       </SubComponents>
                     </Container>
+                    <Component class="com.petshop.swing.combobox.Combobox" name="cbbTypeService">
+                      <Properties>
+                        <Property name="labeText" type="java.lang.String" value="Lo&#x1ea1;i d&#x1ecb;ch v&#x1ee5;"/>
+                      </Properties>
+                    </Component>
+                    <Component class="com.petshop.swing.combobox.Combobox" name="cbbTimeUnit">
+                      <Properties>
+                        <Property name="labeText" type="java.lang.String" value="&#x110;&#x1a1;n v&#x1ecb; th&#x1edd;i gian"/>
+                      </Properties>
+                    </Component>
                   </SubComponents>
                 </Container>
                 <Container class="javax.swing.JPanel" name="jPanel9">
@@ -976,11 +983,12 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="button7" max="32767" attributes="0"/>
-                                  <Component id="button4" max="32767" attributes="0"/>
-                                  <Component id="button5" alignment="1" max="32767" attributes="0"/>
+                                  <Component id="btnReset" alignment="1" max="32767" attributes="0"/>
+                                  <Component id="btnEditStatus" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="btnEdit" alignment="0" max="32767" attributes="0"/>
                               </Group>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="button3" min="-2" pref="106" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="btnAdd" min="-2" pref="118" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -992,12 +1000,14 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
                                       <Component id="button7" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="btnEditStatus" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="button4" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="button5" min="-2" max="-2" attributes="0"/>
+                                      <Component id="btnEdit" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="btnReset" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="button3" max="32767" attributes="0"/>
+                                  <Component id="btnAdd" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
@@ -1005,34 +1015,54 @@
                     </DimensionLayout>
                   </Layout>
                   <SubComponents>
-                    <Component class="com.petshop.swing.Button" name="button3">
+                    <Component class="com.petshop.swing.Button" name="btnAdd">
                       <Properties>
                         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="ff" green="ff" red="cc" type="rgb"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Th&#xea;m"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAddActionPerformed"/>
+                      </Events>
                     </Component>
-                    <Component class="com.petshop.swing.Button" name="button4">
+                    <Component class="com.petshop.swing.Button" name="btnEdit">
                       <Properties>
                         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="cc" green="ff" red="ff" type="rgb"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="S&#x1eed;a"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnEditActionPerformed"/>
+                      </Events>
                     </Component>
-                    <Component class="com.petshop.swing.Button" name="button5">
+                    <Component class="com.petshop.swing.Button" name="btnReset">
                       <Properties>
                         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="ff" green="cc" red="ff" type="rgb"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="L&#xe0;m m&#x1edb;i"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnResetActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="com.petshop.swing.Button" name="button7">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="L&#x1ecb;ch s&#x1eed; &#x111;&#xe3; x&#xf3;a"/>
                       </Properties>
+                    </Component>
+                    <Component class="com.petshop.swing.Button" name="btnEditStatus">
+                      <Properties>
+                        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="66" green="66" red="ff" type="rgb"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="        "/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnEditStatusActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -1056,17 +1086,17 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jScrollPane4" pref="1025" max="32767" attributes="0"/>
+                              <Component id="jScrollPane4" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
                                   <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="32767" attributes="0"/>
-                                  <Component id="comboboxRounded8" min="-2" pref="100" max="-2" attributes="0"/>
+                                  <Component id="cbbFilterTypeService" min="-2" pref="138" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="comboboxRounded5" min="-2" pref="145" max="-2" attributes="0"/>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="comboboxRounded6" min="-2" pref="190" max="-2" attributes="0"/>
+                                  <Component id="cbbFilterStatus" min="-2" pref="151" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="comboboxRounded6" min="-2" pref="149" max="-2" attributes="0"/>
                                   <EmptySpace type="separate" max="-2" attributes="0"/>
-                                  <Component id="textFieldAnimation2" min="-2" pref="309" max="-2" attributes="0"/>
+                                  <Component id="txtSearchService" min="-2" pref="309" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -1081,10 +1111,10 @@
                               <Component id="jLabel10" min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="comboboxRounded6" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="comboboxRounded5" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="comboboxRounded8" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbbFilterStatus" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbbFilterTypeService" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="textFieldAnimation2" min="-2" pref="42" max="-2" attributes="0"/>
+                              <Component id="txtSearchService" min="-2" pref="42" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace min="0" pref="2" max="32767" attributes="0"/>
                           <Component id="jScrollPane4" min="-2" pref="380" max="-2" attributes="0"/>
@@ -1101,25 +1131,32 @@
 
                   <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
                   <SubComponents>
-                    <Component class="com.petshop.swing.table.Table" name="table4">
+                    <Component class="com.petshop.swing.table.Table" name="tbService">
                       <Properties>
                         <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                          <Table columnCount="10" rowCount="0">
+                          <Table columnCount="12" rowCount="0">
+                            <Column editable="true" title="" type="java.lang.Object"/>
                             <Column editable="true" title="STT" type="java.lang.Object"/>
                             <Column editable="true" title="M&#xe3; d&#x1ecb;ch v&#x1ee5;" type="java.lang.Object"/>
                             <Column editable="true" title="T&#xea;n d&#x1ecb;ch v&#x1ee5;" type="java.lang.Object"/>
                             <Column editable="true" title="Lo&#x1ea1;i d&#x1ecb;ch v&#x1ee5;" type="java.lang.Object"/>
-                            <Column editable="true" title="Th&#x1edd;i gian" type="java.lang.Object"/>
+                            <Column editable="true" title="T.gian" type="java.lang.Object"/>
                             <Column editable="true" title="&#x110;&#x1a1;n v&#x1ecb; th&#x1edd;i gian" type="java.lang.Object"/>
                             <Column editable="true" title="Gi&#xe1;" type="java.lang.Object"/>
                             <Column editable="true" title="M&#xf4; t&#x1ea3; d&#x1ecb;ch v&#x1ee5;" type="java.lang.Object"/>
+                            <Column editable="true" title="Ng&#xe0;y t&#x1ea1;o" type="java.lang.Object"/>
                             <Column editable="true" title="Tr&#x1ea1;ng th&#xe1;i" type="java.lang.Object"/>
                             <Column editable="true" title="Thao t&#xe1;c" type="java.lang.Object"/>
                           </Table>
                         </Property>
                         <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                           <TableColumnModel selectionModel="0">
-                            <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                            <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                              <Title/>
+                              <Editor/>
+                              <Renderer/>
+                            </Column>
+                            <Column maxWidth="40" minWidth="40" prefWidth="-1" resizable="true">
                               <Title/>
                               <Editor/>
                               <Renderer/>
@@ -1135,6 +1172,11 @@
                               <Renderer/>
                             </Column>
                             <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                              <Title/>
+                              <Editor/>
+                              <Renderer/>
+                            </Column>
+                            <Column maxWidth="60" minWidth="60" prefWidth="-1" resizable="true">
                               <Title/>
                               <Editor/>
                               <Renderer/>
@@ -1175,6 +1217,9 @@
                           <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                         </Property>
                       </Properties>
+                      <Events>
+                        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="tbServiceMouseClicked"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -1186,29 +1231,26 @@
                     <Property name="text" type="java.lang.String" value="Danh s&#xe1;ch d&#x1ecb;ch v&#x1ee5;"/>
                   </Properties>
                 </Component>
-                <Component class="com.petshop.swing.combobox.ComboboxRounded" name="comboboxRounded5">
-                  <Properties>
-                    <Property name="labeText" type="java.lang.String" value="Lo&#x1ea1;i d&#x1ecb;ch v&#x1ee5;"/>
-                  </Properties>
-                  <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="comboboxRounded5ActionPerformed"/>
-                  </Events>
-                </Component>
                 <Component class="com.petshop.swing.combobox.ComboboxRounded" name="comboboxRounded6">
                   <Properties>
                     <Property name="labeText" type="java.lang.String" value="S&#x1eaf;p x&#x1ebf;p theo"/>
                   </Properties>
                 </Component>
-                <Component class="com.petshop.swing.textfield.TextFieldAnimation" name="textFieldAnimation2">
+                <Component class="com.petshop.swing.textfield.TextFieldAnimation" name="txtSearchService">
                   <Properties>
                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                       <Color blue="fa" green="fa" red="fa" type="rgb"/>
                     </Property>
                   </Properties>
                 </Component>
-                <Component class="com.petshop.swing.combobox.ComboboxRounded" name="comboboxRounded8">
+                <Component class="com.petshop.swing.combobox.Combobox" name="cbbFilterStatus">
                   <Properties>
                     <Property name="labeText" type="java.lang.String" value="Tr&#x1ea1;ng th&#xe1;i"/>
+                  </Properties>
+                </Component>
+                <Component class="com.petshop.swing.combobox.Combobox" name="cbbFilterTypeService">
+                  <Properties>
+                    <Property name="labeText" type="java.lang.String" value="Lo&#x1ea1;i d&#x1ecb;ch v&#x1ee5;"/>
                   </Properties>
                 </Component>
               </SubComponents>

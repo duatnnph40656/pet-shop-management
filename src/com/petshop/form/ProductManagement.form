@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <NonVisualComponents>
+    <Component class="com.petshop.swing.datechooser.DateChooser" name="dateChooser">
+      <Properties>
+        <Property name="textRefernce" type="javax.swing.JTextField" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="txtProductDate"/>
+        </Property>
+      </Properties>
+    </Component>
+  </NonVisualComponents>
   <Properties>
     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
       <Dimension value="[1058, 741]"/>
@@ -408,7 +417,7 @@
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="combobox4" min="-2" pref="173" max="-2" attributes="0"/>
                                   <EmptySpace max="32767" attributes="0"/>
-                                  <Component id="txtSearch" min="-2" pref="300" max="-2" attributes="0"/>
+                                  <Component id="txtSearchProduct" min="-2" pref="300" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -427,7 +436,7 @@
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="txtSearch" min="-2" pref="42" max="-2" attributes="0"/>
+                                          <Component id="txtSearchProduct" min="-2" pref="42" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                                   <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
@@ -458,7 +467,7 @@
                       <Properties>
                         <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                           <Table columnCount="9" rowCount="4">
-                            <Column editable="false" title="." type="java.lang.Object"/>
+                            <Column editable="false" title="" type="java.lang.Object"/>
                             <Column editable="false" title="STT" type="java.lang.Object"/>
                             <Column editable="false" title="M&#xe3; SP" type="java.lang.Object"/>
                             <Column editable="false" title="T&#xea;n SP" type="java.lang.Object"/>
@@ -471,7 +480,7 @@
                         </Property>
                         <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                           <TableColumnModel selectionModel="0">
-                            <Column maxWidth="1" minWidth="-1" prefWidth="-1" resizable="true">
+                            <Column maxWidth="0" minWidth="0" prefWidth="-1" resizable="true">
                               <Title/>
                               <Editor/>
                               <Renderer/>
@@ -536,14 +545,14 @@
                     <Property name="text" type="java.lang.String" value="Danh s&#xe1;ch s&#x1ea3;n ph&#x1ea9;m"/>
                   </Properties>
                 </Component>
-                <Component class="com.petshop.swing.textfield.TextFieldAnimation" name="txtSearch">
+                <Component class="com.petshop.swing.textfield.TextFieldAnimation" name="txtSearchProduct">
                   <Properties>
                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                       <Color blue="fa" green="fa" red="fa" type="rgb"/>
                     </Property>
                   </Properties>
                   <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtSearchActionPerformed"/>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtSearchProductActionPerformed"/>
                   </Events>
                 </Component>
                 <Component class="com.petshop.swing.combobox.Combobox" name="cbbFilterCategory">
@@ -674,25 +683,23 @@
                                   <Component id="cbbProduct" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="txtWeightProductDetail" alignment="1" pref="172" max="32767" attributes="0"/>
+                                  <Component id="txtProductDetailName" alignment="1" max="32767" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
                                       <Component id="btnPopupTypePet" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Component id="txtFlavor" pref="130" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                      <Component id="txtWeightProductDetail" pref="172" max="32767" attributes="0"/>
-                                      <Component id="txtProductDetailName" max="32767" attributes="0"/>
+                                      <Component id="txtFlavor" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="txtExpiry" pref="151" max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="txtExpiry" alignment="0" pref="135" max="32767" attributes="0"/>
+                                  <Component id="txtProductDate" max="32767" attributes="0"/>
                                   <Component id="txtQuantityInStock" max="32767" attributes="0"/>
-                                  <Component id="txtProductDate" alignment="0" max="32767" attributes="0"/>
                               </Group>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="textAreaScroll1" pref="157" max="32767" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="textAreaScroll1" min="-2" pref="189" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="btnSelectImage" min="-2" max="-2" attributes="0"/>
@@ -707,10 +714,6 @@
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <Component id="textAreaScroll1" min="-2" pref="186" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="22" max="32767" attributes="0"/>
-                                  </Group>
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" alignment="0" attributes="0">
@@ -751,6 +754,10 @@
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                   </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="textAreaScroll1" min="-2" pref="186" max="-2" attributes="0"/>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  </Group>
                               </Group>
                           </Group>
                       </Group>
@@ -770,7 +777,7 @@
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Segoe UI" size="14" style="0"/>
                         </Property>
-                        <Property name="labelText" type="java.lang.String" value="Ng&#xe0;y s&#x1ea3;n xu&#x1ea5;t"/>
+                        <Property name="labelText" type="java.lang.String" value="NSX(dd/MM/yyy)"/>
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtProductDateActionPerformed"/>
@@ -922,11 +929,10 @@
                                   <Component id="btnAddProductDetail" max="32767" attributes="0"/>
                                   <Component id="button9" pref="148" max="32767" attributes="0"/>
                                   <Component id="btnUpdateProductDetail" max="32767" attributes="0"/>
-                                  <Group type="102" attributes="0">
-                                      <Component id="btnUpdateStatusProductDetail" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="btnUpdateStatusProductDetail" max="32767" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
                                       <Component id="btnRestProductDetail" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
                                   <Component id="btnHisProductDetailDeleted" alignment="0" max="32767" attributes="0"/>
                               </Group>
@@ -974,6 +980,9 @@
                         </Property>
                         <Property name="text" type="java.lang.String" value="C&#x1ead;p nh&#x1ead;p"/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnUpdateProductDetailActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="com.petshop.swing.Button" name="btnRestProductDetail">
                       <Properties>
@@ -1002,8 +1011,11 @@
                         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="cc" green="cc" red="ff" type="rgb"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="Ng&#x1b0;ng b&#xe1;n"/>
+                        <Property name="text" type="java.lang.String" value="             "/>
                       </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnUpdateStatusProductDetailActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="com.petshop.swing.Button" name="btnHisProductDetailDeleted">
                       <Properties>
@@ -1032,53 +1044,48 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
+                      <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="103" groupAlignment="1" attributes="0">
                               <Component id="jScrollPane2" max="32767" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="1" attributes="0">
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Component id="jLabel4" min="-2" pref="332" max="-2" attributes="0"/>
-                                          <EmptySpace min="-2" pref="177" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Group type="102" alignment="1" attributes="0">
-                                          <Component id="cbbFilterProduct" min="-2" pref="139" max="-2" attributes="0"/>
-                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                          <Component id="cbbFilterTypePet" min="-2" pref="185" max="-2" attributes="0"/>
-                                          <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                                  <Component id="cbbSort" pref="178" max="32767" attributes="0"/>
+                              <Group type="102" alignment="1" attributes="0">
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  <Component id="cbbFilterProduct" min="-2" pref="139" max="-2" attributes="0"/>
+                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                  <Component id="cbbFilterTypePet" min="-2" pref="185" max="-2" attributes="0"/>
                                   <EmptySpace type="separate" max="-2" attributes="0"/>
-                                  <Component id="txtSearchProductDetail" min="-2" pref="320" max="-2" attributes="0"/>
+                                  <Component id="cbbSort" min="-2" pref="148" max="-2" attributes="0"/>
+                                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                                  <Component id="txtSearchProductDetail" min="-2" pref="207" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="jLabel4" min="-2" pref="332" max="-2" attributes="0"/>
+                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <Component id="txtSearchProductDetail" min="-2" pref="42" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
-                                  <Component id="jScrollPane2" pref="282" max="32767" attributes="0"/>
-                              </Group>
-                              <Group type="102" attributes="0">
-                                  <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="cbbFilterProduct" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="cbbFilterTypePet" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="cbbSort" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="txtSearchProductDetail" min="-2" pref="42" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="3" attributes="0">
+                                          <Component id="cbbSort" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="cbbFilterTypePet" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="cbbFilterProduct" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      </Group>
                                   </Group>
-                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
+                          <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                          <Component id="jScrollPane2" pref="313" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1103,8 +1110,10 @@
                     <Component class="com.petshop.swing.table.Table" name="tbProductDetail">
                       <Properties>
                         <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                          <Table columnCount="15" rowCount="0">
-                            <Column editable="false" title="." type="java.lang.Object"/>
+                          <Table columnCount="17" rowCount="0">
+                            <Column editable="true" title="" type="java.lang.Object"/>
+                            <Column editable="false" title="" type="java.lang.Object"/>
+                            <Column editable="false" title="" type="java.lang.Object"/>
                             <Column editable="false" title="STT" type="java.lang.Object"/>
                             <Column editable="false" title="T&#xea;n SPCT" type="java.lang.Object"/>
                             <Column editable="false" title="M&#xe3; SPCT" type="java.lang.Object"/>
@@ -1112,9 +1121,9 @@
                             <Column editable="false" title="D&#xe0;nh cho" type="java.lang.Object"/>
                             <Column editable="false" title="H&#x1b0;&#x1a1;ng v&#x1ecb;" type="java.lang.Object"/>
                             <Column editable="false" title="SL" type="java.lang.Object"/>
-                            <Column editable="false" title="TL(KG)" type="java.lang.Object"/>
+                            <Column editable="false" title="TL" type="java.lang.Object"/>
                             <Column editable="false" title="NSX" type="java.lang.Object"/>
-                            <Column editable="false" title="HSD(Th&#xe1;ng)" type="java.lang.Object"/>
+                            <Column editable="false" title="HSD" type="java.lang.Object"/>
                             <Column editable="false" title="Gi&#xe1; b&#xe1;n" type="java.lang.Object"/>
                             <Column editable="false" title="M&#xf4; t&#x1ea3;" type="java.lang.Object"/>
                             <Column editable="false" title="Tr&#x1ea1;ng th&#xe1;i" type="java.lang.Object"/>
@@ -1123,7 +1132,17 @@
                         </Property>
                         <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                           <TableColumnModel selectionModel="0">
-                            <Column maxWidth="1" minWidth="-1" prefWidth="-1" resizable="true">
+                            <Column maxWidth="0" minWidth="0" prefWidth="-1" resizable="true">
+                              <Title/>
+                              <Editor/>
+                              <Renderer/>
+                            </Column>
+                            <Column maxWidth="0" minWidth="0" prefWidth="-1" resizable="true">
+                              <Title/>
+                              <Editor/>
+                              <Renderer/>
+                            </Column>
+                            <Column maxWidth="0" minWidth="0" prefWidth="-1" resizable="true">
                               <Title/>
                               <Editor/>
                               <Renderer/>

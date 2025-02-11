@@ -44,11 +44,11 @@ public class TypePetDAO {
 
         return null;
     }
-    
-    public boolean insertTypePet(TypePet t){
+
+    public boolean insertTypePet(TypePet t) {
         String sql = "INSERT INTO type_pets(type_pet_code,type_pet_name,is_deleted,is_status) VALUES (?,?,?,?)";
-        
-        try (PreparedStatement ps = conn.prepareStatement(sql)){
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, t.getTypePetCode());
             ps.setString(2, t.getTypePetName());
             ps.setBoolean(3, t.isDeleted());
@@ -59,10 +59,10 @@ public class TypePetDAO {
         }
         return false;
     }
-    
-    public boolean deleteTypePet(int id){
+
+    public boolean deleteTypePet(int id) {
         String sql = "UPDATE type_pets SET is_deleted = 1 WHERE id = ?";
-        
+
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
@@ -71,4 +71,20 @@ public class TypePetDAO {
         }
         return false;
     }
+
+    public boolean isTypePetNameExists(String typePetName) {
+        String sql = "SELECT COUNT(*) FROM type_pets WHERE type_pet_name = ? AND is_deleted = 0";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, typePetName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0; // Nếu số lượng > 0, tức là tên đã tồn tại
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }

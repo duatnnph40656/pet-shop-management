@@ -53,4 +53,10 @@ public class ModelImage {
         }
         return null;
     }
+    
+    @Override
+    public String toString() {
+        return ""; // Trả về chuỗi rỗng thay vì tên sản phẩm
+    }
+    
 }

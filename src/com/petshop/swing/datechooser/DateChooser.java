@@ -26,7 +26,7 @@ public final class DateChooser extends javax.swing.JPanel {
 
     private JTextField textRefernce;
     private final String MONTH_ENGLISH[] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-    private String dateFormat = "dd-MM-yyyy";
+    private String dateFormat = "dd/MM/yyyy";
     private int MONTH = 1;
     private int YEAR = 2021;
     private int DAY = 1;
@@ -64,8 +64,8 @@ public final class DateChooser extends javax.swing.JPanel {
     private void setText(boolean runEvent, int act) {
         if (textRefernce != null) {
             try {
-                SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
-                Date date = df.parse(DAY + "-" + MONTH + "-" + YEAR);
+                SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                Date date = df.parse(DAY + "/" + MONTH + "/" + YEAR);
                 textRefernce.setText(new SimpleDateFormat(dateFormat).format(date));
             } catch (ParseException e) {
                 System.err.println(e);
@@ -143,12 +143,12 @@ public final class DateChooser extends javax.swing.JPanel {
         Dates dates = new Dates();
         dates.setForeground(getForeground());
         dates.setEvent(getEventDay(dates));
-        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         Date date = new Date();
         String toDay = df.format(date);
-        DAY = Integer.valueOf(toDay.split("-")[0]);
-        MONTH = Integer.valueOf(toDay.split("-")[1]);
-        YEAR = Integer.valueOf(toDay.split("-")[2]);
+        DAY = Integer.valueOf(toDay.split("/")[0]);
+        MONTH = Integer.valueOf(toDay.split("/")[1]);
+        YEAR = Integer.valueOf(toDay.split("/")[2]);
         selectedDate.setDay(DAY);
         selectedDate.setMonth(MONTH);
         selectedDate.setYear(YEAR);
@@ -460,11 +460,11 @@ public final class DateChooser extends javax.swing.JPanel {
     }
 
     public void setSelectedDate(Date date) {
-        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         String d = df.format(date);
-        DAY = Integer.valueOf(d.split("-")[0]);
-        MONTH = Integer.valueOf(d.split("-")[1]);
-        YEAR = Integer.valueOf(d.split("-")[2]);
+        DAY = Integer.valueOf(d.split("/")[0]);
+        MONTH = Integer.valueOf(d.split("/")[1]);
+        YEAR = Integer.valueOf(d.split("/")[2]);
         selectedDate.setDay(DAY);
         selectedDate.setMonth(MONTH);
         selectedDate.setYear(YEAR);

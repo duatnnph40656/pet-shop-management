@@ -139,6 +139,10 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
     }
 
     private boolean check() {
+        if(categoryDao.isCategoryNameExists(txtName.getText())){
+            showMessageError("Tên loại sản phẩm đã tồn tại!!");
+            return false;
+        }
         if (txtCode.getText().isEmpty()) {
             showMessageError("Mã không được để trống");
             return false;

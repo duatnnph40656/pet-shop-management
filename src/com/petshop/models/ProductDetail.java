@@ -9,7 +9,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.sql.Date;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -50,6 +50,21 @@ public class ProductDetail {
         return productionDate;
     }
 
+    public ProductDetail(String productDetailName, Product product, TypePet typePet, int expirydate, Date productionDate, BigDecimal weight, int quantityInStock, String flavor, String description, BigDecimal price, String imagePath,boolean status) {
+        this.productDetailName = productDetailName;
+        this.product = product;
+        this.typePet = typePet;
+        this.expirydate = expirydate;
+        this.productionDate = productionDate;
+        this.weight = weight;
+        this.quantityInStock = quantityInStock;
+        this.flavor = flavor;
+        this.description = description;
+        this.price = price;
+        this.imagePath = imagePath;
+        this.status = status;
+    }
+
     public ProductDetail(int id, Icon icon, String productDetailCode, String productDetailName, String barCode, Product product, TypePet typePet, int expirydate, Date productionDate, BigDecimal weight, int quantityInStock, String flavor, String description, BigDecimal price, String imagePath, Date createdAt, boolean deleted, boolean status) {
         this.id = id;
         this.icon = icon;
@@ -71,7 +86,7 @@ public class ProductDetail {
         this.status = status;
     }
 
-    public ProductDetail(String productDetailCode, String productDetailName, String barCode, Product product, TypePet typePet, int expirydate, Date productionDate, BigDecimal weight, int quantityInStock, String flavor, String description, BigDecimal price, String imagePath) {
+    public ProductDetail(String productDetailCode, String productDetailName, String barCode, Product product, TypePet typePet, int expirydate, Date productionDate, BigDecimal weight, int quantityInStock, String flavor, String description, BigDecimal price, String imagePath,boolean status) {
         this.productDetailCode = productDetailCode;
         this.productDetailName = productDetailName;
         this.barCode = barCode;
@@ -85,6 +100,7 @@ public class ProductDetail {
         this.description = description;
         this.price = price;
         this.imagePath = imagePath;
+        this.status = status;
     }
 
     public int getId() {
@@ -228,11 +244,11 @@ public class ProductDetail {
     }
 
     public String getFormattedProductionDate() {
-        if (createdAt == null) {
+        if (productionDate == null) {
             return "N/A"; // Nếu ngày tạo là null, trả về chuỗi mặc định
         }
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        return dateFormat.format(createdAt);
+        return dateFormat.format(productionDate);
     }
 
     // Getter tùy chỉnh: Định dạng giá theo tiền tệ VND

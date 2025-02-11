@@ -13,20 +13,26 @@ import com.google.zxing.NotFoundException;
 import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
+import com.petshop.daos.ProductDetailDAO;
 import com.petshop.models.Product;
+import com.petshop.models.ProductDetail;
 import com.petshop.swing.jnafilechooser.api.JnaFileChooser;
 import com.petshop.swing.datechooser.EventDateChooser;
 import com.petshop.swing.datechooser.SelectedAction;
 import com.petshop.swing.datechooser.SelectedDate;
 import com.petshop.swing.model.ModelStudent;
 import com.petshop.swing.table.EventAction;
+import com.petshop.swing.table.ModelAction;
+import com.petshop.swing.table.ModelImage;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -34,62 +40,79 @@ import javax.swing.SwingUtilities;
  */
 public class Demo extends javax.swing.JFrame {
 
-    private Webcam webcam;
-
     /**
      * Creates new form Demo
      */
+    private final ProductDetailDAO dao;
+    private DefaultTableModel model;
+
     public Demo() {
         initComponents();
-        startWebcam();
+        model = new DefaultTableModel();
+        dao = new ProductDetailDAO();
+        getListProduct(dao.getListProductDetail());
     }
 
-    private void startWebcam() {
-        new Thread(() -> {
-            webcam = Webcam.getDefault();
-            if (webcam == null) {
-                JOptionPane.showMessageDialog(this, "Không tìm thấy webcam!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+    private void getListProduct(List<ProductDetail> list) {
+        int stt = 1;
+        model = (DefaultTableModel) tbProduct.getModel();
+        model.setRowCount(0);
 
-            // Chọn độ phân giải cao nhất
-            Dimension[] sizes = webcam.getViewSizes();
-            webcam.setViewSize(sizes[sizes.length - 1]);
-
-            webcam.open();
-            System.out.println("📸 Webcam đang hoạt động, chờ quét mã vạch...");
-
-            while (webcam.isOpen()) {
-                BufferedImage image = webcam.getImage();
-                if (image != null) {
-                    jLabel1.setIcon(new ImageIcon(image)); // Cập nhật ảnh lên JLabel
-
-                    // Quét mã vạch
-                    String barcode = decodeBarcode(image);
-                    if (barcode != null) {
-                        txtBarCode.setText(barcode); // Hiển thị mã vạch lên JTextField
-                        System.out.println("📌 Mã vạch: " + barcode);
-                        break;
-                    }
+        for (ProductDetail productDetail : list) {
+            ModelAction<ProductDetail> actionData = new ModelAction<>(
+                    productDetail,
+                    new EventAction<ProductDetail>() {
+                @Override
+                public void delete(ProductDetail proDetail) {
                 }
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-    }
 
-    private String decodeBarcode(BufferedImage image) {
-        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(
-                new BufferedImageLuminanceSource(image)));
-        try {
-            Result result = new MultiFormatReader().decode(bitmap);
-            return result.getText();
-        } catch (NotFoundException e) {
-            return null; // Không tìm thấy mã vạch
+                @Override
+                public void update(ProductDetail proDetail) {
+
+                }
+            });
+
+            if (!productDetail.isDeleted()) {
+                model.addRow(new Object[]{
+                    productDetail.getId(),
+                    stt++,
+                    //                    new ModelProfile(productDetail.getIcon(), productDetail.getProductDetailName()),
+                    new ModelImage(productDetail.getIcon().toString(), productDetail.getProductDetailName()),
+                    //                    productDetail.getProductDetailName(),
+                    productDetail.getProductDetailCode(),
+                    productDetail.getBarCode(),
+                    productDetail.getTypePet().getTypePetName(),
+                    productDetail.getFlavor(),
+                    productDetail.getQuantityInStock(),
+                    productDetail.getWeight() + "KG",
+                    productDetail.getFormattedProductionDate(),
+                    productDetail.getExpirydate() + " Tháng",
+                    productDetail.getFormattedPriceBase(),
+                    productDetail.getDescription(),
+                    productDetail.isStatus() ? "Còn hàng" : "Hết hàng", //                    
+                    actionData
+                });
+                stt++; // Tăng STT
+            }
         }
+// Ẩn cột ID
+        tbProduct.getColumnModel()
+                .getColumn(0).setMinWidth(0); // Giả sử cột ID là cột 1
+        tbProduct.getColumnModel()
+                .getColumn(0).setMaxWidth(0);
+        tbProduct.getColumnModel()
+                .getColumn(0).setWidth(0);
+    }
+
+    public void delete() {
+        int selectedRow = tbProduct.getSelectedRow();
+        if (selectedRow != -1) {
+            int id = (int) tbProduct.getValueAt(selectedRow, 0);
+            dao.deleteProductDetail(id);
+            getListProduct(dao.getListProductDetail());
+        } else {
+        }
+
     }
 
     /**
@@ -102,59 +125,62 @@ public class Demo extends javax.swing.JFrame {
     private void initComponents() {
 
         dateChooser2 = new com.petshop.swing.datechooser.DateChooser();
-        button1 = new com.petshop.swing.Button();
-        jLabel1 = new javax.swing.JLabel();
-        txtBarCode = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tbProduct = new javax.swing.JTable();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        button1.setText("button1");
-        button1.addActionListener(new java.awt.event.ActionListener() {
+        tbProduct.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4", "Title 5", "Title 6", "Title 7", "Title 8", "Title 9", "Title 10", "Title 11", "Title 12", "Title 13", "Title 14", "Title 15", "Title 16"
+            }
+        ));
+        jScrollPane1.setViewportView(tbProduct);
+
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                button1ActionPerformed(evt);
+                jButton1ActionPerformed(evt);
             }
         });
-
-        jLabel1.setText("jLabel1");
-
-        txtBarCode.setText("jTextField1");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(28, 28, 28)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 382, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(149, 149, 149))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(txtBarCode, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(73, 73, 73))))
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1126, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(342, 342, 342)
+                .addComponent(jButton1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(101, 101, 101)
-                        .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(43, 43, 43)
-                        .addComponent(txtBarCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(39, 39, 39)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 384, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addGap(112, 112, 112)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(59, 59, 59)
+                .addComponent(jButton1)
+                .addContainerGap(96, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void button1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button1ActionPerformed
-    }//GEN-LAST:event_button1ActionPerformed
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        delete();
+    }//GEN-LAST:event_jButton1ActionPerformed
     /**
      * @param args the command line arguments
      */
@@ -194,9 +220,9 @@ public class Demo extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private com.petshop.swing.Button button1;
     private com.petshop.swing.datechooser.DateChooser dateChooser2;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JTextField txtBarCode;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable tbProduct;
     // End of variables declaration//GEN-END:variables
 }

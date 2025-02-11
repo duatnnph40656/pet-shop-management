@@ -72,5 +72,20 @@ public class CategoryProductDAO {
     }
 
     
+    public boolean isCategoryNameExists(String categoryName) {
+    sql = "SELECT COUNT(*) FROM categories WHERE category_name = ? AND is_deleted = 0";
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, categoryName);
+        rs = ps.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1) > 0; // Nếu số lượng > 0, tức là tên đã tồn tại
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+    
     
 }

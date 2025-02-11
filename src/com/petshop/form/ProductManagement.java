@@ -9,6 +9,8 @@ import com.petshop.daos.ProductDAO;
 import com.petshop.daos.ProductDetailDAO;
 import com.petshop.daos.TypePetDAO;
 import com.petshop.event.ConfirmListener;
+import com.petshop.event.EventCallBack;
+import com.petshop.event.EventTextField;
 import com.petshop.models.CategoryProduct;
 import com.petshop.models.Product;
 import com.petshop.models.ProductDetail;
@@ -16,6 +18,9 @@ import com.petshop.models.TypePet;
 import com.petshop.popup.PopupCategoryPet;
 import com.petshop.popup.PopupCategoryProduct;
 import com.petshop.popup.PopupScanBarCode;
+import com.petshop.swing.datechooser.EventDateChooser;
+import com.petshop.swing.datechooser.SelectedAction;
+import com.petshop.swing.datechooser.SelectedDate;
 import com.petshop.swing.jnafilechooser.api.JnaFileChooser;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogInput;
@@ -29,10 +34,13 @@ import com.petshop.swing.table.ModelAction;
 import com.petshop.swing.table.ModelImage;
 import com.petshop.swing.table.ModelProfile;
 import com.petshop.ultils.Ultil;
+import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
@@ -42,11 +50,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Date;
+import java.sql.Date;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import raven.glasspanepopup.GlassPanePopup;
 
@@ -63,7 +73,6 @@ public class ProductManagement extends javax.swing.JPanel {
     private final CategoryProductDAO categoryProductDao;
     private final TypePetDAO typePetDAO;
     private final ProductDetailDAO productDetailDao;
-    private DefaultTableModel model;
 
     public ProductManagement() {
         initComponents();
@@ -71,21 +80,98 @@ public class ProductManagement extends javax.swing.JPanel {
         categoryProductDao = new CategoryProductDAO();
         productDetailDao = new ProductDetailDAO();
         typePetDAO = new TypePetDAO();
-        model = new DefaultTableModel();
         tbProduct.fixTable(jScrollPane1);
         tbProductDetail.fixTable(jScrollPane2);
         init();
+        this.getListProductDetail(productDetailDao.getListProductDetail());
+        this.loadCBBStatus();
     }
 
     void init() {
+        resetRamdomCode();
+        addTableEvent();
+        searchEvent();
+        dateChooserEvent();
         this.getListProduct(productDao.getListProduct());
         this.getListProductDetail(productDetailDao.getListProductDetail());
         this.loadCBBCategoryProduct(categoryProductDao.getListCategoryProduct());
         this.loadCBBTypePet(typePetDAO.getList());
         this.loadFilterCBBProduct(categoryProductDao.getListCategoryProduct());
         this.loadCBBProduct(productDao.getListProduct());
-        this.loadCBBStatus();
-        resetRamdomCode();
+        this.loadCbbFilterTypePet(typePetDAO.getList());
+        this.loadCbbFilterProduct(productDao.getListProduct());
+    }
+
+    private void addTableEvent() {
+        tbProductDetail.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                showDataD();
+            }
+        });
+
+        tbProductDetail.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    showDataD();
+                }
+            }
+        });
+    }
+
+    private void searchEvent() {
+        txtSearchProductDetail.addEvent(new EventTextField() { // là tên của cái search
+            @Override
+            public void onPressed(EventCallBack call) {
+                //  Test
+                try {
+                    for (int i = 1; i <= 100; i++) {
+                        Thread.sleep(5); // time sleep
+                    }
+                    searchProductD(txtSearchProductDetail.getText()); // tìm kiếm sau khi ấn, lấy text của thanh search
+                    call.done();
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+        txtSearchProduct.addEvent(new EventTextField() {
+            @Override
+            public void onPressed(EventCallBack call) {
+                //  Test
+                try {
+                    for (int i = 1; i <= 100; i++) {
+                        Thread.sleep(5); // time sleep
+                    }
+                    searchProduct(txtSearchProduct.getText()); // tìm kiếm sau khi ấn, lấy text của thanh search
+                    call.done();
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+
+            @Override
+            public void onCancel() {
+            }
+
+        });
+    }
+
+    private void dateChooserEvent() {
+        dateChooser.addEventDateChooser(new EventDateChooser() {
+            @Override
+            public void dateSelected(SelectedAction action, SelectedDate date) {
+                if (action.getAction() == SelectedAction.DAY_SELECTED) {
+                    dateChooser.hidePopup();
+                }
+            }
+        });
     }
 
     //<editor-fold defaultstate="collapsed" desc="{Message...">
@@ -146,7 +232,7 @@ public class ProductManagement extends javax.swing.JPanel {
         tPopup.setConfirmListener(new ConfirmListener() {
             @Override
             public void onConfirm() {
-
+                loadCBBTypePet(typePetDAO.getList());
             }
 
             @Override
@@ -162,7 +248,7 @@ public class ProductManagement extends javax.swing.JPanel {
         pPopup.setConfirmListener(new ConfirmListener() {
             @Override
             public void onConfirm() {
-
+                loadCBBCategoryProduct(categoryProductDao.getListCategoryProduct());
             }
 
             @Override
@@ -175,14 +261,21 @@ public class ProductManagement extends javax.swing.JPanel {
 
     public void showPopupWebcam() {
         PopupScanBarCode pWebCam = new PopupScanBarCode();
-//        pWebCam.setConfirmListener(new )
+
         pWebCam.setBarcodeListener((String barcode) -> {
-            txtDescribe.setText(barcode);
+            List<ProductDetail> product = productDetailDao.searchByBarCode(barcode);
+            if (product != null) {
+                getListProductDetail(product); // Hiển thị thông tin sản phẩm lên giao diện
+            } else {
+                showMessageFail("Không tìm thấy sản phẩm có mã vạch: " + barcode);
+            }
         });
+
         GlassPanePopup.showPopup(pWebCam, "pWebCam");
     }
-    //</editor-fold>
 
+    //</editor-fold>
+    
     //<editor-fold defaultstate="collapsed" desc="{Loadcbb...">
     public void loadCBBCategoryProduct(List<CategoryProduct> categoryList) {
         cbbCategoryProduct.removeAllItems();
@@ -195,10 +288,24 @@ public class ProductManagement extends javax.swing.JPanel {
 
     public void loadCBBTypePet(List<TypePet> list) {
         cbbTypePet.removeAllItems();
+        cbbFilterTypePet.removeAllItems();
         for (TypePet t : list) {
             cbbTypePet.addItem(t);
+            cbbFilterTypePet.addItem(t);
         }
+        cbbFilterTypePet.setSelectedIndex(-1);
         cbbTypePet.setSelectedIndex(-1);
+
+        cbbFilterTypePet.addActionListener(e -> {
+            if (cbbFilterTypePet.getSelectedIndex() == -1) {
+                return;
+            }
+            TypePet t = (TypePet) cbbFilterTypePet.getSelectedItem();
+            if (t != null) {
+                int typePetId = t.getId();
+                filterProductDetailByTypePet(typePetId);
+            }
+        });
     }
 
     public void loadFilterCBBProduct(List<CategoryProduct> categoryList) {
@@ -228,12 +335,60 @@ public class ProductManagement extends javax.swing.JPanel {
         }
         // Đặt mục chọn về -1 (không có mục nào được chọn)
         cbbProduct.setSelectedIndex(-1);
+
+    }
+
+    private void loadCbbFilterTypePet(List<TypePet> list) {
+        cbbFilterTypePet.removeAllItems();
+        for (TypePet t : list) {
+            cbbFilterTypePet.addItem(t);
+        }
+        cbbFilterTypePet.setSelectedIndex(-1);
+
+        cbbFilterTypePet.addActionListener(e -> filterProductDetails());
+    }
+
+    private void loadCbbFilterProduct(List<Product> productList) {
+        cbbFilterProduct.removeAllItems();
+        for (Product p : productList) {
+            cbbFilterProduct.addItem(p);
+        }
+        cbbFilterProduct.setSelectedIndex(-1);
+        cbbFilterProduct.addActionListener(e -> filterProductDetails());
+    }
+
+    private void filterProductDetails() {
+        TypePet selectedTypePet = (TypePet) cbbFilterTypePet.getSelectedItem();
+        Product selectedProduct = (Product) cbbFilterProduct.getSelectedItem();
+
+        Integer typePetId = (selectedTypePet != null) ? selectedTypePet.getId() : null;
+        Integer productId = (selectedProduct != null) ? selectedProduct.getId() : null;
+
+        // Nếu cả hai đều null, lấy toàn bộ danh sách
+        List<ProductDetail> filteredList;
+        if (typePetId == null && productId == null) {
+            filteredList = productDetailDao.getListProductDetail();
+        } else {
+            filteredList = productDetailDao.searchProductDetails(productId, typePetId);
+        }
+
+        getListProductDetail(filteredList); // Cập nhật giao diện với danh sách lọc
+    }
+
+    public void filterProductDetailByProduct(int productId) {
+        List<ProductDetail> list = productDetailDao.searchByProductId(productId);
+        getListProductDetail(list);
     }
 
     public void filterProductByCategory(int categoryId) {
         List<Product> filteredProducts = productDao.selectProductByCategoryId(categoryId); // Lấy sản phẩm từ DAO
         getListProduct(filteredProducts); // Hiển thị sản phẩm trong bảng
 
+    }
+
+    public void filterProductDetailByTypePet(int typePetId) {
+        List<ProductDetail> filteredProducts = productDetailDao.findByTypePetId(typePetId);
+        getListProductDetail(filteredProducts);
     }
 
     public void loadCBBStatus() {
@@ -247,38 +402,23 @@ public class ProductManagement extends javax.swing.JPanel {
     //<editor-fold defaultstate="collapsed" desc="{crud product...">
     public void getListProduct(List<Product> list) {
         int stt = 1;
-        model = (DefaultTableModel) tbProduct.getModel();
-        model.setRowCount(0); // Xóa dữ liệu cũ
-
-        System.out.println("Số cột của bảng: " + model.getColumnCount());
-
+        tbProduct.setRowCount(0); // Xóa dữ liệu cũ
         for (Product product : list) {
-            if (product == null) {
-                System.out.println("Lỗi: Product bị null!");
-                continue;
-            }
-
-            String categoryName = (product.getCategoryProduct() != null)
-                    ? product.getCategoryProduct().getCategoryProductName()
-                    : "Không có danh mục";
-
-            System.out.println("Thêm sản phẩm: " + product.getProductName());
-
             if (!product.isDeleted()) {
-                model.addRow(new Object[]{
+                tbProduct.addRow(new Object[]{
                     product.getId(),
                     stt,
                     product.getProductCode(),
                     product.getProductName(),
-                    categoryName,
+                    product.getCategoryProduct().getCategoryProductName(),
                     product.getFormattedPriceBase(),
                     product.getFormattedCreatedAt(),
-                    product.isStatus() ? "Hoạt động" : "",
+                    product.isStatus() ? "Hoạt động" : "Ngưng hoạt động",
                     new ModelAction<>(product, new EventAction<Product>() {
                         @Override
                         public void delete(Product product) {
                             showMessageConfirm("Xác nhận xóa sản phẩm?", () -> {
-                                deleteProduct();
+                                deleteProduct(product);
                             });
                         }
 
@@ -291,10 +431,6 @@ public class ProductManagement extends javax.swing.JPanel {
                 stt++;
             }
         }
-
-        tbProduct.getColumnModel().getColumn(0).setMinWidth(0);
-        tbProduct.getColumnModel().getColumn(0).setMaxWidth(0);
-        tbProduct.getColumnModel().getColumn(0).setWidth(0);
     }
 
     public Product readFormProduct() {
@@ -358,10 +494,11 @@ public class ProductManagement extends javax.swing.JPanel {
         resetRamdomCode();
         txtProductName.setText("");
         txtPriceProduct.setText("");
+        txtSearchProduct.setText("");
         cbbCategoryProduct.setSelectedIndex(-1);
         cbbStatusProduct.setSelectedIndex(-1);
         tbProduct.clearSelection();
-
+        init();
     }
 
     public void resetRamdomCode() {
@@ -374,13 +511,7 @@ public class ProductManagement extends javax.swing.JPanel {
             this.showMessageFail("Mã trống!");
             return false;
         }
-        // Kiểm tra mã trùng
-        for (int i = 0; i < tbProduct.getRowCount(); i++) {
-            if (tbProduct.getValueAt(i, 2).toString().equals(txtProductCode.getText())) {
-                this.showMessageFail("Mã sản phẩm đã tồn tại!");
-                return false;
-            }
-        }
+
         if (!txtProductCode.getText().matches("^[a-zA-Z0-9]+$")) {
             this.showMessageFail("Mã không được chứa ký tự đặc biệt hoặc dấu!");
             return false;
@@ -425,7 +556,7 @@ public class ProductManagement extends javax.swing.JPanel {
         }
         if (productDao.addProduct(readFormProduct())) {
             this.showMessageSuccess("Thêm sản phẩm thành công!");
-            this.getListProduct(productDao.getListProduct());
+            init();
             resetFormProduct();
             resetRamdomCode();
         } else {
@@ -443,23 +574,20 @@ public class ProductManagement extends javax.swing.JPanel {
             Product product = readFormProduct(); // Đọc dữ liệu từ form
             if (productDao.updateProduct(id, product)) {
                 this.showMessageSuccess("Update thành công!");
-                this.getListProduct(productDao.getListProduct());
+                init();
             } else {
                 this.showMessageFail("Update thất bại!!");
             }
         }
     }
 
-    public void deleteProduct() {
+    public void deleteProduct(Product p) {
         int selectedRow = tbProduct.getSelectedRow(); // Lấy hàng được chọn
         if (selectedRow != -1) { // Kiểm tra nếu có hàng được chọn
-            int id = (int) tbProduct.getValueAt(selectedRow, 0); // Lấy ID từ cột đầu tiên
+            int id = p.getId(); // Lấy ID từ cột đầu tiên
             productDao.deleteProduct(id); // Xóa sản phẩm trong DB
 
-            // Cập nhật danh sách sản phẩm
-            List<Product> updatedList = productDao.getListProduct();
-            this.getListProduct(updatedList);
-
+            init();
             // Kiểm tra nếu bảng còn dữ liệu, chọn lại dòng gần nhất
             if (tbProduct.getRowCount() > 0) {
                 int newRow = Math.min(selectedRow, tbProduct.getRowCount() - 1);
@@ -474,8 +602,70 @@ public class ProductManagement extends javax.swing.JPanel {
         }
     }
 
+    public void searchProduct(String keyword) {
+        List<Product> list = productDao.searchProduct(keyword);
+        if (list.isEmpty()) {
+            showMessageFail("Không tìm thấy sản phẩm nào!");
+        } else {
+            getListProduct(list); // Gọi hàm cập nhật bảng
+        }
+    }
+
     //</editor-fold>
+    
     //<editor-fold defaultstate="collapsed" desc="{crud product detail...">
+    public void getListProductDetail(List<ProductDetail> list) {
+        int stt = 1;
+        tbProductDetail.setRowCount(0);
+
+        for (ProductDetail productDetail : list) {
+            tbProductDetail.addRow(new Object[]{
+                productDetail.getId(),
+                productDetail.getImagePath(),
+                productDetail.getProduct().getProductName(),
+                stt,
+                new ModelImage(productDetail.getIcon().toString(), productDetail.getProductDetailName()),
+                productDetail.getProductDetailCode(),
+                productDetail.getBarCode(),
+                productDetail.getTypePet().getTypePetName(),
+                productDetail.getFlavor(),
+                productDetail.getQuantityInStock(),
+                productDetail.getWeight() + "KG",
+                productDetail.getFormattedProductionDate(),
+                productDetail.getExpirydate() + " Tháng",
+                productDetail.getFormattedPriceBase(),
+                productDetail.getDescription(),
+                productDetail.isStatus() ? "Còn hàng" : "Hết hàng",
+                new ModelAction<>(productDetail, new EventAction<ProductDetail>() {
+                    @Override
+                    public void delete(ProductDetail p) {
+                        showMessageConfirm("Xác nhận xóa sản phẩm?", () -> {
+                            deleteProductD(p);
+                        });
+                    }
+
+                    @Override
+                    public void update(ProductDetail p) {
+
+                    }
+                })
+            }
+            );
+            stt++; // Tăng STT
+//            if (tbProductDetail.getColumnModel().getColumnCount() > 0) {
+//                tbProductDetail.getColumnModel().getColumn(0).setMinWidth(0);
+//                tbProductDetail.getColumnModel().getColumn(0).setMaxWidth(0);
+//                tbProductDetail.getColumnModel().getColumn(0).setWidth(0);
+//                tbProductDetail.getColumnModel().getColumn(0).setMinWidth(1);
+//                tbProductDetail.getColumnModel().getColumn(0).setMaxWidth(1);
+//                tbProductDetail.getColumnModel().getColumn(0).setWidth(1);
+//                tbProductDetail.getColumnModel().getColumn(0).setMinWidth(2);
+//                tbProductDetail.getColumnModel().getColumn(0).setMaxWidth(2);
+//                tbProductDetail.getColumnModel().getColumn(0).setWidth(2);
+//            }
+        }
+    }
+
     public void resetFormProductD() {
         txtProductCode.setText("");
         txtProductDetailName.setText("");
@@ -487,6 +677,7 @@ public class ProductManagement extends javax.swing.JPanel {
         txtExpiry.setText("");
         txtProductDate.setText("");
         txtWeightProductDetail.setText("");
+        txtSearchProductDetail.setText("");
 
         pic.clearImage();
         pic.putClientProperty("imagePath", null);
@@ -494,62 +685,65 @@ public class ProductManagement extends javax.swing.JPanel {
 
         cbbProduct.setSelectedIndex(-1);
         cbbTypePet.setSelectedIndex(-1);
+        cbbFilterProduct.setSelectedIndex(-1);
 
         tbProductDetail.clearSelection();
-
+        init();
     }
 
-    public void getListProductDetail(List<ProductDetail> list) {
-        int stt = 1;
-        model = (DefaultTableModel) tbProductDetail.getModel();
-        model.setRowCount(0);
+    public void showDataD() {
+        int selectedRow = tbProductDetail.getSelectedRow(); // Lấy chỉ số dòng được chọn
+        if (selectedRow == -1) {
+            return; // Nếu không có dòng nào được chọn, thoát khỏi hàm
+        }
 
-        for (ProductDetail productDetail : list) {
-            ModelAction<ProductDetail> actionData = new ModelAction<>(
-                    productDetail,
-                    new EventAction<ProductDetail>() {
-                @Override
-                public void delete(ProductDetail proDetail) {
-                    showMessageConfirm("Xác nhận xóa sản phẩm?", () -> {
-                        deleteProductD();
-                    });
-                }
+        // Lấy dữ liệu từ bảng
+        String productName = tbProductDetail.getValueAt(selectedRow, 2).toString();
+        ModelImage modelImage = (ModelImage) tbProductDetail.getValueAt(selectedRow, 4);
+        String productDetailName = modelImage.getNameProduct();
+        String barCode = tbProductDetail.getValueAt(selectedRow, 5).toString(); // Mã vạch
+        String typePet = tbProductDetail.getValueAt(selectedRow, 7).toString(); // Loại thú cưng
+        String flavor = tbProductDetail.getValueAt(selectedRow, 8).toString(); // Hương vị
+        String quantityInStock = tbProductDetail.getValueAt(selectedRow, 9).toString(); // Số lượng tồn kho
+        String weight = tbProductDetail.getValueAt(selectedRow, 10).toString().replace("KG", ""); // Cân nặng (loại bỏ "KG")
+        String productionDate = tbProductDetail.getValueAt(selectedRow, 11).toString(); // Ngày sản xuất
+        String expiryDate = tbProductDetail.getValueAt(selectedRow, 12).toString().replace(" Tháng", ""); // Hạn sử dụng (loại bỏ "Tháng")
+        String price = tbProductDetail.getValueAt(selectedRow, 13).toString().replace("VND", "").replace(",", ""); // Giá sản phẩm
+        String description = tbProductDetail.getValueAt(selectedRow, 14).toString(); // Mô tả sản phẩm
+        String imagePath = tbProductDetail.getValueAt(selectedRow, 1).toString(); // Đường dẫn ảnh
+        boolean status = tbProductDetail.getValueAt(selectedRow, 15).equals("Hết hàng");
+        if (status) {
+            btnUpdateStatusProductDetail.setText("Tiếp tục bán");
+        } else {
+            btnUpdateStatusProductDetail.setText("Ngưng bán");
+        }
+        // Set dữ liệu vào các ô nhập
+        txtProductDetailName.setText(productDetailName);
+        txtFlavor.setText(flavor);
+        txtQuantityInStock.setText(quantityInStock);
+        txtWeightProductDetail.setText(weight);
+        txtProductDate.setText(productionDate);
+        txtExpiry.setText(expiryDate);
+        txtPriceProductDetail.setText(price);
+        txtDescribe.setText(description);
 
-                @Override
-                public void update(ProductDetail proDetail) {
+        // Hiển thị ảnh sản phẩm
+        pic.putClientProperty("imagePath", imagePath);
+        pic.setImage("D:\\FPT\\DA1\\Project1\\pet-shop\\src\\com\\petshop\\images\\" + imagePath);
 
-                }
-            });
-            if (!productDetail.isDeleted()) {
-                model.addRow(new Object[]{
-                    productDetail.getId(),
-                    stt++,
-                    //                    new ModelProfile(productDetail.getIcon(), productDetail.getProductDetailName()),
-                    new ModelImage(productDetail.getIcon().toString(), productDetail.getProductDetailName()),
-                    //                    productDetail.getProductDetailName(),
-                    productDetail.getProductDetailCode(),
-                    productDetail.getBarCode(),
-                    productDetail.getTypePet().getTypePetName(),
-                    productDetail.getFlavor(),
-                    productDetail.getQuantityInStock(),
-                    productDetail.getWeight() + "KG",
-                    productDetail.getFormattedProductionDate(),
-                    productDetail.getExpirydate() + " Tháng",
-                    productDetail.getFormattedPriceBase(),
-                    productDetail.getDescription(),
-                    productDetail.isStatus() ? "Còn hàng" : "Hết hàng",
-                    actionData
-                });
-                stt++; // Tăng STT
+        for (int i = 0; i < cbbProduct.getItemCount(); i++) {
+            if (cbbProduct.getItemAt(i).toString().equalsIgnoreCase(productName)) {
+                cbbProduct.setSelectedIndex(i);
+                break;
             }
+        }
 
-            // Ẩn cột ID
-            tbProductDetail.getColumnModel()
-                    .getColumn(0).setMinWidth(0); // Giả sử cột ID là cột 1
-            tbProductDetail.getColumnModel()
-                    .getColumn(0).setMaxWidth(0);
-            tbProductDetail.getColumnModel()
-                    .getColumn(0).setWidth(0);
+        // Chọn item trong combobox dựa trên tên loại thú cưng
+        for (int i = 0; i < cbbTypePet.getItemCount(); i++) {
+            if (cbbTypePet.getItemAt(i).toString().equalsIgnoreCase(typePet)) {
+                cbbTypePet.setSelectedIndex(i);
+                break;
+            }
         }
     }
 
@@ -590,13 +784,16 @@ public class ProductManagement extends javax.swing.JPanel {
             e.printStackTrace();
         }
 
-        // Chuyển đổi productDate từ String sang Date
-        Date productDate = null;
+        Date sqlProductDate = null;
         try {
             String productDateStr = txtProductDate.getText().trim();
-            if (productDateStr != null && !productDateStr.trim().isEmpty()) {
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-                productDate = df.parse(productDateStr);
+            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+
+            if (!productDateStr.isEmpty()) {
+                java.util.Date utilDate = df.parse(productDateStr); // Chuyển String -> java.util.Date
+                sqlProductDate = new java.sql.Date(utilDate.getTime()); // Chuyển java.util.Date -> java.sql.Date
+            } else {
+                sqlProductDate = new java.sql.Date(System.currentTimeMillis()); // Nếu trống, lấy ngày hiện tại
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -617,9 +814,95 @@ public class ProductManagement extends javax.swing.JPanel {
         String flavor = txtFlavor.getText().trim();
         String description = txtDescribe.getText().trim();
         String imagePath = (String) pic.getClientProperty("imagePath");
+        if (imagePath == null || imagePath.isEmpty()) {
+            imagePath = "01.jpg";
+        }
+
+        boolean statusP = amount > 0;
 
         // Trả về đối tượng ProductDetail
-        return new ProductDetail(productDetailCode, nameProductDetail, barCode, p, typePet, expirydate, productDate, weight, amount, flavor, description, price, imagePath);
+        return new ProductDetail(productDetailCode, nameProductDetail, barCode, p, typePet, expirydate, sqlProductDate, weight, amount, flavor, description, price, imagePath, statusP);
+    }
+
+    public ProductDetail readFormProductDetailForUpdate() {
+        String nameProductDetail = txtProductDetailName.getText().trim();
+        Product p = (Product) cbbProduct.getSelectedItem();
+        TypePet typePet = (TypePet) cbbTypePet.getSelectedItem();
+
+        int expirydate = 0;
+        try {
+            expirydate = Integer.parseInt(txtExpiry.getText().trim());
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+
+        Date sqlProductDate = null;
+        try {
+            String productDateStr = txtProductDate.getText().trim();
+            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+
+            if (!productDateStr.isEmpty()) {
+                java.util.Date utilDate = df.parse(productDateStr); // Chuyển String -> java.util.Date
+                sqlProductDate = new java.sql.Date(utilDate.getTime()); // Chuyển java.util.Date -> java.sql.Date
+            } else {
+                sqlProductDate = new java.sql.Date(System.currentTimeMillis()); // Nếu trống, lấy ngày hiện tại
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        // Chuyển đổi weight từ String sang BigDecimal
+        BigDecimal weight = BigDecimal.ZERO;
+        try {
+            String weightStr = txtWeightProductDetail.getText().trim();
+            if (!weightStr.isEmpty()) {
+                weight = new BigDecimal(weightStr);
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+
+        // Chuyển đổi quantity từ String sang int
+        int amount = 0;
+        try {
+            amount = Integer.parseInt(txtQuantityInStock.getText().trim());
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+
+        // Lấy giá sản phẩm
+        BigDecimal price = BigDecimal.ZERO;
+        try {
+            String priceStr = txtPriceProductDetail.getText().trim();
+            if (!priceStr.isEmpty()) {
+                price = new BigDecimal(priceStr);
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+        Date productDate = null;
+        try {
+            String productDateStr = txtProductDate.getText().trim();
+            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+
+            if (!productDateStr.isEmpty()) {
+                java.util.Date utilDate = df.parse(productDateStr); // Chuyển String -> java.util.Date
+                productDate = new java.sql.Date(utilDate.getTime()); // Chuyển java.util.Date -> java.sql.Date
+            } else {
+                sqlProductDate = new java.sql.Date(System.currentTimeMillis()); // Nếu trống, lấy ngày hiện tại
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        // Lấy hương vị (flavor)
+        String flavor = txtFlavor.getText().trim();
+        String description = txtDescribe.getText().trim();
+        String imagePath = (String) pic.getClientProperty("imagePath");
+
+        boolean statusP = amount > 0;
+
+        // Trả về đối tượng ProductDetail
+        return new ProductDetail(nameProductDetail, p, typePet, expirydate, productDate, weight, amount, flavor, description, price, imagePath, statusP);
     }
 
     public boolean checkProductD() {
@@ -685,7 +968,7 @@ public class ProductManagement extends javax.swing.JPanel {
             }
 
             // Kiểm tra ngày sản xuất không lớn hơn ngày hiện tại
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             LocalDate productDate = LocalDate.parse(txtProductDate.getText(), formatter);
             if (productDate.isAfter(LocalDate.now())) {
                 this.showMessageFail("Ngày sản xuất không được lớn hơn ngày hiện tại!");
@@ -716,7 +999,7 @@ public class ProductManagement extends javax.swing.JPanel {
         }
         if (productDetailDao.addProductDetail(readFormProductDetail())) {
             showMessageSuccess("Thêm thành công!");
-            this.getListProductDetail(productDetailDao.getListProductDetail());
+            init();
             this.resetFormProductD();
         } else {
             showMessageFail("Thêm thất bại!");
@@ -724,14 +1007,14 @@ public class ProductManagement extends javax.swing.JPanel {
 
     }
 
-    public void deleteProductD() {
+    public void deleteProductD(ProductDetail p) {
         try {
             int selectRow = tbProductDetail.getSelectedRow();
             if (selectRow != -1) {
-                int id = (int) tbProductDetail.getValueAt(selectRow, 0);
+                int id = p.getId();
                 productDetailDao.deleteProductDetail(id);
                 this.showMessageSuccess("Xóa thành công!!");
-                this.getListProductDetail(productDetailDao.getListProductDetail());
+                init();
                 resetFormProductD();
             } else {
                 this.showMessageFail("Vui lòng chọn thông tin để xóa!");
@@ -739,6 +1022,51 @@ public class ProductManagement extends javax.swing.JPanel {
         } catch (Exception e) {
             showMessageError("Có lỗi sảy ra!!");
             e.printStackTrace();
+        }
+    }
+
+    public void updateProductD() {
+        try {
+            if (!checkProductD()) {
+                return;
+            }
+            int selectedRow = tbProductDetail.getSelectedRow();
+            if (selectedRow == -1) {
+                showMessageFail("Vui lòng chọn một sản phẩm để cập nhật!");
+                return;
+            }
+            int id = (int) tbProductDetail.getValueAt(selectedRow, 0);
+            if (productDetailDao.updateProductDetail(id, readFormProductDetailForUpdate())) {
+                showMessageSuccess("Cập nhập thành công!");
+                init();
+            } else {
+                showMessageFail("Cập nhập thất bại");
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); // Log lỗi để dễ debug
+            showMessageError("Đã xảy ra lỗi khi cập nhật!");
+        }
+    }
+
+    public void updateStatusProductD() {
+        int selectedRow = tbProductDetail.getSelectedRow();
+        if (selectedRow != -1) {
+            boolean status = tbProductDetail.getValueAt(selectedRow, 15).equals("Hết hàng");
+            productDetailDao.updateStatusProductDetail(status, (int) tbProductDetail.getValueAt(selectedRow, 0));
+            init();
+            showMessageSuccess("Thay đổi trạng thái thành công!");
+        } else {
+            showMessageFail("Vui lòng chọn sản phẩm");
+        }
+
+    }
+
+    public void searchProductD(String keyword) {
+        List<ProductDetail> productsByNameOrFlavor = productDetailDao.searchByNameOrFlavor(keyword);
+        if (productsByNameOrFlavor.isEmpty()) {
+            showMessageFail("Không tìm thấy sản phẩm nào!");
+        } else {
+            getListProductDetail(productsByNameOrFlavor); // Gọi hàm cập nhật bảng
         }
     }
     //</editor-fold>
@@ -752,6 +1080,7 @@ public class ProductManagement extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        dateChooser = new com.petshop.swing.datechooser.DateChooser();
         materialTabbed1 = new com.petshop.swing.tabbed.MaterialTabbed();
         jPanel1 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
@@ -773,7 +1102,7 @@ public class ProductManagement extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         tbProduct = new com.petshop.swing.table.Table();
         jLabel2 = new javax.swing.JLabel();
-        txtSearch = new com.petshop.swing.textfield.TextFieldAnimation();
+        txtSearchProduct = new com.petshop.swing.textfield.TextFieldAnimation();
         cbbFilterCategory = new com.petshop.swing.combobox.Combobox();
         combobox4 = new com.petshop.swing.combobox.Combobox();
         jPanel2 = new javax.swing.JPanel();
@@ -809,6 +1138,8 @@ public class ProductManagement extends javax.swing.JPanel {
         cbbFilterProduct = new com.petshop.swing.combobox.Combobox();
         cbbFilterTypePet = new com.petshop.swing.combobox.Combobox();
         cbbSort = new com.petshop.swing.combobox.Combobox();
+
+        dateChooser.setTextRefernce(txtProductDate);
 
         setMaximumSize(new java.awt.Dimension(1058, 741));
         setPreferredSize(new java.awt.Dimension(1058, 741));
@@ -1004,7 +1335,7 @@ public class ProductManagement extends javax.swing.JPanel {
                 {null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                ".", "STT", "Mã SP", "Tên SP", "Loại sản phẩm", "Giá", "Ngày tạo", "Trạng thái", "Thao tác"
+                "", "STT", "Mã SP", "Tên SP", "Loại sản phẩm", "Giá", "Ngày tạo", "Trạng thái", "Thao tác"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -1022,16 +1353,17 @@ public class ProductManagement extends javax.swing.JPanel {
         });
         jScrollPane1.setViewportView(tbProduct);
         if (tbProduct.getColumnModel().getColumnCount() > 0) {
-            tbProduct.getColumnModel().getColumn(0).setMaxWidth(1);
+            tbProduct.getColumnModel().getColumn(0).setMinWidth(0);
+            tbProduct.getColumnModel().getColumn(0).setMaxWidth(0);
         }
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel2.setText("Danh sách sản phẩm");
 
-        txtSearch.setBackground(new java.awt.Color(250, 250, 250));
-        txtSearch.addActionListener(new java.awt.event.ActionListener() {
+        txtSearchProduct.setBackground(new java.awt.Color(250, 250, 250));
+        txtSearchProduct.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtSearchActionPerformed(evt);
+                txtSearchProductActionPerformed(evt);
             }
         });
 
@@ -1059,7 +1391,7 @@ public class ProductManagement extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(combobox4, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(txtSearchProduct, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -1073,7 +1405,7 @@ public class ProductManagement extends javax.swing.JPanel {
                                 .addComponent(jLabel2))
                             .addGroup(jPanel4Layout.createSequentialGroup()
                                 .addContainerGap()
-                                .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(txtSearchProduct, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(7, 7, 7))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1120,7 +1452,7 @@ public class ProductManagement extends javax.swing.JPanel {
         txtProductDetailName.setLabelText("Tên sản phẩm chi tiết");
 
         txtProductDate.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtProductDate.setLabelText("Ngày sản xuất");
+        txtProductDate.setLabelText("NSX(dd/MM/yyy)");
         txtProductDate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtProductDateActionPerformed(evt);
@@ -1189,21 +1521,20 @@ public class ProductManagement extends javax.swing.JPanel {
                     .addComponent(txtPriceProductDetail, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
                     .addComponent(cbbProduct, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(txtWeightProductDetail, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
+                    .addComponent(txtProductDetailName, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel10Layout.createSequentialGroup()
                         .addComponent(btnPopupTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(txtFlavor, javax.swing.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE))
-                    .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(txtWeightProductDetail, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
-                        .addComponent(txtProductDetailName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(txtFlavor, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtExpiry, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
-                    .addComponent(txtQuantityInStock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtProductDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
-                .addComponent(textAreaScroll1, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(txtExpiry, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                    .addComponent(txtProductDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtQuantityInStock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(textAreaScroll1, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnSelectImage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1215,9 +1546,6 @@ public class ProductManagement extends javax.swing.JPanel {
             .addGroup(jPanel10Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel10Layout.createSequentialGroup()
-                        .addComponent(textAreaScroll1, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 22, Short.MAX_VALUE))
                     .addGroup(jPanel10Layout.createSequentialGroup()
                         .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel10Layout.createSequentialGroup()
@@ -1246,7 +1574,10 @@ public class ProductManagement extends javax.swing.JPanel {
                                                 .addComponent(txtProductDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addComponent(txtFlavor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                             .addComponent(cbbTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                        .addContainerGap())))
+                        .addContainerGap())
+                    .addGroup(jPanel10Layout.createSequentialGroup()
+                        .addComponent(textAreaScroll1, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -1266,6 +1597,11 @@ public class ProductManagement extends javax.swing.JPanel {
 
         btnUpdateProductDetail.setBackground(new java.awt.Color(255, 255, 204));
         btnUpdateProductDetail.setText("Cập nhập");
+        btnUpdateProductDetail.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateProductDetailActionPerformed(evt);
+            }
+        });
 
         btnRestProductDetail.setBackground(new java.awt.Color(204, 204, 204));
         btnRestProductDetail.setText("Làm mới");
@@ -1284,7 +1620,12 @@ public class ProductManagement extends javax.swing.JPanel {
         });
 
         btnUpdateStatusProductDetail.setBackground(new java.awt.Color(255, 204, 204));
-        btnUpdateStatusProductDetail.setText("Ngưng bán");
+        btnUpdateStatusProductDetail.setText("             ");
+        btnUpdateStatusProductDetail.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateStatusProductDetailActionPerformed(evt);
+            }
+        });
 
         btnHisProductDetailDeleted.setBackground(new java.awt.Color(204, 204, 255));
         btnHisProductDetailDeleted.setText("Lịch sử đã xóa");
@@ -1300,10 +1641,9 @@ public class ProductManagement extends javax.swing.JPanel {
                     .addComponent(button9, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
                     .addComponent(btnUpdateProductDetail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel11Layout.createSequentialGroup()
-                        .addComponent(btnUpdateStatusProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnRestProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addComponent(btnUpdateStatusProductDetail, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnRestProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(btnHisProductDetailDeleted, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -1362,11 +1702,11 @@ public class ProductManagement extends javax.swing.JPanel {
 
             },
             new String [] {
-                ".", "STT", "Tên SPCT", "Mã SPCT", "BarCode", "Dành cho", "Hương vị", "SL", "TL(KG)", "NSX", "HSD(Tháng)", "Giá bán", "Mô tả", "Trạng thái", "Thao tác"
+                "", "", "", "STT", "Tên SPCT", "Mã SPCT", "BarCode", "Dành cho", "Hương vị", "SL", "TL", "NSX", "HSD", "Giá bán", "Mô tả", "Trạng thái", "Thao tác"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, false, false, false, true
+                true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1375,15 +1715,20 @@ public class ProductManagement extends javax.swing.JPanel {
         });
         jScrollPane2.setViewportView(tbProductDetail);
         if (tbProductDetail.getColumnModel().getColumnCount() > 0) {
-            tbProductDetail.getColumnModel().getColumn(0).setMaxWidth(1);
-            tbProductDetail.getColumnModel().getColumn(1).setMaxWidth(40);
-            tbProductDetail.getColumnModel().getColumn(2).setMinWidth(180);
-            tbProductDetail.getColumnModel().getColumn(3).setMinWidth(80);
-            tbProductDetail.getColumnModel().getColumn(5).setMaxWidth(70);
-            tbProductDetail.getColumnModel().getColumn(6).setMaxWidth(70);
-            tbProductDetail.getColumnModel().getColumn(7).setMaxWidth(40);
-            tbProductDetail.getColumnModel().getColumn(8).setMaxWidth(60);
-            tbProductDetail.getColumnModel().getColumn(10).setMaxWidth(70);
+            tbProductDetail.getColumnModel().getColumn(0).setMinWidth(0);
+            tbProductDetail.getColumnModel().getColumn(0).setMaxWidth(0);
+            tbProductDetail.getColumnModel().getColumn(1).setMinWidth(0);
+            tbProductDetail.getColumnModel().getColumn(1).setMaxWidth(0);
+            tbProductDetail.getColumnModel().getColumn(2).setMinWidth(0);
+            tbProductDetail.getColumnModel().getColumn(2).setMaxWidth(0);
+            tbProductDetail.getColumnModel().getColumn(3).setMaxWidth(40);
+            tbProductDetail.getColumnModel().getColumn(4).setMinWidth(180);
+            tbProductDetail.getColumnModel().getColumn(5).setMinWidth(80);
+            tbProductDetail.getColumnModel().getColumn(7).setMaxWidth(70);
+            tbProductDetail.getColumnModel().getColumn(8).setMaxWidth(70);
+            tbProductDetail.getColumnModel().getColumn(9).setMaxWidth(40);
+            tbProductDetail.getColumnModel().getColumn(10).setMaxWidth(60);
+            tbProductDetail.getColumnModel().getColumn(12).setMaxWidth(70);
         }
 
         txtSearchProductDetail.setBackground(new java.awt.Color(250, 250, 250));
@@ -1399,42 +1744,39 @@ public class ProductManagement extends javax.swing.JPanel {
         jPanel9.setLayout(jPanel9Layout);
         jPanel9Layout.setHorizontalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel9Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane2)
                     .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(jPanel9Layout.createSequentialGroup()
-                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(177, 177, 177))
-                            .addGroup(jPanel9Layout.createSequentialGroup()
-                                .addComponent(cbbFilterProduct, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(cbbFilterTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)))
-                        .addComponent(cbbSort, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(cbbFilterProduct, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cbbFilterTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(txtSearchProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, 320, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(cbbSort, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(txtSearchProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel9Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel4)
                     .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addComponent(txtSearchProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, 0)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
-                    .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(cbbFilterProduct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(cbbFilterTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(cbbSort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(1, 1, 1)
+                        .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtSearchProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(cbbSort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(cbbFilterTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(cbbFilterProduct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1485,9 +1827,9 @@ public class ProductManagement extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtProductDateActionPerformed
 
-    private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
+    private void txtSearchProductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchProductActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_txtSearchActionPerformed
+    }//GEN-LAST:event_txtSearchProductActionPerformed
 
     private void btnPopupCProductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPopupCProductActionPerformed
         // TODO add your handling code here:
@@ -1577,6 +1919,21 @@ public class ProductManagement extends javax.swing.JPanel {
         showPopupWebcam();
     }//GEN-LAST:event_button9ActionPerformed
 
+    private void btnUpdateProductDetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateProductDetailActionPerformed
+        // TODO add your handling code here:
+        showMessageConfirm("Xác nhận?", () -> {
+            updateProductD();
+        });
+    }//GEN-LAST:event_btnUpdateProductDetailActionPerformed
+
+    private void btnUpdateStatusProductDetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateStatusProductDetailActionPerformed
+        // TODO add your handling code here:
+        showMessageConfirm("Xác nhận?", () -> {
+            updateStatusProductD();
+        }
+        );
+    }//GEN-LAST:event_btnUpdateStatusProductDetailActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.Button btnAddProduct;
@@ -1601,6 +1958,7 @@ public class ProductManagement extends javax.swing.JPanel {
     private com.petshop.swing.combobox.Combobox cbbStatusProduct;
     private com.petshop.swing.combobox.Combobox cbbTypePet;
     private com.petshop.swing.combobox.Combobox combobox4;
+    private com.petshop.swing.datechooser.DateChooser dateChooser;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -1633,7 +1991,7 @@ public class ProductManagement extends javax.swing.JPanel {
     private com.petshop.swing.textfield.TextFieldRounded txtProductDetailName;
     private com.petshop.swing.textfield.TextFieldRounded txtProductName;
     private com.petshop.swing.textfield.TextFieldRounded txtQuantityInStock;
-    private com.petshop.swing.textfield.TextFieldAnimation txtSearch;
+    private com.petshop.swing.textfield.TextFieldAnimation txtSearchProduct;
     private com.petshop.swing.textfield.TextFieldAnimation txtSearchProductDetail;
     private com.petshop.swing.textfield.TextFieldRounded txtWeightProductDetail;
     // End of variables declaration//GEN-END:variables

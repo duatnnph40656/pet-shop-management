@@ -154,6 +154,10 @@ public class PopupCategoryPet extends javax.swing.JPanel {
     }
 
     public boolean checkT() {
+        if(tDao.isTypePetNameExists(txtName.getText())){
+            showMessageFail("Tên loại thú cưng đã tồn tại");
+            return false;
+        }
         if (txtCode.getText().isEmpty()) {
             showMessageError("Mã không được để trống!!");
             return false;

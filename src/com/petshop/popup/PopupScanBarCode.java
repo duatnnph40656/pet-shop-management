@@ -75,13 +75,11 @@ public class PopupScanBarCode extends javax.swing.JPanel {
                         }
 
                         // 🔴 Tắt webcam ngay sau khi quét
-//                        webcam.close();
+                        webcam.close();
                         System.out.println("❌ Webcam đã tắt.");
 
                         // ❌ Đóng popup ngay lập tức
-                        javax.swing.SwingUtilities.invokeLater(() -> {
-                            GlassPanePopup.closePopup("pWebCam");
-                        });
+                        raven.glasspanepopup.GlassPanePopup.closePopupLast();
 
                         break; // Thoát vòng lặp sau khi quét xong
                     }
