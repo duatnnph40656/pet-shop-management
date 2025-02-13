@@ -5,8 +5,8 @@
 package com.petshop.daos;
 
 import com.petshop.connect.DBConnect;
-import com.petshop.models.CategoryProduct;
-import com.petshop.models.Product;
+import com.petshop.models.CategoryProducts;
+import com.petshop.models.Products;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ public class CategoryProductDAO {
         conn = DBConnect.getConnection();
     }
 
-    public List<CategoryProduct> getListCategoryProduct() {
+    public List<CategoryProducts> getListCategoryProduct() {
         sql = "	SELECT \n"
                 + "    c.id,\n"
                 + "    c.category_code,\n"
@@ -38,10 +38,10 @@ public class CategoryProductDAO {
                 + "    [categories] c\n"
                 + "WHERE \n"
                 + "    c.is_deleted = 0 AND c.is_status = 1";
-        List<CategoryProduct> list = new ArrayList<>();
+        List<CategoryProducts> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                CategoryProduct c = new CategoryProduct();
+                CategoryProducts c = new CategoryProducts();
                 c.setId(rs.getInt("id"));
                 c.setCategoryProductCode(rs.getString("category_code"));
                 c.setCategoryProductName(rs.getString("category_name"));
@@ -57,7 +57,7 @@ public class CategoryProductDAO {
         return null;
     }
 
-    public boolean addCategoryProduct(CategoryProduct c) {
+    public boolean addCategoryProduct(CategoryProducts c) {
         sql = "INSERT INTO categories(category_code, category_name, is_deleted, is_status) VALUES (?,?,?,?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, c.getCategoryProductCode());

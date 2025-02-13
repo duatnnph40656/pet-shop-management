@@ -7,8 +7,8 @@ package com.petshop.popup;
 import com.petshop.daos.TypePetDAO;
 import com.petshop.daos.TypeServiceDAO;
 import com.petshop.event.ConfirmListener;
-import com.petshop.models.Product;
-import com.petshop.models.TypeService;
+import com.petshop.models.Products;
+import com.petshop.models.TypeServices;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogMessageError;
 import com.petshop.swing.message.DialogMessageFail;
@@ -105,11 +105,11 @@ public class PopupTypeService extends javax.swing.JPanel {
         raven.glasspanepopup.GlassPanePopup.showPopup(confirm, "confirm"); // Hiển thị popup
     }
 
-    public void getListTypeService(List<TypeService> list) {
+    public void getListTypeService(List<TypeServices> list) {
         int stt = 1;
         tbTypeService.setRowCount(0);
 
-        for (TypeService t : list) {
+        for (TypeServices t : list) {
             tbTypeService.addRow(new Object[]{
                 t.getId(),
                 stt,
@@ -117,18 +117,23 @@ public class PopupTypeService extends javax.swing.JPanel {
                 t.getTypeServiceName(),
                 t.getCreatedAt(),
                 t.isStatus() ? "Hoạt động" : "Không hoạt động",
-                new ModelAction<>(t, new EventAction<TypeService>() {
+                new ModelAction<>(t, new EventAction<TypeServices>() {
                         @Override
-                        public void delete(TypeService t) {
+                        public void delete(TypeServices t) {
                             showMessageConfirm("Xác nhận xóa?", () -> {
                                 deleteT(t);
                             });
                         }
 
                         @Override
-                        public void update(TypeService t) {
+                        public void update(TypeServices t) {
 
                         }
+
+                @Override
+                public void add(TypeServices model) {
+                    throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+                }
                     })
             });
            stt++;
@@ -150,8 +155,8 @@ public class PopupTypeService extends javax.swing.JPanel {
         return true;
     }
     
-    public TypeService readForm(){
-        return new TypeService(txtCode.getText(),txtName.getText(),false,true);
+    public TypeServices readForm(){
+        return new TypeServices(txtCode.getText(),txtName.getText(),false,true);
     }
     
     public void insertTypeSevice(){
@@ -166,7 +171,7 @@ public class PopupTypeService extends javax.swing.JPanel {
         }
     }
     
-    public void deleteT(TypeService t){
+    public void deleteT(TypeServices t){
         int selectedRow = tbTypeService.getSelectedRow();
         if(selectedRow != -1){
             int id = t.getId();

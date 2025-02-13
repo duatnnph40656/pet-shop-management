@@ -14,8 +14,9 @@ import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 import com.petshop.daos.ProductDetailDAO;
-import com.petshop.models.Product;
-import com.petshop.models.ProductDetail;
+import com.petshop.main.Main;
+import com.petshop.models.Products;
+import com.petshop.models.ProductDetails;
 import com.petshop.swing.jnafilechooser.api.JnaFileChooser;
 import com.petshop.swing.datechooser.EventDateChooser;
 import com.petshop.swing.datechooser.SelectedAction;
@@ -24,10 +25,14 @@ import com.petshop.swing.model.ModelStudent;
 import com.petshop.swing.table.EventAction;
 import com.petshop.swing.table.ModelAction;
 import com.petshop.swing.table.ModelImage;
+import com.petshop.ultils.Ultil;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -43,76 +48,11 @@ public class Demo extends javax.swing.JFrame {
     /**
      * Creates new form Demo
      */
-    private final ProductDetailDAO dao;
-    private DefaultTableModel model;
-
     public Demo() {
         initComponents();
-        model = new DefaultTableModel();
-        dao = new ProductDetailDAO();
-        getListProduct(dao.getListProductDetail());
     }
 
-    private void getListProduct(List<ProductDetail> list) {
-        int stt = 1;
-        model = (DefaultTableModel) tbProduct.getModel();
-        model.setRowCount(0);
-
-        for (ProductDetail productDetail : list) {
-            ModelAction<ProductDetail> actionData = new ModelAction<>(
-                    productDetail,
-                    new EventAction<ProductDetail>() {
-                @Override
-                public void delete(ProductDetail proDetail) {
-                }
-
-                @Override
-                public void update(ProductDetail proDetail) {
-
-                }
-            });
-
-            if (!productDetail.isDeleted()) {
-                model.addRow(new Object[]{
-                    productDetail.getId(),
-                    stt++,
-                    //                    new ModelProfile(productDetail.getIcon(), productDetail.getProductDetailName()),
-                    new ModelImage(productDetail.getIcon().toString(), productDetail.getProductDetailName()),
-                    //                    productDetail.getProductDetailName(),
-                    productDetail.getProductDetailCode(),
-                    productDetail.getBarCode(),
-                    productDetail.getTypePet().getTypePetName(),
-                    productDetail.getFlavor(),
-                    productDetail.getQuantityInStock(),
-                    productDetail.getWeight() + "KG",
-                    productDetail.getFormattedProductionDate(),
-                    productDetail.getExpirydate() + " Tháng",
-                    productDetail.getFormattedPriceBase(),
-                    productDetail.getDescription(),
-                    productDetail.isStatus() ? "Còn hàng" : "Hết hàng", //                    
-                    actionData
-                });
-                stt++; // Tăng STT
-            }
-        }
-// Ẩn cột ID
-        tbProduct.getColumnModel()
-                .getColumn(0).setMinWidth(0); // Giả sử cột ID là cột 1
-        tbProduct.getColumnModel()
-                .getColumn(0).setMaxWidth(0);
-        tbProduct.getColumnModel()
-                .getColumn(0).setWidth(0);
-    }
-
-    public void delete() {
-        int selectedRow = tbProduct.getSelectedRow();
-        if (selectedRow != -1) {
-            int id = (int) tbProduct.getValueAt(selectedRow, 0);
-            dao.deleteProductDetail(id);
-            getListProduct(dao.getListProductDetail());
-        } else {
-        }
-
+    public void test() throws IOException {
     }
 
     /**
@@ -125,24 +65,24 @@ public class Demo extends javax.swing.JFrame {
     private void initComponents() {
 
         dateChooser2 = new com.petshop.swing.datechooser.DateChooser();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tbProduct = new javax.swing.JTable();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tableMore11 = new com.petshop.swing.tableMore.TableMore1();
         jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        tbProduct.setModel(new javax.swing.table.DefaultTableModel(
+        tableMore11.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null}
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4", "Title 5", "Title 6", "Title 7", "Title 8", "Title 9", "Title 10", "Title 11", "Title 12", "Title 13", "Title 14", "Title 15", "Title 16"
+                "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(tbProduct);
+        jScrollPane2.setViewportView(tableMore11);
 
         jButton1.setText("jButton1");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -156,22 +96,23 @@ public class Demo extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 1126, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(342, 342, 342)
-                .addComponent(jButton1)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(136, 136, 136)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 265, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(211, 211, 211)
+                        .addComponent(jButton1)))
+                .addContainerGap(737, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(112, 112, 112)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(59, 59, 59)
+                .addGap(64, 64, 64)
                 .addComponent(jButton1)
-                .addContainerGap(96, Short.MAX_VALUE))
+                .addGap(121, 121, 121)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(520, Short.MAX_VALUE))
         );
 
         pack();
@@ -179,7 +120,7 @@ public class Demo extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        delete();
+
     }//GEN-LAST:event_jButton1ActionPerformed
     /**
      * @param args the command line arguments
@@ -222,7 +163,7 @@ public class Demo extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.datechooser.DateChooser dateChooser2;
     private javax.swing.JButton jButton1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable tbProduct;
+    private javax.swing.JScrollPane jScrollPane2;
+    private com.petshop.swing.tableMore.TableMore1 tableMore11;
     // End of variables declaration//GEN-END:variables
 }

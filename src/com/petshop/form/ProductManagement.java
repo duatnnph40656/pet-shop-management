@@ -11,10 +11,10 @@ import com.petshop.daos.TypePetDAO;
 import com.petshop.event.ConfirmListener;
 import com.petshop.event.EventCallBack;
 import com.petshop.event.EventTextField;
-import com.petshop.models.CategoryProduct;
-import com.petshop.models.Product;
-import com.petshop.models.ProductDetail;
-import com.petshop.models.TypePet;
+import com.petshop.models.CategoryProducts;
+import com.petshop.models.Products;
+import com.petshop.models.ProductDetails;
+import com.petshop.models.TypePets;
 import com.petshop.popup.PopupCategoryPet;
 import com.petshop.popup.PopupCategoryProduct;
 import com.petshop.popup.PopupScanBarCode;
@@ -263,7 +263,7 @@ public class ProductManagement extends javax.swing.JPanel {
         PopupScanBarCode pWebCam = new PopupScanBarCode();
 
         pWebCam.setBarcodeListener((String barcode) -> {
-            List<ProductDetail> product = productDetailDao.searchByBarCode(barcode);
+            List<ProductDetails> product = productDetailDao.searchByBarCode(barcode);
             if (product != null) {
                 getListProductDetail(product); // Hiển thị thông tin sản phẩm lên giao diện
             } else {
@@ -277,19 +277,19 @@ public class ProductManagement extends javax.swing.JPanel {
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="{Loadcbb...">
-    public void loadCBBCategoryProduct(List<CategoryProduct> categoryList) {
+    public void loadCBBCategoryProduct(List<CategoryProducts> categoryList) {
         cbbCategoryProduct.removeAllItems();
-        for (CategoryProduct category : categoryList) {
+        for (CategoryProducts category : categoryList) {
             cbbCategoryProduct.addItem(category);
         }
         // Đặt mục chọn về -1 (không có mục nào được chọn)
         cbbCategoryProduct.setSelectedIndex(-1);
     }
 
-    public void loadCBBTypePet(List<TypePet> list) {
+    public void loadCBBTypePet(List<TypePets> list) {
         cbbTypePet.removeAllItems();
         cbbFilterTypePet.removeAllItems();
-        for (TypePet t : list) {
+        for (TypePets t : list) {
             cbbTypePet.addItem(t);
             cbbFilterTypePet.addItem(t);
         }
@@ -300,7 +300,7 @@ public class ProductManagement extends javax.swing.JPanel {
             if (cbbFilterTypePet.getSelectedIndex() == -1) {
                 return;
             }
-            TypePet t = (TypePet) cbbFilterTypePet.getSelectedItem();
+            TypePets t = (TypePets) cbbFilterTypePet.getSelectedItem();
             if (t != null) {
                 int typePetId = t.getId();
                 filterProductDetailByTypePet(typePetId);
@@ -308,9 +308,9 @@ public class ProductManagement extends javax.swing.JPanel {
         });
     }
 
-    public void loadFilterCBBProduct(List<CategoryProduct> categoryList) {
+    public void loadFilterCBBProduct(List<CategoryProducts> categoryList) {
         cbbFilterCategory.removeAllItems(); // Xóa tất cả các mục hiện có
-        for (CategoryProduct category : categoryList) {
+        for (CategoryProducts category : categoryList) {
             cbbFilterCategory.addItem(category); // Thêm đối tượng CategoryProduct vào JComboBox
         }
         cbbFilterCategory.setSelectedIndex(-1);
@@ -319,7 +319,7 @@ public class ProductManagement extends javax.swing.JPanel {
             if (cbbFilterCategory.getSelectedIndex() == -1) {
                 return;
             }
-            CategoryProduct selectedCategory = (CategoryProduct) cbbFilterCategory.getSelectedItem();
+            CategoryProducts selectedCategory = (CategoryProducts) cbbFilterCategory.getSelectedItem();
             if (selectedCategory != null) {
                 int categoryId = selectedCategory.getId();
                 filterProductByCategory(categoryId);
@@ -328,9 +328,9 @@ public class ProductManagement extends javax.swing.JPanel {
 
     }
 
-    public void loadCBBProduct(List<Product> productList) {
+    public void loadCBBProduct(List<Products> productList) {
         cbbProduct.removeAllItems();
-        for (Product p : productList) {
+        for (Products p : productList) {
             cbbProduct.addItem(p);
         }
         // Đặt mục chọn về -1 (không có mục nào được chọn)
@@ -338,9 +338,9 @@ public class ProductManagement extends javax.swing.JPanel {
 
     }
 
-    private void loadCbbFilterTypePet(List<TypePet> list) {
+    private void loadCbbFilterTypePet(List<TypePets> list) {
         cbbFilterTypePet.removeAllItems();
-        for (TypePet t : list) {
+        for (TypePets t : list) {
             cbbFilterTypePet.addItem(t);
         }
         cbbFilterTypePet.setSelectedIndex(-1);
@@ -348,9 +348,9 @@ public class ProductManagement extends javax.swing.JPanel {
         cbbFilterTypePet.addActionListener(e -> filterProductDetails());
     }
 
-    private void loadCbbFilterProduct(List<Product> productList) {
+    private void loadCbbFilterProduct(List<Products> productList) {
         cbbFilterProduct.removeAllItems();
-        for (Product p : productList) {
+        for (Products p : productList) {
             cbbFilterProduct.addItem(p);
         }
         cbbFilterProduct.setSelectedIndex(-1);
@@ -358,14 +358,14 @@ public class ProductManagement extends javax.swing.JPanel {
     }
 
     private void filterProductDetails() {
-        TypePet selectedTypePet = (TypePet) cbbFilterTypePet.getSelectedItem();
-        Product selectedProduct = (Product) cbbFilterProduct.getSelectedItem();
+        TypePets selectedTypePet = (TypePets) cbbFilterTypePet.getSelectedItem();
+        Products selectedProduct = (Products) cbbFilterProduct.getSelectedItem();
 
         Integer typePetId = (selectedTypePet != null) ? selectedTypePet.getId() : null;
         Integer productId = (selectedProduct != null) ? selectedProduct.getId() : null;
 
         // Nếu cả hai đều null, lấy toàn bộ danh sách
-        List<ProductDetail> filteredList;
+        List<ProductDetails> filteredList;
         if (typePetId == null && productId == null) {
             filteredList = productDetailDao.getListProductDetail();
         } else {
@@ -376,18 +376,18 @@ public class ProductManagement extends javax.swing.JPanel {
     }
 
     public void filterProductDetailByProduct(int productId) {
-        List<ProductDetail> list = productDetailDao.searchByProductId(productId);
+        List<ProductDetails> list = productDetailDao.searchByProductId(productId);
         getListProductDetail(list);
     }
 
     public void filterProductByCategory(int categoryId) {
-        List<Product> filteredProducts = productDao.selectProductByCategoryId(categoryId); // Lấy sản phẩm từ DAO
+        List<Products> filteredProducts = productDao.selectProductByCategoryId(categoryId); // Lấy sản phẩm từ DAO
         getListProduct(filteredProducts); // Hiển thị sản phẩm trong bảng
 
     }
 
     public void filterProductDetailByTypePet(int typePetId) {
-        List<ProductDetail> filteredProducts = productDetailDao.findByTypePetId(typePetId);
+        List<ProductDetails> filteredProducts = productDetailDao.findByTypePetId(typePetId);
         getListProductDetail(filteredProducts);
     }
 
@@ -400,10 +400,10 @@ public class ProductManagement extends javax.swing.JPanel {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="{crud product...">
-    public void getListProduct(List<Product> list) {
+    public void getListProduct(List<Products> list) {
         int stt = 1;
         tbProduct.setRowCount(0); // Xóa dữ liệu cũ
-        for (Product product : list) {
+        for (Products product : list) {
             if (!product.isDeleted()) {
                 tbProduct.addRow(new Object[]{
                     product.getId(),
@@ -414,18 +414,22 @@ public class ProductManagement extends javax.swing.JPanel {
                     product.getFormattedPriceBase(),
                     product.getFormattedCreatedAt(),
                     product.isStatus() ? "Hoạt động" : "Ngưng hoạt động",
-                    new ModelAction<>(product, new EventAction<Product>() {
+                    new ModelAction<>(product, new EventAction<Products>() {
                         @Override
-                        public void delete(Product product) {
+                        public void delete(Products product) {
                             showMessageConfirm("Xác nhận xóa sản phẩm?", () -> {
                                 deleteProduct(product);
                             });
                         }
 
                         @Override
-                        public void update(Product product) {
+                        public void update(Products product) {
 
                         }
+
+                    @Override
+                    public void add(Products model) {
+                    }
                     })
                 });
                 stt++;
@@ -433,7 +437,7 @@ public class ProductManagement extends javax.swing.JPanel {
         }
     }
 
-    public Product readFormProduct() {
+    public Products readFormProduct() {
         try {
             // Lấy dữ liệu từ các trường nhập liệu
             String productCode = txtProductCode.getText().trim();
@@ -441,7 +445,7 @@ public class ProductManagement extends javax.swing.JPanel {
             BigDecimal priceBase = new BigDecimal(txtPriceProduct.getText().trim());
 
             // Lấy danh mục sản phẩm từ JComboBox
-            CategoryProduct categoryProduct = (CategoryProduct) cbbCategoryProduct.getSelectedItem();
+            CategoryProducts categoryProduct = (CategoryProducts) cbbCategoryProduct.getSelectedItem();
 
             // Lấy trạng thái từ JComboBox
             boolean isStatus;
@@ -453,7 +457,7 @@ public class ProductManagement extends javax.swing.JPanel {
             }
 
             // Tạo đối tượng Product
-            Product product = new Product();
+            Products product = new Products();
             product.setProductCode(productCode);
             product.setProductName(productName);
             product.setCategoryProduct(categoryProduct); // Gán trực tiếp đối tượng CategoryProduct
@@ -476,7 +480,7 @@ public class ProductManagement extends javax.swing.JPanel {
         txtProductName.setText((String) tbProduct.getValueAt(index, 3));
         String categoryName = (String) tbProduct.getValueAt(index, 4);
         for (int i = 0; i < cbbCategoryProduct.getItemCount(); i++) {
-            CategoryProduct category = (CategoryProduct) cbbCategoryProduct.getItemAt(i);
+            CategoryProducts category = (CategoryProducts) cbbCategoryProduct.getItemAt(i);
             if (category.getCategoryProductName().equals(categoryName)) {
                 cbbCategoryProduct.setSelectedItem(category);
                 break;
@@ -571,7 +575,7 @@ public class ProductManagement extends javax.swing.JPanel {
         int selectedRow = tbProduct.getSelectedRow();
         if (selectedRow != -1) {
             int id = (int) tbProduct.getValueAt(selectedRow, 0);
-            Product product = readFormProduct(); // Đọc dữ liệu từ form
+            Products product = readFormProduct(); // Đọc dữ liệu từ form
             if (productDao.updateProduct(id, product)) {
                 this.showMessageSuccess("Update thành công!");
                 init();
@@ -581,7 +585,7 @@ public class ProductManagement extends javax.swing.JPanel {
         }
     }
 
-    public void deleteProduct(Product p) {
+    public void deleteProduct(Products p) {
         int selectedRow = tbProduct.getSelectedRow(); // Lấy hàng được chọn
         if (selectedRow != -1) { // Kiểm tra nếu có hàng được chọn
             int id = p.getId(); // Lấy ID từ cột đầu tiên
@@ -603,7 +607,7 @@ public class ProductManagement extends javax.swing.JPanel {
     }
 
     public void searchProduct(String keyword) {
-        List<Product> list = productDao.searchProduct(keyword);
+        List<Products> list = productDao.searchProduct(keyword);
         if (list.isEmpty()) {
             showMessageFail("Không tìm thấy sản phẩm nào!");
         } else {
@@ -614,11 +618,11 @@ public class ProductManagement extends javax.swing.JPanel {
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="{crud product detail...">
-    public void getListProductDetail(List<ProductDetail> list) {
+    public void getListProductDetail(List<ProductDetails> list) {
         int stt = 1;
         tbProductDetail.setRowCount(0);
 
-        for (ProductDetail productDetail : list) {
+        for (ProductDetails productDetail : list) {
             tbProductDetail.addRow(new Object[]{
                 productDetail.getId(),
                 productDetail.getImagePath(),
@@ -636,18 +640,22 @@ public class ProductManagement extends javax.swing.JPanel {
                 productDetail.getFormattedPriceBase(),
                 productDetail.getDescription(),
                 productDetail.isStatus() ? "Còn hàng" : "Hết hàng",
-                new ModelAction<>(productDetail, new EventAction<ProductDetail>() {
+                new ModelAction<>(productDetail, new EventAction<ProductDetails>() {
                     @Override
-                    public void delete(ProductDetail p) {
+                    public void delete(ProductDetails p) {
                         showMessageConfirm("Xác nhận xóa sản phẩm?", () -> {
                             deleteProductD(p);
                         });
                     }
 
                     @Override
-                    public void update(ProductDetail p) {
+                    public void update(ProductDetails p) {
 
                     }
+
+                @Override
+                public void add(ProductDetails model) {
+                }
                 })
             }
             );
@@ -747,11 +755,11 @@ public class ProductManagement extends javax.swing.JPanel {
         }
     }
 
-    public ProductDetail readFormProductDetail() {
+    public ProductDetails readFormProductDetail() {
         String nameProductDetail = txtProductDetailName.getText().trim();
         String productDetailCode = "SPCT" + Ultil.generateRandomCode().trim();
-        Product p = (Product) cbbProduct.getSelectedItem();
-        TypePet typePet = (TypePet) cbbTypePet.getSelectedItem();
+        Products p = (Products) cbbProduct.getSelectedItem();
+        TypePets typePet = (TypePets) cbbTypePet.getSelectedItem();
 
         // Tạo barcode tự động
         String barCode = Ultil.generateEAN13Barcode();
@@ -821,13 +829,13 @@ public class ProductManagement extends javax.swing.JPanel {
         boolean statusP = amount > 0;
 
         // Trả về đối tượng ProductDetail
-        return new ProductDetail(productDetailCode, nameProductDetail, barCode, p, typePet, expirydate, sqlProductDate, weight, amount, flavor, description, price, imagePath, statusP);
+        return new ProductDetails(productDetailCode, nameProductDetail, barCode, p, typePet, expirydate, sqlProductDate, weight, amount, flavor, description, price, imagePath, statusP);
     }
 
-    public ProductDetail readFormProductDetailForUpdate() {
+    public ProductDetails readFormProductDetailForUpdate() {
         String nameProductDetail = txtProductDetailName.getText().trim();
-        Product p = (Product) cbbProduct.getSelectedItem();
-        TypePet typePet = (TypePet) cbbTypePet.getSelectedItem();
+        Products p = (Products) cbbProduct.getSelectedItem();
+        TypePets typePet = (TypePets) cbbTypePet.getSelectedItem();
 
         int expirydate = 0;
         try {
@@ -902,7 +910,7 @@ public class ProductManagement extends javax.swing.JPanel {
         boolean statusP = amount > 0;
 
         // Trả về đối tượng ProductDetail
-        return new ProductDetail(nameProductDetail, p, typePet, expirydate, productDate, weight, amount, flavor, description, price, imagePath, statusP);
+        return new ProductDetails(nameProductDetail, p, typePet, expirydate, productDate, weight, amount, flavor, description, price, imagePath, statusP);
     }
 
     public boolean checkProductD() {
@@ -1007,7 +1015,7 @@ public class ProductManagement extends javax.swing.JPanel {
 
     }
 
-    public void deleteProductD(ProductDetail p) {
+    public void deleteProductD(ProductDetails p) {
         try {
             int selectRow = tbProductDetail.getSelectedRow();
             if (selectRow != -1) {
@@ -1062,7 +1070,7 @@ public class ProductManagement extends javax.swing.JPanel {
     }
 
     public void searchProductD(String keyword) {
-        List<ProductDetail> productsByNameOrFlavor = productDetailDao.searchByNameOrFlavor(keyword);
+        List<ProductDetails> productsByNameOrFlavor = productDetailDao.searchByNameOrFlavor(keyword);
         if (productsByNameOrFlavor.isEmpty()) {
             showMessageFail("Không tìm thấy sản phẩm nào!");
         } else {

@@ -9,8 +9,8 @@ import com.petshop.daos.TypeServiceDAO;
 import com.petshop.event.ConfirmListener;
 import com.petshop.event.EventCallBack;
 import com.petshop.event.EventTextField;
-import com.petshop.models.PetService;
-import com.petshop.models.TypeService;
+import com.petshop.models.PetServices;
+import com.petshop.models.TypeServices;
 import com.petshop.popup.PopupTypeService;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogInput;
@@ -152,17 +152,17 @@ public class ServiceManagerment extends javax.swing.JPanel {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="loadCBB...">
-    public void loadCBBTypeService(List<TypeService> list) {
+    public void loadCBBTypeService(List<TypeServices> list) {
         cbbTypeService.removeAllItems();
-        for (TypeService p : list) {
+        for (TypeServices p : list) {
             cbbTypeService.addItem(p);
         }
         cbbTypeService.setSelectedIndex(-1);
     }
 
-    public void loadCbbFilterTypeService(List<TypeService> list) {
+    public void loadCbbFilterTypeService(List<TypeServices> list) {
         cbbFilterTypeService.removeAllItems();
-        for (TypeService p : list) {
+        for (TypeServices p : list) {
             cbbFilterTypeService.addItem(p);
         }
         cbbFilterTypeService.setSelectedIndex(-1);
@@ -181,13 +181,13 @@ public class ServiceManagerment extends javax.swing.JPanel {
     }
 
     public void getListServiceByFilter() {
-        TypeService t = (TypeService) cbbFilterTypeService.getSelectedItem();
+        TypeServices t = (TypeServices) cbbFilterTypeService.getSelectedItem();
         boolean status = cbbFilterStatus.getSelectedItem().equals("Hoạt động");
 
         System.out.println(status);
         Integer typeServiceId = (t != null) ? t.getId() : null;
-        
-        List<PetService> filteredList;
+
+        List<PetServices> filteredList;
         if (typeServiceId == null || status == true) {
             filteredList = petServiceDAO.getList();
         } else {
@@ -209,33 +209,37 @@ public class ServiceManagerment extends javax.swing.JPanel {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Service...">
-    public void getListService(List<PetService> list) {
+    public void getListService(List<PetServices> list) {
         tbService.setRowCount(0);
         int stt = 1;
-        for (PetService p : list) {
+        for (PetServices p : list) {
             tbService.addRow(new Object[]{
                 p.getId(),
                 stt,
-                p.getSerivce_code(),
-                p.getServce_name(),
+                p.getServiceCode(),
+                p.getServiceName(),
                 p.getTypeService().getTypeServiceName(),
                 p.getDuration(),
                 p.getTime_unit(),
                 p.getFormattedPriceService(),
-                p.getDescribe_service(),
+                p.getDescribeService(),
                 p.getFormattedCreatedAt(),
                 p.isStatus() ? "Hoạt động" : "Tạm ngưng",
-                new ModelAction<>(p, new EventAction<PetService>() {
+                new ModelAction<>(p, new EventAction<PetServices>() {
                     @Override
-                    public void delete(PetService p) {
+                    public void delete(PetServices p) {
                         showMessageConfirm("Xác nhận xóa", () -> {
                             deleteService(p);
                         });
                     }
 
                     @Override
-                    public void update(PetService p) {
+                    public void update(PetServices p) {
 
+                    }
+
+                    @Override
+                    public void add(PetServices model) {
                     }
                 })
             });
@@ -243,16 +247,16 @@ public class ServiceManagerment extends javax.swing.JPanel {
         }
     }
 
-    private PetService readForm() {
-        PetService p = new PetService();
-        p.setSerivce_code(txtServiceCode.getText());
-        p.setServce_name(txtServiceName.getText());
-        p.setDescribe_service(txtDescribeService.getText());
+    private PetServices readForm() {
+        PetServices p = new PetServices();
+        p.setServiceCode(txtServiceCode.getText());
+        p.setServiceName(txtServiceName.getText());
+        p.setDescribeService(txtDescribeService.getText());
         p.setDuration(Integer.parseInt(txtDuration.getText()));
         BigDecimal priceService = new BigDecimal(txtPriceService.getText().trim());
         p.setPriceService(priceService);
 
-        TypeService t = (TypeService) cbbTypeService.getSelectedItem();
+        TypeServices t = (TypeServices) cbbTypeService.getSelectedItem();
         p.setTypeService(t);
 
         String timeDuration = cbbTimeUnit.getSelectedItem().toString();
@@ -264,15 +268,15 @@ public class ServiceManagerment extends javax.swing.JPanel {
         return p;
     }
 
-    private PetService readFormUpdate() {
-        PetService p = new PetService();
-        p.setServce_name(txtServiceName.getText());
-        p.setDescribe_service(txtDescribeService.getText());
+    private PetServices readFormUpdate() {
+        PetServices p = new PetServices();
+        p.setServiceName(txtServiceName.getText());
+        p.setDescribeService(txtDescribeService.getText());
         p.setDuration(Integer.parseInt(txtDuration.getText()));
         BigDecimal priceService = new BigDecimal(txtPriceService.getText().trim());
         p.setPriceService(priceService);
 
-        TypeService t = (TypeService) cbbTypeService.getSelectedItem();
+        TypeServices t = (TypeServices) cbbTypeService.getSelectedItem();
         p.setTypeService(t);
 
         String timeDuration = cbbTimeUnit.getSelectedItem().toString();
@@ -337,7 +341,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
         // Đặt giá trị cho cbbTypeService dựa vào tên loại dịch vụ
         for (int i = 0; i < cbbTypeService.getItemCount(); i++) {
-            TypeService type = (TypeService) cbbTypeService.getItemAt(i);
+            TypeServices type = (TypeServices) cbbTypeService.getItemAt(i);
             if (type.getTypeServiceName().equals(typeServiceName)) {
                 cbbTypeService.setSelectedIndex(i);
                 break;
@@ -469,7 +473,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         }
     }
 
-    public void deleteService(PetService p) {
+    public void deleteService(PetServices p) {
         int selectedRow = tbService.getSelectedRow();
         if (selectedRow != -1) {
             int id = p.getId();
@@ -505,7 +509,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
     }
 
     public void searchServiceByName(String keyword) {
-        List<PetService> list = petServiceDAO.searchByServiceNameOrCode(keyword);
+        List<PetServices> list = petServiceDAO.searchByServiceNameOrCode(keyword);
         if (list.isEmpty()) {
             showMessageFail("Không tìm thấy!");
         } else {

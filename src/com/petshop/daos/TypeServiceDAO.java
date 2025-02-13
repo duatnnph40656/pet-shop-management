@@ -5,7 +5,7 @@
 package com.petshop.daos;
 
 import com.petshop.connect.DBConnect;
-import com.petshop.models.TypeService;
+import com.petshop.models.TypeServices;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,13 +23,13 @@ public class TypeServiceDAO {
     }
 
     // Lấy danh sách loại dịch vụ
-    public List<TypeService> getListTypeS() {
+    public List<TypeServices> getListTypeS() {
         String sql = "SELECT * FROM type_services WHERE is_deleted = 0 AND is_status = 1";
-        List<TypeService> list = new ArrayList<>();
+        List<TypeServices> list = new ArrayList<>();
 
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                TypeService t = new TypeService();
+                TypeServices t = new TypeServices();
                 t.setId(rs.getInt("id"));
                 t.setTypeServiceCode(rs.getString("type_service_code"));
                 t.setTypeServiceName(rs.getString("type_service_name"));
@@ -46,7 +46,7 @@ public class TypeServiceDAO {
     }
 
     // Thêm mới loại dịch vụ
-    public boolean insertTypeService(TypeService typeService) {
+    public boolean insertTypeService(TypeServices typeService) {
         String sql = "INSERT INTO type_services (type_service_code, type_service_name, is_deleted, is_status) VALUES (?, ?, 0, 1)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -60,7 +60,7 @@ public class TypeServiceDAO {
     }
 
     // Cập nhật thông tin loại dịch vụ
-    public boolean updateTypeService(TypeService typeService) {
+    public boolean updateTypeService(TypeServices typeService) {
         String sql = "UPDATE type_services SET type_service_code = ?, type_service_name = ?, is_status = ? WHERE id = ? AND is_deleted = 0";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {

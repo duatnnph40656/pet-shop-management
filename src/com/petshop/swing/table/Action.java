@@ -37,7 +37,7 @@ public class Action<T> extends javax.swing.JPanel {
 
         cmdDelete = new com.petshop.swing.Button();
 
-        cmdDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/delete.png"))); // NOI18N
+        cmdDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-delete-20.png"))); // NOI18N
         cmdDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmdDeleteActionPerformed(evt);

@@ -6,8 +6,8 @@ package com.petshop.popup;
 
 import com.petshop.daos.TypePetDAO;
 import com.petshop.event.ConfirmListener;
-import com.petshop.models.Product;
-import com.petshop.models.TypePet;
+import com.petshop.models.Products;
+import com.petshop.models.TypePets;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogMessageError;
 import com.petshop.swing.message.DialogMessageFail;
@@ -111,23 +111,27 @@ public class PopupCategoryPet extends javax.swing.JPanel {
         raven.glasspanepopup.GlassPanePopup.showPopup(confirm, "confirm"); // Hiển thị popup
     }
 
-    public void getListTypePet(List<TypePet> list) {
+    public void getListTypePet(List<TypePets> list) {
         int stt = 1;
         tbTypePet.setRowCount(0);
 
-        for (TypePet t : list) {
-            ModelAction<TypePet> actionData = new ModelAction<>(t,
-                    new EventAction<TypePet>() {
+        for (TypePets t : list) {
+            ModelAction<TypePets> actionData = new ModelAction<>(t,
+                    new EventAction<TypePets>() {
                 @Override
-                public void delete(TypePet typePet) {
+                public void delete(TypePets typePet) {
                     showMessageConfirm("Xác nhận xóa!", () -> {
                         deleteTypePet();
                     });
                 }
 
                 @Override
-                public void update(TypePet typePet) {
+                public void update(TypePets typePet) {
 
+                }
+
+                @Override
+                public void add(TypePets model) {
                 }
             }
             );
@@ -179,7 +183,7 @@ public class PopupCategoryPet extends javax.swing.JPanel {
         }
         String tCode = txtCode.getText();
         String tName = txtName.getText();
-        TypePet t = new TypePet(tCode, tName, false, true);
+        TypePets t = new TypePets(tCode, tName, false, true);
         if (tDao.insertTypePet(t)) {
             showMessageSuccess("Thêm thành công");
             this.getListTypePet(tDao.getList());

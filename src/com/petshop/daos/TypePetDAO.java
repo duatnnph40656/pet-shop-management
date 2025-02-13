@@ -5,7 +5,7 @@
 package com.petshop.daos;
 
 import com.petshop.connect.DBConnect;
-import com.petshop.models.TypePet;
+import com.petshop.models.TypePets;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +22,13 @@ public class TypePetDAO {
         conn = DBConnect.getConnection();
     }
 
-    public List<TypePet> getList() {
+    public List<TypePets> getList() {
         String sql = "SELECT id, type_pet_code, type_pet_name, created_at, is_deleted, is_status FROM type_pets WHERE is_deleted = 0 AND is_status = 1";
 
-        List<TypePet> list = new ArrayList<>();
+        List<TypePets> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                TypePet t = new TypePet();
+                TypePets t = new TypePets();
                 t.setId(rs.getInt("id"));
                 t.setTypePetCode(rs.getString("type_pet_code"));
                 t.setTypePetName(rs.getString("type_pet_name"));
@@ -45,7 +45,7 @@ public class TypePetDAO {
         return null;
     }
 
-    public boolean insertTypePet(TypePet t) {
+    public boolean insertTypePet(TypePets t) {
         String sql = "INSERT INTO type_pets(type_pet_code,type_pet_name,is_deleted,is_status) VALUES (?,?,?,?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {

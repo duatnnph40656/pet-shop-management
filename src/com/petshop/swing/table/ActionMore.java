@@ -4,17 +4,34 @@
  */
 package com.petshop.swing.table;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 /**
  *
  * @author duat
  */
-public class ActionMore extends javax.swing.JPanel {
+public class ActionMore<T> extends javax.swing.JPanel {
 
     /**
      * Creates new form ActionMore
      */
-    public ActionMore() {
+     private ConfirmListener<T> listener; // Listener để giao tiếp với frame chính
+
+    public void setConfirmListener(ConfirmListener<T> listener) {
+        this.listener = listener;
+    }
+    
+    
+    public ActionMore(ModelAction<T> data) {
         initComponents();
+        
+        cmdAdd.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                data.getEvent().add(data.getModel());
+            }
+        });
     }
 
     /**
@@ -26,19 +43,41 @@ public class ActionMore extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        cmdAdd = new com.petshop.swing.Button();
+
+        setPreferredSize(new java.awt.Dimension(70, 40));
+
+        cmdAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-addition-20.png"))); // NOI18N
+        cmdAdd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmdAddActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(28, Short.MAX_VALUE)
+                .addComponent(cmdAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(14, 14, 14))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(cmdAdd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void cmdAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdAddActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmdAddActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private com.petshop.swing.Button cmdAdd;
     // End of variables declaration//GEN-END:variables
 }

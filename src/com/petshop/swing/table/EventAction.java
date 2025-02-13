@@ -8,4 +8,5 @@ public interface EventAction<T> {
 
     void update(T model);
     
+    void add(T model);
 }

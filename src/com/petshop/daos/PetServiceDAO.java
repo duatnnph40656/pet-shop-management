@@ -5,8 +5,8 @@
 package com.petshop.daos;
 
 import com.petshop.connect.DBConnect;
-import com.petshop.models.PetService;
-import com.petshop.models.TypeService;
+import com.petshop.models.PetServices;
+import com.petshop.models.TypeServices;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,7 @@ public class PetServiceDAO {
         conn = DBConnect.getConnection();
     }
 
-    public List<PetService> getList() {
+    public List<PetServices> getList() {
         String sql = "SELECT\n"
                 + "    sd.id,\n"
                 + "    sd.service_code,\n"
@@ -39,7 +39,7 @@ public class PetServiceDAO {
                 + "FROM PETSHOP.dbo.service_details sd\n"
                 + "JOIN PETSHOP.dbo.type_services ts ON sd.id_service_type = ts.id\n"
                 + "WHERE sd.is_deleted = 0;";
-        List<PetService> list = new ArrayList<>();
+        List<PetServices> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapPetService(rs));
@@ -51,14 +51,14 @@ public class PetServiceDAO {
         return list;
     }
 
-    public boolean insertPetService(PetService petService) {
+    public boolean insertPetService(PetServices petService) {
         String sql = "INSERT INTO service_details (service_code, service_name, id_service_type, price_service, describe_service,  is_deleted, is_status, duration, time_unit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, petService.getSerivce_code());
-            ps.setString(2, petService.getServce_name());
+            ps.setString(1, petService.getServiceCode());
+            ps.setString(2, petService.getServiceName());
             ps.setInt(3, petService.getTypeService().getId());
             ps.setBigDecimal(4, petService.getPriceService());
-            ps.setString(5, petService.getDescribe_service());
+            ps.setString(5, petService.getDescribeService());
             ps.setBoolean(6, petService.isDeleted());
             ps.setBoolean(7, petService.isStatus());
             ps.setInt(8, petService.getDuration());
@@ -70,13 +70,13 @@ public class PetServiceDAO {
         return false;
     }
 
-    public boolean updatePetService(int id, PetService petService) {
+    public boolean updatePetService(int id, PetServices petService) {
         String sql = "UPDATE service_details SET service_name = ?, id_service_type = ?, price_service = ?, describe_service = ?, duration = ?, time_unit = ? WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, petService.getServce_name());
+            ps.setString(1, petService.getServiceName());
             ps.setInt(2, petService.getTypeService().getId());
             ps.setBigDecimal(3, petService.getPriceService());
-            ps.setString(4, petService.getDescribe_service());
+            ps.setString(4, petService.getDescribeService());
             ps.setInt(5, petService.getDuration());
             ps.setString(6, petService.getTime_unit());
             ps.setInt(7, id);
@@ -98,7 +98,7 @@ public class PetServiceDAO {
         return false;
     }
 
-    public List<PetService> searchByServiceNameOrCode(String keyword) {
+    public List<PetServices> searchByServiceNameOrCode(String keyword) {
         String sql = "SELECT\n"
                 + "    sd.id,\n"
                 + "    sd.service_code,\n"
@@ -115,7 +115,7 @@ public class PetServiceDAO {
                 + "JOIN PETSHOP.dbo.type_services ts ON sd.id_service_type = ts.id\n"
                 + "WHERE (sd.service_name LIKE ? OR sd.service_code LIKE ?) AND sd.is_deleted = 0";
 
-        List<PetService> list = new ArrayList<>();
+        List<PetServices> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, "%" + keyword + "%");
             ps.setString(2, "%" + keyword + "%");
@@ -129,9 +129,9 @@ public class PetServiceDAO {
         return list;
     }
 
-    public List<PetService> searchByTypeServiceId(int typeServiceId) {
+    public List<PetServices> searchByTypeServiceId(int typeServiceId) {
         String sql = "SELECT * FROM service_details WHERE id_service_type = ? AND is_deleted = 0";
-        List<PetService> list = new ArrayList<>();
+        List<PetServices> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, typeServiceId);
             ResultSet rs = ps.executeQuery();
@@ -156,7 +156,7 @@ public class PetServiceDAO {
         return false;
     }
 
-    public List<PetService> filterServiceByIdTypeService(int typeServiceId, boolean status) {
+    public List<PetServices> filterServiceByIdTypeService(int typeServiceId, boolean status) {
         String sql = "SELECT "
                 + "    sd.id, "
                 + "    sd.service_code, "
@@ -173,7 +173,7 @@ public class PetServiceDAO {
                 + "JOIN PETSHOP.dbo.type_services ts ON sd.id_service_type = ts.id "
                 + "WHERE sd.id_service_type = ? AND sd.is_status = ? AND sd.is_deleted = 0";
 
-        List<PetService> list = new ArrayList<>();
+        List<PetServices> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, typeServiceId);
             ps.setBoolean(2, status);
@@ -201,20 +201,20 @@ public class PetServiceDAO {
         return false;
     }
 
-    public PetService mapPetService(ResultSet rs) throws Exception {
-        PetService p = new PetService();
+    public PetServices mapPetService(ResultSet rs) throws Exception {
+        PetServices p = new PetServices();
         p.setId(rs.getInt("id"));
-        p.setSerivce_code(rs.getString("service_code"));
-        p.setServce_name(rs.getString("service_name"));
+        p.setServiceCode(rs.getString("service_code"));
+        p.setServiceName(rs.getString("service_name"));
 
-        TypeService t = new TypeService();
+        TypeServices t = new TypeServices();
         t.setTypeServiceName(rs.getString("type_service_name"));
         p.setTypeService(t);
 
         p.setPriceService(rs.getBigDecimal("price_service"));
         p.setDuration(rs.getInt("duration"));
         p.setTime_unit(rs.getString("time_unit"));
-        p.setDescribe_service(rs.getString("describe_service"));
+        p.setDescribeService(rs.getString("describe_service"));
         p.setCreatedAt(rs.getDate("created_at"));
         p.setDeleted(rs.getBoolean("is_deleted"));
         p.setStatus(rs.getBoolean("is_status"));

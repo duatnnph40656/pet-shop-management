@@ -5,8 +5,8 @@
 package com.petshop.daos;
 
 import com.petshop.connect.DBConnect;
-import com.petshop.models.CategoryProduct;
-import com.petshop.models.Product;
+import com.petshop.models.CategoryProducts;
+import com.petshop.models.Products;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class ProductDAO {
         conn = DBConnect.getConnection();
     }
 
-    public List<Product> getListProduct() {
+    public List<Products> getListProduct() {
         String sql = "SELECT \n"
                 + "    p.id,\n"
                 + "    p.product_code,\n"
@@ -43,7 +43,7 @@ public class ProductDAO {
                 + "WHERE \n"
                 + "    p.is_deleted = 0;";
 
-        List<Product> list = new ArrayList<>();
+        List<Products> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapProduct(rs));
@@ -56,7 +56,7 @@ public class ProductDAO {
         return list;
     }
 
-    public boolean addProduct(Product p) {
+    public boolean addProduct(Products p) {
         String sql = "INSERT INTO products (product_code, product_name, id_category, price_base, is_deleted ,is_status) VALUES (?,?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             // Thiết lập các giá trị cho câu lệnh SQL
@@ -76,7 +76,7 @@ public class ProductDAO {
         return false; // Trả về false nếu có lỗi xảy ra
     }
 
-    public boolean updateProduct(int id, Product p) {
+    public boolean updateProduct(int id, Products p) {
         String sql = "UPDATE products SET product_code = ?, product_name = ?, price_base = ?,id_category = ?, is_status = ? WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             // Thiết lập giá trị cho các tham số
@@ -107,7 +107,7 @@ public class ProductDAO {
         return false; // Trả về false nếu có lỗi xảy ra
     }
 
-    public List<Product> searchProduct(String keyword) {
+    public List<Products> searchProduct(String keyword) {
         String sql = "SELECT "
                 + "    p.id, "
                 + "    p.product_code, "
@@ -126,7 +126,7 @@ public class ProductDAO {
                 + "WHERE "
                 + "    p.is_deleted = 0 "
                 + "    AND (p.product_name LIKE ? OR p.product_code LIKE ?)";
-        List<Product> list = new ArrayList<>();
+        List<Products> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, "%" + keyword + "%");
             ps.setString(2, "%" + keyword + "%");
@@ -141,24 +141,24 @@ public class ProductDAO {
         return null;
     }
 
-    public List<Product> selectProductByCategoryId(int categoryId) {
+    public List<Products> selectProductByCategoryId(int categoryId) {
         String sql = "SELECT p.*, c.category_name " // Lấy cả category_name
                 + "FROM products p "
                 + "JOIN categories c ON p.id_category = c.id " // JOIN bảng categories
                 + "WHERE p.id_category = ? AND p.is_deleted = 0";
 
-        List<Product> products = new ArrayList<>();
+        List<Products> products = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, categoryId); // Gán tham số categoryId
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Product product = new Product();
+                    Products product = new Products();
                     product.setId(rs.getInt("id"));
                     product.setProductCode(rs.getString("product_code"));
                     product.setProductName(rs.getString("product_name"));
 
                     // Gán đối tượng CategoryProduct
-                    CategoryProduct category = new CategoryProduct();
+                    CategoryProducts category = new CategoryProducts();
                     category.setId(rs.getInt("id_category"));
                     category.setCategoryProductName(rs.getString("category_name")); // Gán typeProductName
                     product.setCategoryProduct(category);
@@ -177,8 +177,8 @@ public class ProductDAO {
         return products;
     }
 
-    private Product mapProduct(ResultSet rs) throws SQLException {
-        Product product = new Product();
+    private Products mapProduct(ResultSet rs) throws SQLException {
+        Products product = new Products();
         product.setId(rs.getInt("id"));
         product.setProductCode(rs.getString("product_code"));
         product.setProductName(rs.getString("product_name"));
@@ -187,7 +187,7 @@ public class ProductDAO {
         product.setDeleted(rs.getBoolean("is_deleted"));
         product.setStatus(rs.getBoolean("is_status"));
 
-        CategoryProduct categoryProduct = new CategoryProduct();
+        CategoryProducts categoryProduct = new CategoryProducts();
         categoryProduct.setCategoryProductName(rs.getString("category_name"));
 
         product.setCategoryProduct(categoryProduct);

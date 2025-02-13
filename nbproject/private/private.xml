@@ -3,20 +3,20 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/daos/TypePetDAO.java</file>
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/popup/PopupScanBarCode.java</file>
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/popup/PopupCategoryPet.java</file>
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/popup/PopupTypeService.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/models/Account.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/component/Header.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/daos/CustomerDAO.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/daos/EmployeeDAO.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/models/Invoices.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/services/RememberMeService.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/daos/InvoiceDAO.java</file>
             <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/daos/ProductDAO.java</file>
             <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/form/Shop.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/models/Employees.java</file>
             <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/form/ProductManagement.java</file>
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/popup/PopupCategoryProduct.java</file>
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/daos/CategoryProductDAO.java</file>
             <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/daos/ProductDetailDAO.java</file>
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/daos/TypeServiceDAO.java</file>
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/form/ServiceManagerment.java</file>
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/daos/PetServiceDAO.java</file>
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/form/InvoiceManagement.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/main/LoginFrame.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/main/Main.java</file>
         </group>
     </open-files>
 </project-private>

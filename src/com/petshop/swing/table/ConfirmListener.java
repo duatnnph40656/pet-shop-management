@@ -7,6 +7,7 @@ package com.petshop.swing.table;
 /**
  *
  * @author duat
+ * @param <T>
  */
 public interface ConfirmListener<T> {
     void onConfirm(T model);

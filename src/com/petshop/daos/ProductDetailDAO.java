@@ -5,9 +5,9 @@
 package com.petshop.daos;
 
 import com.petshop.connect.DBConnect;
-import com.petshop.models.Product;
-import com.petshop.models.ProductDetail;
-import com.petshop.models.TypePet;
+import com.petshop.models.Products;
+import com.petshop.models.ProductDetails;
+import com.petshop.models.TypePets;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class ProductDetailDAO {
         conn = DBConnect.getConnection();
     }
 
-    public List<ProductDetail> getListProductDetail() {
+    public List<ProductDetails> getListProductDetail() {
         String sql = "SELECT\n"
                 + "    pd.id,\n"
                 + "    p.product_name, \n"
@@ -49,7 +49,7 @@ public class ProductDetailDAO {
                 + "JOIN type_pets t ON pd.id_type_pet = t.id    \n"
                 + "WHERE pd.is_deleted = 0;";
 
-        List<ProductDetail> list = new ArrayList<>();
+        List<ProductDetails> list = new ArrayList<>();
 
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
@@ -92,7 +92,7 @@ public class ProductDetailDAO {
         return list;
     }
 
-    public boolean addProductDetail(ProductDetail productDetail) {
+    public boolean addProductDetail(ProductDetails productDetail) {
         String sql = "INSERT INTO product_details ("
                 + "product_detail_code, product_detail_name, bar_code, id_product, id_type_pet, "
                 + "production_date,expirydate, weight, quantity_in_stock, flavor, describe, "
@@ -134,7 +134,7 @@ public class ProductDetailDAO {
         return false;
     }
 
-    public boolean updateProductDetail(int id, ProductDetail productDetail) {
+    public boolean updateProductDetail(int id, ProductDetails productDetail) {
         String sql = "UPDATE product_details SET "
                 + "product_detail_name = ?, quantity_in_stock = ?, "
                 + "flavor = ?, describe = ?, image_path = ?, "
@@ -165,7 +165,7 @@ public class ProductDetailDAO {
         return false;
     }
 
-    public List<ProductDetail> searchByNameOrFlavor(String keyword) {
+    public List<ProductDetails> searchByNameOrFlavor(String keyword) {
         String sql = "SELECT pd.id, p.product_name, pd.product_detail_code, pd.product_detail_name, "
                 + "t.type_pet_name, pd.expirydate, pd.weight, pd.quantity_in_stock, pd.flavor, "
                 + "pd.describe, pd.price, pd.image_path, pd.created_at, pd.is_deleted, pd.is_status, "
@@ -176,7 +176,7 @@ public class ProductDetailDAO {
                 + "WHERE (pd.product_detail_name LIKE ? OR pd.flavor LIKE ?) "
                 + "AND pd.is_deleted = 0 AND pd.is_status = 1";
 
-        List<ProductDetail> list = new ArrayList<>();
+        List<ProductDetails> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, "%" + keyword + "%");
             ps.setString(2, "%" + keyword + "%");
@@ -191,8 +191,8 @@ public class ProductDetailDAO {
         return list;
     }
 
-    public List<ProductDetail> searchByBarCode(String barCode) {
-        List<ProductDetail> list = new ArrayList<>();
+    public List<ProductDetails> searchByBarCode(String barCode) {
+        List<ProductDetails> list = new ArrayList<>();
         String sql = "SELECT pd.id, p.product_name, pd.product_detail_code, pd.product_detail_name, "
                 + "t.type_pet_name, pd.expirydate, pd.weight, pd.quantity_in_stock, pd.flavor, "
                 + "pd.describe, pd.price, pd.image_path, pd.created_at, pd.is_deleted, pd.is_status, "
@@ -215,7 +215,7 @@ public class ProductDetailDAO {
         return list;
     }
 
-    public List<ProductDetail> searchByProductId(int productId) {
+    public List<ProductDetails> searchByProductId(int productId) {
         String sql = "SELECT pd.id, p.product_name, pd.product_detail_code, pd.product_detail_name, "
                 + "t.type_pet_name, pd.expirydate, pd.weight, pd.quantity_in_stock, pd.flavor, "
                 + "pd.describe, pd.price, pd.image_path, pd.created_at, pd.is_deleted, pd.is_status, "
@@ -225,7 +225,7 @@ public class ProductDetailDAO {
                 + "JOIN type_pets t ON pd.id_type_pet = t.id "
                 + "WHERE pd.id_product = ? AND pd.is_deleted = 0";
 
-        List<ProductDetail> list = new ArrayList<>();
+        List<ProductDetails> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, productId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -239,8 +239,8 @@ public class ProductDetailDAO {
         return list;
     }
 
-    public List<ProductDetail> findByTypePetId(int typePetId) {
-        List<ProductDetail> list = new ArrayList<>();
+    public List<ProductDetails> findByTypePetId(int typePetId) {
+        List<ProductDetails> list = new ArrayList<>();
         String sql = "SELECT "
                 + "    pd.id, "
                 + "    p.product_name, "
@@ -280,8 +280,8 @@ public class ProductDetailDAO {
         return list;
     }
 
-    public List<ProductDetail> searchProductDetails(Integer productId, Integer typePetId) {
-        List<ProductDetail> list = new ArrayList<>();
+    public List<ProductDetails> searchProductDetails(Integer productId, Integer typePetId) {
+        List<ProductDetails> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
                 "SELECT pd.id, p.product_name, pd.product_detail_code, pd.product_detail_name, "
                 + "t.type_pet_name, pd.expirydate, pd.weight, pd.quantity_in_stock, pd.flavor, "
@@ -336,20 +336,20 @@ public class ProductDetailDAO {
         return false;
     }
 
-    private ProductDetail mapResultSetToProductDetail(ResultSet rs) throws SQLException {
-        ProductDetail proD = new ProductDetail();
+    private ProductDetails mapResultSetToProductDetail(ResultSet rs) throws SQLException {
+        ProductDetails proD = new ProductDetails();
         proD.setId(rs.getInt("id"));
         proD.setProductDetailCode(rs.getString("product_detail_code"));
         proD.setProductDetailName(rs.getString("product_detail_name"));
         proD.setBarCode(rs.getString("bar_code"));
 
         // Set Product
-        Product product = new Product();
+        Products product = new Products();
         product.setProductName(rs.getString("product_name"));
         proD.setProduct(product);
 
         // Set TypePet
-        TypePet typePet = new TypePet();
+        TypePets typePet = new TypePets();
         typePet.setTypePetName(rs.getString("type_pet_name"));
         proD.setTypePet(typePet);
 

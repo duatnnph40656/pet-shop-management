@@ -19,6 +19,10 @@ public class RememberMeService {
         prefs.put("password", password);
     }
 
+    public void saveIdEmployee(int employeeId) {
+        prefs.putInt("employeeId", employeeId);
+    }
+
     public String getUsername() {
         return prefs.get("username", null);
     }
@@ -27,8 +31,13 @@ public class RememberMeService {
         return prefs.get("password", null);
     }
 
+    public int getEmployeeId() {
+        return prefs.getInt("employeeId", -1); // Trả về -1 nếu không tìm thấy
+    }
+
     public void clearLoginInfo() {
         prefs.remove("username");
         prefs.remove("password");
+        prefs.remove("employeeId"); // Xóa ID nhân viên
     }
 }

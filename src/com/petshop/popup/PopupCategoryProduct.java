@@ -6,7 +6,7 @@ package com.petshop.popup;
 
 import com.petshop.daos.CategoryProductDAO;
 import com.petshop.event.ConfirmListener;
-import com.petshop.models.CategoryProduct;
+import com.petshop.models.CategoryProducts;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogMessageError;
 import com.petshop.swing.message.DialogMessageFail;
@@ -77,11 +77,11 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
         super.paintComponent(grphcs);
     }
 
-    private void findAll(List<CategoryProduct> list) {
+    private void findAll(List<CategoryProducts> list) {
         model = (DefaultTableModel) tbCategoryProduct.getModel();
         model.setRowCount(0);
         int stt = 1;
-        for (CategoryProduct c : list) {
+        for (CategoryProducts c : list) {
             model.addRow(new Object[]{
                 stt++, // STT
                 c.getCategoryProductCode(),
@@ -92,11 +92,11 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
         }
     }
 
-    private CategoryProduct readForm() {
+    private CategoryProducts readForm() {
         String cProductCode = txtCode.getText();
         String cProductName = txtName.getText();
         boolean cStatus = true;
-        return new CategoryProduct(cProductCode, cProductName, cStatus);
+        return new CategoryProducts(cProductCode, cProductName, cStatus);
     }
     
     public void resetCode(){

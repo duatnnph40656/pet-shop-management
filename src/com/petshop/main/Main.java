@@ -16,7 +16,7 @@ import com.petshop.form.ProductManagement;
 import com.petshop.form.ReturnManagement;
 import com.petshop.form.ServiceManagerment;
 import com.petshop.form.Shop;
-import com.petshop.models.Employee;
+import com.petshop.models.Employees;
 import com.petshop.swing.MenuItem;
 import com.petshop.swing.PopupMenu;
 import com.petshop.swing.icon.GoogleMaterialDesignIcons;
@@ -40,6 +40,9 @@ public class Main extends javax.swing.JFrame {
     private Header header;
     private MainForm main;
     private Animator animator;
+    
+    public static boolean isLoggedIn = false;
+
 
     public Main() {
         initComponents();
@@ -48,6 +51,7 @@ public class Main extends javax.swing.JFrame {
     }
 
     private void init() {
+        
         layout = new MigLayout("fill", "0[]0[100%, fill]0", "0[fill, top]0");
         bg.setLayout(layout);
         menu = new Menu();
@@ -81,7 +85,8 @@ public class Main extends javax.swing.JFrame {
                     main.showForm(new DiscountVoucherManagement());
                 } else if (menuIndex == 11) {
                     dispose();
-                    login login = new login();
+                    isLoggedIn = false;
+                    LoginFrame login = new LoginFrame();
                     login.setVisible(true);
                 } else if (menuIndex == 12) {
 
@@ -218,7 +223,12 @@ public class Main extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new Main().setVisible(true);
+                if (!isLoggedIn) {
+                    LoginFrame loginForm = new LoginFrame();
+                    loginForm.setVisible(true);
+                } else {
+                    new Main().setVisible(true);
+                }
             }
         });
     }

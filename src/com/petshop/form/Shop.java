@@ -4,6 +4,37 @@
  */
 package com.petshop.form;
 
+import com.petshop.component.Header;
+import com.petshop.daos.CustomerDAO;
+import com.petshop.daos.EmployeeDAO;
+import com.petshop.daos.InvoiceDAO;
+import com.petshop.daos.InvoiceDetailDAO;
+import com.petshop.daos.ProductDAO;
+import com.petshop.daos.ProductDetailDAO;
+import com.petshop.event.ConfirmListener;
+import com.petshop.main.Main;
+import com.petshop.models.Customers;
+import com.petshop.models.Employees;
+import com.petshop.models.InvoiceDetails;
+import com.petshop.models.Invoices;
+import com.petshop.models.ProductDetails;
+import com.petshop.popup.PopupCustomer;
+import com.petshop.services.RememberMeService;
+import com.petshop.swing.message.DialogConfirm;
+import com.petshop.swing.message.DialogInput;
+import com.petshop.swing.message.DialogMessageError;
+import com.petshop.swing.message.DialogMessageFail;
+import com.petshop.swing.message.DialogMessageSuccess;
+import com.petshop.swing.table.EventAction;
+import com.petshop.swing.table.ModelAction;
+import com.petshop.swing.table.ModelImage;
+import com.petshop.ultils.Ultil;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JOptionPane;
+import raven.glasspanepopup.GlassPanePopup;
+
 /**
  *
  * @author dut
@@ -13,19 +44,265 @@ public class Shop extends javax.swing.JPanel {
     /**
      * Creates new form Shop
      */
-    
-    
+    private final ProductDetailDAO productDetailDAO;
+    private final ProductDAO productDAO;
+    private final InvoiceDAO invoiceDAO;
+    private final InvoiceDetailDAO invoiceDetailDAO;
+    private final CustomerDAO customerDAO;
+    private final EmployeeDAO employeeDAO;
+    private RememberMeService rememberMeService;
+
     public Shop() {
         initComponents();
-        jLabel36.setText("");
-        table1.fixTable(jScrollPane1);
-        table2.fixTable(jScrollPane2);
-        table3.fixTable(jScrollPane3);
+        tbInvoice.fixTable(jScrollPane1);
+        tbInvoiceDetail.fixTable(jScrollPane2);
+        tbProductDetail.fixTable(jScrollPane3);
+        productDetailDAO = new ProductDetailDAO();
+        productDAO = new ProductDAO();
+        invoiceDAO = new InvoiceDAO();
+        invoiceDetailDAO = new InvoiceDetailDAO();
+        customerDAO = new CustomerDAO();
+        employeeDAO = new EmployeeDAO();
+        rememberMeService = new RememberMeService();
+        loadCbbPaymen();
+        init();
     }
 
+    public void init() {
+        getListProductDetail(productDetailDAO.getListProductDetail());
+        getListInvoice(invoiceDAO.getListInvoice());
+
+        resetForm();
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="{Message...">
+    private void showMessageSuccess(String message) {
+        DialogMessageSuccess success = new DialogMessageSuccess(message);
+        GlassPanePopup.showPopup(success);
+    }
+
+    private void showMessageError(String message) {
+        DialogMessageError error = new DialogMessageError(message);
+        GlassPanePopup.showPopup(error);
+    }
+
+    private void showMessageFail(String message) {
+        DialogMessageFail fail = new DialogMessageFail(message);
+        GlassPanePopup.showPopup(fail);
+    }
+
+    public void showMessageConfirm(String message, Runnable onConfirmAction) {
+        DialogConfirm confirm = new DialogConfirm(message);
+        confirm.setConfirmListener(new ConfirmListener() {
+            @Override
+            public void onConfirm() {
+                if (onConfirmAction != null) {
+                    onConfirmAction.run(); // Thực hiện hành động truyền vào
+                }
+                GlassPanePopup.closePopup("confirm");
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+        GlassPanePopup.showPopup(confirm, "confirm"); // Hiển thị popup
+    }
+
+    public void showInputDialog(int amount) {
+        DialogInput input = new DialogInput(amount);
+        input.setConfirmListener(new ConfirmListener() {
+            @Override
+            public void onConfirm() {
+
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+        GlassPanePopup.showPopup(input, "input");
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="{Popup...">
+    //</editor-fold>
+    //<editor-fold defaultstate="collapsed" desc="{CBB...">
+    public void loadCbbPaymen() {
+        cbbPayment.removeAllItems();
+        cbbPayment.addItem("Tiền mặt");
+        cbbPayment.addItem("Thanh toán qua banking");
+        cbbPayment.setSelectedIndex(-1);
+    }
+//</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="{ProductDetail...">
+    public void getListProductDetail(List<ProductDetails> list) {
+        int stt = 1;
+        tbProductDetail.setRowCount(0);
+        for (ProductDetails p : list) {
+            if (p.isStatus()) {
+                tbProductDetail.addRow(new Object[]{
+                    p.getId(),
+                    stt,
+                    new ModelImage(p.getIcon().toString(), p.getProductDetailName()),
+                    p.getProductDetailCode(),
+                    p.getBarCode(),
+                    p.getTypePet().getTypePetName(),
+                    p.getFlavor(),
+                    p.getQuantityInStock(),
+                    p.getWeight() + "KG",
+                    p.getFormattedProductionDate(),
+                    p.getExpirydate() + " Tháng",
+                    p.getFormattedPriceBase(),
+                    p.isStatus() ? "Còn hàng" : "Hết hàng",
+                    new ModelAction<>(p, new EventAction<ProductDetails>() {
+                        @Override
+                        public void delete(ProductDetails p) {
+
+                        }
+
+                        @Override
+                        public void update(ProductDetails p) {
+
+                        }
+
+                        @Override
+                        public void add(ProductDetails model) {
+
+                        }
+                    })
+
+                });
+                stt++;
+            }
+
+        }
+    }
+
+    //</editor-fold>
     
+    //<editor-fold defaultstate="collapsed" desc="{Invoice...">
+    public void getListInvoice(List<Invoices> list) {
+        int stt = 1;
+        tbInvoice.setRowCount(0);
+        for (Invoices i : list) {
+            tbInvoice.addRow(new Object[]{
+                i.getId(),
+                stt,
+                i.getInvoiceCode(),
+                i.getCustomer().getCustomerName(),
+                i.getEmployee().getEmployeeName(),
+                i.getTotalPrice(),
+                i.isPaymentStatus() ? "Đã thanh toán" : "Chưa thanh toán",});
+            stt++;
+        }
+    }
+
+    public void resetForm() {
+        Customers c = customerDAO.searchCustomerById(1);
+        lbCustomerName.setText(c.getCustomerName());
+        lbCustomerCode.setText(c.getCustomerCode());
+    }
+
+    public Invoices readFormInsert() {
+        String invoiceCode = "HD" + Ultil.generateRandomCode();
+//        Ultil.generateInvoice(invoiceCode, invoiceCode, new ArrayList<>(), invoiceCode);
+
+        Customers c = customerDAO.searchCustomerByCustomerCode(lbCustomerCode.getText());
+        if (c == null) {
+            showMessageFail("Có lỗi sảy ra");
+        }
+        // Lấy username của nhân viên đang đăng nhập
+        int idEmployee = rememberMeService.getEmployeeId();
+
+        Employees e = employeeDAO.findEmployeeById(idEmployee);
+
+//        BigDecimal totalPrice = BigDecimal.ZERO;
+//        BigDecimal costsIncurred = BigDecimal.ZERO;
+//        boolean paymentMethod = "Tiền mặt".equals(cbbPayment.getSelectedItem());
+//        boolean paymentStatus = checkBoxPaymStatus.isSelected();
+//        String note = "";
+//        boolean deleted = false;
+        boolean status = true; // Mặc định hóa đơn hoạt động
+
+        return new Invoices(invoiceCode, c, e,status);
+    }
+
+    public void insertInvoice() {
+        // Kiểm tra xem khách hàng có hóa đơn chờ hay không
+        Customers c = customerDAO.searchCustomerByCustomerCode(lbCustomerCode.getText());
+        if (c == null) {
+            showMessageFail("Có lỗi sảy ra");
+        }
+
+        if (invoiceDAO.hasPendingInvoice(c.getId())) {
+            showMessageFail("Khách hàng này đã có hóa đơn chờ!");
+            return;
+        }
+
+        // Nếu không có hóa đơn chờ, tiếp tục tạo hóa đơn mới
+        Invoices invoice = readFormInsert();
+        if (invoice == null) {
+            showMessageFail("Tạo hóa đơn thất bại!!");
+            return;
+        }
+
+        invoiceDAO.createPendingInvoice(invoice);
+        getListInvoice(invoiceDAO.getListInvoice());
+        showMessageSuccess("Tạo hóa đơn thành công");
+    }
     
-    
+    public void deleteInvoice(){
+        int selectRow = tbInvoice.getSelectedRow();
+        int id = (int) tbInvoice.getValueAt(selectRow, 0);
+        invoiceDAO.updateDeletedStatus(id, true);
+        getListInvoice(invoiceDAO.getListInvoice());
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="{InvoiceDetail...">
+    public void getListInvoiceDetail(List<InvoiceDetails> list) {
+//        tb
+    }
+
+    public void insertPToInvoiceD() {
+
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="{Customers...">
+    public Customers readFormCustomer() {
+
+        return new Customers();
+    }
+
+    public void insertCustomer() {
+
+    }
+
+    public void showPopupInsertCustomer() {
+        PopupCustomer pC = new PopupCustomer();
+
+        GlassPanePopup.showPopup(pC, "pCustomer");
+    }
+
+    public void searchCustomer(String keyword) {
+        Customers t = customerDAO.searchCustomerByPhoneNumber(keyword);
+        if (t != null) {
+            txtSearchCustomer.setText(t.getPhoneNumber());
+            lbCustomerCode.setText(t.getCustomerCode());
+            lbCustomerName.setText(t.getCustomerName());
+        } else {
+            showMessageConfirm("Không tìm thấy khách hàng \nbạn có muốn thêm mới khách hàng", () -> {
+                showPopupInsertCustomer();
+            });
+        }
+    }
+    //</editor-fold>
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -39,39 +316,41 @@ public class Shop extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        table1 = new com.petshop.swing.table.Table();
+        tbInvoice = new com.petshop.swing.table.Table();
+        jPanel5 = new javax.swing.JPanel();
+        button12 = new com.petshop.swing.Button1();
         jPanel13 = new javax.swing.JPanel();
         jLabel32 = new javax.swing.JLabel();
-        button4 = new com.petshop.swing.Button();
+        btnConfirmInvoice = new com.petshop.swing.Button();
         jLabel33 = new javax.swing.JLabel();
-        textFieldSuggestion4 = new com.petshop.swing.textfield_suggestion.TextFieldSuggestion();
-        button18 = new com.petshop.swing.Button();
+        txtSearchCustomer = new com.petshop.swing.textfield_suggestion.TextFieldSuggestion();
+        btnSearchCustomer = new com.petshop.swing.Button();
         jLabel34 = new javax.swing.JLabel();
         jLabel35 = new javax.swing.JLabel();
-        jLabel36 = new javax.swing.JLabel();
-        jLabel37 = new javax.swing.JLabel();
-        button19 = new com.petshop.swing.Button();
-        button20 = new com.petshop.swing.Button();
-        button21 = new com.petshop.swing.Button();
-        comboboxRounded10 = new com.petshop.swing.combobox.ComboboxRounded();
+        lbCustomerCode = new javax.swing.JLabel();
+        lbCustomerName = new javax.swing.JLabel();
+        btnAddInvoice = new com.petshop.swing.Button();
+        btnDeleteInvoice = new com.petshop.swing.Button();
+        btnResetInvoice = new com.petshop.swing.Button();
         jLabel38 = new javax.swing.JLabel();
-        jLabel39 = new javax.swing.JLabel();
+        lbTotalPrice = new javax.swing.JLabel();
         jLabel40 = new javax.swing.JLabel();
-        jLabel41 = new javax.swing.JLabel();
-        comboboxRounded1 = new com.petshop.swing.combobox.ComboboxRounded();
-        jCheckBoxCustom1 = new com.petshop.swing.checkbox.JCheckBoxCustom();
+        lbTotalPrice1 = new javax.swing.JLabel();
+        checkBoxPaymStatus = new com.petshop.swing.checkbox.JCheckBoxCustom();
+        cbbPayment = new com.petshop.swing.combobox.Combobox();
         jPanel2 = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        table3 = new com.petshop.swing.table.Table();
         jLabel43 = new javax.swing.JLabel();
-        textFieldAnimation1 = new com.petshop.swing.textfield.TextFieldAnimation();
+        txtSearchProductDetail = new com.petshop.swing.textfield.TextFieldAnimation();
         comboboxRounded2 = new com.petshop.swing.combobox.ComboboxRounded();
-        comboboxRounded3 = new com.petshop.swing.combobox.ComboboxRounded();
-        comboboxRounded4 = new com.petshop.swing.combobox.ComboboxRounded();
+        cbbFilterTypePet = new com.petshop.swing.combobox.ComboboxRounded();
+        cbbFilterProduct = new com.petshop.swing.combobox.ComboboxRounded();
+        btnScanBarcode = new com.petshop.swing.Button1();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tbProductDetail = new com.petshop.swing.tableMore.TableMore();
         jPanel4 = new javax.swing.JPanel();
         jLabel42 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        table2 = new com.petshop.swing.table.Table();
+        tbInvoiceDetail = new com.petshop.swing.tableMore.TableMore1();
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -91,20 +370,45 @@ public class Shop extends javax.swing.JPanel {
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jLabel1.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
-        jLabel1.setText("HÓA ĐƠN");
+        jLabel1.setText("HÓA ĐƠN CHỜ");
 
-        table1.setModel(new javax.swing.table.DefaultTableModel(
+        tbInvoice.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "", "STT", "Mã HD", "Tên khách hàng", "Tên nhân viên", "Tổng giá", "Trạng thái thanh toán"
             }
         ));
-        jScrollPane1.setViewportView(table1);
+        jScrollPane1.setViewportView(tbInvoice);
+        if (tbInvoice.getColumnModel().getColumnCount() > 0) {
+            tbInvoice.getColumnModel().getColumn(0).setMinWidth(0);
+            tbInvoice.getColumnModel().getColumn(0).setMaxWidth(0);
+            tbInvoice.getColumnModel().getColumn(1).setMinWidth(40);
+            tbInvoice.getColumnModel().getColumn(1).setMaxWidth(40);
+        }
+
+        button12.setText("button12");
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(button12, javax.swing.GroupLayout.DEFAULT_SIZE, 82, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(button12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -113,10 +417,12 @@ public class Shop extends javax.swing.JPanel {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -124,9 +430,13 @@ public class Shop extends javax.swing.JPanel {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addGap(0, 0, 0)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         jPanel13.setBackground(new java.awt.Color(255, 255, 255));
@@ -136,66 +446,81 @@ public class Shop extends javax.swing.JPanel {
         jLabel32.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel32.setText("Hóa đơn");
 
-        button4.setBackground(new java.awt.Color(0, 255, 255));
-        button4.setText("Thanh toán");
+        btnConfirmInvoice.setBackground(new java.awt.Color(0, 255, 255));
+        btnConfirmInvoice.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-yes-30.png"))); // NOI18N
+        btnConfirmInvoice.setText("Xác nhận");
 
         jLabel33.setText("Nhập số điện thại khách hàng:");
 
-        button18.setBackground(new java.awt.Color(204, 255, 255));
-        button18.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-search-15.png"))); // NOI18N
+        btnSearchCustomer.setBackground(new java.awt.Color(204, 255, 255));
+        btnSearchCustomer.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-search-15.png"))); // NOI18N
+        btnSearchCustomer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSearchCustomerActionPerformed(evt);
+            }
+        });
 
         jLabel34.setText("Mã kh  :");
 
         jLabel35.setText("Tên kh : ");
 
-        jLabel36.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
-        jLabel36.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel36.setText("KH01");
+        lbCustomerCode.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
+        lbCustomerCode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lbCustomerCode.setText("KH");
 
-        jLabel37.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
-        jLabel37.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel37.setText("Nguyễn Nông Duật");
+        lbCustomerName.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
+        lbCustomerName.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lbCustomerName.setText("Chưa có thông tin");
 
-        button19.setBackground(new java.awt.Color(204, 255, 255));
-        button19.setText("Tạo hóa đơn");
-
-        button20.setBackground(new java.awt.Color(255, 204, 204));
-        button20.setText("Hủy hóa đơn");
-
-        button21.setBackground(new java.awt.Color(255, 255, 204));
-        button21.setText("Làm mới");
-        button21.addActionListener(new java.awt.event.ActionListener() {
+        btnAddInvoice.setBackground(new java.awt.Color(204, 255, 255));
+        btnAddInvoice.setText("Tạo hóa đơn");
+        btnAddInvoice.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                button21ActionPerformed(evt);
+                btnAddInvoiceActionPerformed(evt);
             }
         });
 
-        comboboxRounded10.setLabeText("Hình thức thanh toán");
-        comboboxRounded10.addActionListener(new java.awt.event.ActionListener() {
+        btnDeleteInvoice.setBackground(new java.awt.Color(255, 204, 204));
+        btnDeleteInvoice.setText("Hủy hóa đơn");
+        btnDeleteInvoice.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comboboxRounded10ActionPerformed(evt);
+                btnDeleteInvoiceActionPerformed(evt);
+            }
+        });
+
+        btnResetInvoice.setBackground(new java.awt.Color(255, 255, 204));
+        btnResetInvoice.setText("Làm mới");
+        btnResetInvoice.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnResetInvoiceActionPerformed(evt);
             }
         });
 
         jLabel38.setText("Tổng tiền :");
 
-        jLabel39.setBackground(new java.awt.Color(255, 255, 255));
-        jLabel39.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
-        jLabel39.setForeground(new java.awt.Color(255, 0, 0));
-        jLabel39.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel39.setText("VND");
+        lbTotalPrice.setBackground(new java.awt.Color(255, 255, 255));
+        lbTotalPrice.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
+        lbTotalPrice.setForeground(new java.awt.Color(255, 0, 0));
+        lbTotalPrice.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lbTotalPrice.setText("VND");
 
         jLabel40.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jLabel40.setText("Thành tiền:");
 
-        jLabel41.setFont(new java.awt.Font("SansSerif", 1, 14)); // NOI18N
-        jLabel41.setForeground(new java.awt.Color(255, 51, 0));
-        jLabel41.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel41.setText("VND");
+        lbTotalPrice1.setFont(new java.awt.Font("SansSerif", 1, 14)); // NOI18N
+        lbTotalPrice1.setForeground(new java.awt.Color(255, 51, 0));
+        lbTotalPrice1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lbTotalPrice1.setText("VND");
 
-        comboboxRounded1.setLabeText("Hình thức vận chuyển");
+        checkBoxPaymStatus.setBackground(new java.awt.Color(255, 204, 204));
+        checkBoxPaymStatus.setText("Đã thanh toán");
 
-        jCheckBoxCustom1.setText("Đã thanh toán");
+        cbbPayment.setLabeText("Phương thức thanh toán");
+        cbbPayment.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbbPaymentActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel13Layout = new javax.swing.GroupLayout(jPanel13);
         jPanel13.setLayout(jPanel13Layout);
@@ -204,44 +529,40 @@ public class Shop extends javax.swing.JPanel {
             .addGroup(jPanel13Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(comboboxRounded10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(button19, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cbbPayment, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnAddInvoice, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel32, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(button4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnConfirmInvoice, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel13Layout.createSequentialGroup()
-                        .addComponent(jLabel34)
+                        .addComponent(jLabel40)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel36, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel13Layout.createSequentialGroup()
-                        .addComponent(jLabel35)
-                        .addGap(4, 4, 4)
-                        .addComponent(jLabel37, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(lbTotalPrice1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel13Layout.createSequentialGroup()
                         .addComponent(jLabel38)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel39, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(comboboxRounded1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lbTotalPrice, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel13Layout.createSequentialGroup()
-                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(button21, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel40, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jLabel34)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lbCustomerCode, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel13Layout.createSequentialGroup()
                         .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel13Layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel41, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel13Layout.createSequentialGroup()
+                                .addComponent(btnResetInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(55, 55, 55)
-                                .addComponent(button20, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(jPanel13Layout.createSequentialGroup()
-                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(btnDeleteInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel13Layout.createSequentialGroup()
                                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(jLabel33, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(textFieldSuggestion4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addComponent(txtSearchCustomer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(button18, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jCheckBoxCustom1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                                .addComponent(btnSearchCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(checkBoxPaymStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel13Layout.createSequentialGroup()
+                        .addComponent(jLabel35)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lbCustomerName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel13Layout.setVerticalGroup(
@@ -251,70 +572,84 @@ public class Shop extends javax.swing.JPanel {
                 .addComponent(jLabel32)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel33)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(10, 10, 10)
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(button18, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(textFieldSuggestion4, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(5, 5, 5)
-                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel34)
-                    .addComponent(jLabel36))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel35)
-                    .addComponent(jLabel37))
+                    .addGroup(jPanel13Layout.createSequentialGroup()
+                        .addComponent(txtSearchCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel34)
+                            .addComponent(lbCustomerCode))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel35)
+                            .addComponent(lbCustomerName)))
+                    .addComponent(btnSearchCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(button19, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnAddInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel38)
-                    .addComponent(jLabel39))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comboboxRounded1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comboboxRounded10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel41)
-                    .addComponent(jLabel40))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jCheckBoxCustom1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(lbTotalPrice))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(cbbPayment, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(10, 10, 10)
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(button20, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(button21, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(button4, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel40)
+                    .addComponent(lbTotalPrice1))
+                .addGap(10, 10, 10)
+                .addComponent(checkBoxPaymStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(10, 10, 10)
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnResetInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDeleteInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnConfirmInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        table3.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane3.setViewportView(table3);
-
         jLabel43.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
         jLabel43.setText("DANH SÁCH SẢN PHẨM");
 
-        textFieldAnimation1.setBackground(new java.awt.Color(250, 250, 250));
-        textFieldAnimation1.setText("textFieldAnimation1");
+        txtSearchProductDetail.setBackground(new java.awt.Color(250, 250, 250));
 
         comboboxRounded2.setLabeText("Sắp xếp theo");
 
-        comboboxRounded3.setLabeText("Loại thú cưng");
+        cbbFilterTypePet.setLabeText("Loại thú cưng");
 
-        comboboxRounded4.setLabeText("Sản phẩm");
+        cbbFilterProduct.setLabeText("Sản phẩm");
+
+        btnScanBarcode.setText("Quét barcode");
+
+        tbProductDetail.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null}
+            },
+            new String [] {
+                "", "STT", "Tên SP", "Mã SP", "BarCode", "Dành cho", "Hương vị", "SL", "TL", "NSX", "HSD", "Giá bán", "Trạng thái", "Thao tác"
+            }
+        ));
+        jScrollPane3.setViewportView(tbProductDetail);
+        if (tbProductDetail.getColumnModel().getColumnCount() > 0) {
+            tbProductDetail.getColumnModel().getColumn(0).setMinWidth(0);
+            tbProductDetail.getColumnModel().getColumn(0).setMaxWidth(0);
+            tbProductDetail.getColumnModel().getColumn(1).setMinWidth(40);
+            tbProductDetail.getColumnModel().getColumn(1).setMaxWidth(40);
+            tbProductDetail.getColumnModel().getColumn(2).setMinWidth(180);
+            tbProductDetail.getColumnModel().getColumn(2).setMaxWidth(180);
+            tbProductDetail.getColumnModel().getColumn(7).setMinWidth(40);
+            tbProductDetail.getColumnModel().getColumn(7).setMaxWidth(40);
+            tbProductDetail.getColumnModel().getColumn(8).setMinWidth(60);
+            tbProductDetail.getColumnModel().getColumn(8).setMaxWidth(60);
+            tbProductDetail.getColumnModel().getColumn(10).setMinWidth(70);
+            tbProductDetail.getColumnModel().getColumn(10).setMaxWidth(70);
+        }
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -322,34 +657,36 @@ public class Shop extends javax.swing.JPanel {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel43)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 81, Short.MAX_VALUE)
-                        .addComponent(comboboxRounded4, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(comboboxRounded3, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(comboboxRounded2, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(textFieldAnimation1, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addComponent(jLabel43)
+                .addGap(18, 18, 18)
+                .addComponent(cbbFilterProduct, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbbFilterTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(comboboxRounded2, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 80, Short.MAX_VALUE)
+                .addComponent(btnScanBarcode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtSearchProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
+            .addComponent(jScrollPane3)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel43)
-                    .addComponent(textFieldAnimation1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txtSearchProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnScanBarcode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(comboboxRounded2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(comboboxRounded3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(comboboxRounded4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(14, 14, 14))
+                        .addComponent(cbbFilterTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbbFilterProduct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
@@ -358,18 +695,22 @@ public class Shop extends javax.swing.JPanel {
         jLabel42.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
         jLabel42.setText("HÓA ĐƠN CHI TIẾT");
 
-        table2.setModel(new javax.swing.table.DefaultTableModel(
+        tbInvoiceDetail.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "", "STT", "Mã HDCT", "Mã SP", "Tên SP", "Số lượng", "Giá bán", "Thao tác"
             }
         ));
-        jScrollPane2.setViewportView(table2);
+        jScrollPane2.setViewportView(tbInvoiceDetail);
+        if (tbInvoiceDetail.getColumnModel().getColumnCount() > 0) {
+            tbInvoiceDetail.getColumnModel().getColumn(0).setMinWidth(0);
+            tbInvoiceDetail.getColumnModel().getColumn(0).setMaxWidth(0);
+        }
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -378,10 +719,10 @@ public class Shop extends javax.swing.JPanel {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2)
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addComponent(jLabel42)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -389,7 +730,7 @@ public class Shop extends javax.swing.JPanel {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel42)
-                .addGap(0, 0, 0)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -414,50 +755,62 @@ public class Shop extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jPanel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(22, 22, 22))
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(52, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void comboboxRounded10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboboxRounded10ActionPerformed
+    private void btnResetInvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetInvoiceActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_comboboxRounded10ActionPerformed
+    }//GEN-LAST:event_btnResetInvoiceActionPerformed
 
-    private void button21ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button21ActionPerformed
+    private void cbbPaymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbbPaymentActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_button21ActionPerformed
+    }//GEN-LAST:event_cbbPaymentActionPerformed
+
+    private void btnAddInvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddInvoiceActionPerformed
+        // TODO add your handling code here:
+        insertInvoice();
+    }//GEN-LAST:event_btnAddInvoiceActionPerformed
+
+    private void btnSearchCustomerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchCustomerActionPerformed
+        // TODO add your handling code here:
+        searchCustomer(txtSearchCustomer.getText());
+    }//GEN-LAST:event_btnSearchCustomerActionPerformed
+
+    private void btnDeleteInvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteInvoiceActionPerformed
+        // TODO add your handling code here:
+        showMessageConfirm("Xác nhận hủy hóa đơn", () -> {deleteInvoice();});
+    }//GEN-LAST:event_btnDeleteInvoiceActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private com.petshop.swing.Button button18;
-    private com.petshop.swing.Button button19;
-    private com.petshop.swing.Button button20;
-    private com.petshop.swing.Button button21;
-    private com.petshop.swing.Button button4;
-    private com.petshop.swing.combobox.ComboboxRounded comboboxRounded1;
-    private com.petshop.swing.combobox.ComboboxRounded comboboxRounded10;
+    private com.petshop.swing.Button btnAddInvoice;
+    private com.petshop.swing.Button btnConfirmInvoice;
+    private com.petshop.swing.Button btnDeleteInvoice;
+    private com.petshop.swing.Button btnResetInvoice;
+    private com.petshop.swing.Button1 btnScanBarcode;
+    private com.petshop.swing.Button btnSearchCustomer;
+    private com.petshop.swing.Button1 button12;
+    private com.petshop.swing.combobox.ComboboxRounded cbbFilterProduct;
+    private com.petshop.swing.combobox.ComboboxRounded cbbFilterTypePet;
+    private com.petshop.swing.combobox.Combobox cbbPayment;
+    private com.petshop.swing.checkbox.JCheckBoxCustom checkBoxPaymStatus;
     private com.petshop.swing.combobox.ComboboxRounded comboboxRounded2;
-    private com.petshop.swing.combobox.ComboboxRounded comboboxRounded3;
-    private com.petshop.swing.combobox.ComboboxRounded comboboxRounded4;
-    private com.petshop.swing.checkbox.JCheckBoxCustom jCheckBoxCustom1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel32;
     private javax.swing.JLabel jLabel33;
     private javax.swing.JLabel jLabel34;
     private javax.swing.JLabel jLabel35;
-    private javax.swing.JLabel jLabel36;
-    private javax.swing.JLabel jLabel37;
     private javax.swing.JLabel jLabel38;
-    private javax.swing.JLabel jLabel39;
     private javax.swing.JLabel jLabel40;
-    private javax.swing.JLabel jLabel41;
     private javax.swing.JLabel jLabel42;
     private javax.swing.JLabel jLabel43;
     private javax.swing.JPanel jPanel1;
@@ -465,13 +818,18 @@ public class Shop extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private com.petshop.swing.table.Table table1;
-    private com.petshop.swing.table.Table table2;
-    private com.petshop.swing.table.Table table3;
-    private com.petshop.swing.textfield.TextFieldAnimation textFieldAnimation1;
-    private com.petshop.swing.textfield_suggestion.TextFieldSuggestion textFieldSuggestion4;
+    private javax.swing.JLabel lbCustomerCode;
+    private javax.swing.JLabel lbCustomerName;
+    private javax.swing.JLabel lbTotalPrice;
+    private javax.swing.JLabel lbTotalPrice1;
+    private com.petshop.swing.table.Table tbInvoice;
+    private com.petshop.swing.tableMore.TableMore1 tbInvoiceDetail;
+    private com.petshop.swing.tableMore.TableMore tbProductDetail;
+    private com.petshop.swing.textfield_suggestion.TextFieldSuggestion txtSearchCustomer;
+    private com.petshop.swing.textfield.TextFieldAnimation txtSearchProductDetail;
     // End of variables declaration//GEN-END:variables
 }
