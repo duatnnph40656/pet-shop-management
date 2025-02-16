@@ -5,8 +5,12 @@
 package com.petshop.models;
 
 import com.petshop.swing.table.ModelProfile;
+import java.awt.Image;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.sql.Date;
@@ -50,7 +54,7 @@ public class ProductDetails {
         return productionDate;
     }
 
-    public ProductDetails(String productDetailName, Products product, TypePets typePet, int expirydate, Date productionDate, BigDecimal weight, int quantityInStock, String flavor, String description, BigDecimal price, String imagePath,boolean status) {
+    public ProductDetails(String productDetailName, Products product, TypePets typePet, int expirydate, Date productionDate, BigDecimal weight, int quantityInStock, String flavor, String description, BigDecimal price, String imagePath, boolean status) {
         this.productDetailName = productDetailName;
         this.product = product;
         this.typePet = typePet;
@@ -86,7 +90,7 @@ public class ProductDetails {
         this.status = status;
     }
 
-    public ProductDetails(String productDetailCode, String productDetailName, String barCode, Products product, TypePets typePet, int expirydate, Date productionDate, BigDecimal weight, int quantityInStock, String flavor, String description, BigDecimal price, String imagePath,boolean status) {
+    public ProductDetails(String productDetailCode, String productDetailName, String barCode, Products product, TypePets typePet, int expirydate, Date productionDate, BigDecimal weight, int quantityInStock, String flavor, String description, BigDecimal price, String imagePath, boolean status) {
         this.productDetailCode = productDetailCode;
         this.productDetailName = productDetailName;
         this.barCode = barCode;
@@ -260,22 +264,30 @@ public class ProductDetails {
         return decimalFormat.format(price) + " VND"; // Thêm đơn vị "VND"
     }
 
-    public ModelProfile getModelProfile() {
+    public ModelProfile getModelProfile() throws IOException {
         return new ModelProfile(getIcon(), productDetailName);
     }
 
     public ImageIcon getIcon() {
         if (imagePath != null && !imagePath.isEmpty()) {
-            String basePath = "D:/FPT/DA1/Project1/pet-shop/src/com/petshop/images/";
-            File file = new File(basePath + imagePath); // Chỉ lấy tên ảnh, không cần đường dẫn đầy đủ
-
-            if (file.exists()) {
-                return new ImageIcon(file.getAbsolutePath()); // Load ảnh từ file
+            // Lấy ảnh từ thư mục resources
+            URL imageUrl = getClass().getResource("/com/resources/images/" + imagePath);
+            if (imageUrl != null) {
+                return new ImageIcon(imageUrl);
             }
         }
 
-        // Trả về ảnh mặc định từ resources nếu ảnh không tồn tại
-        return new ImageIcon(getClass().getResource("/com/petshop/images/01.jpg"));
+        // Nếu ảnh không tồn tại, trả về ảnh mặc định từ resources
+        URL defaultUrl = getClass().getResource("/com/resources/images/default.jpg");
+        if (defaultUrl != null) {
+            return new ImageIcon(defaultUrl);
+        }
+
+        return null; // Nếu không có ảnh nào, trả về null
+    }
+
+    public String getImageName() {
+        return imagePath; // imagePath chỉ chứa tên ảnh, ví dụ: "dog.jpg"
     }
 
 }

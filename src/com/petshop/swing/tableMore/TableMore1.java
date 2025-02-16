@@ -70,7 +70,7 @@ public class TableMore1 extends JTable {
     @Override
     public TableCellEditor getCellEditor(int row, int col) {
         if (getValueAt(row, col) instanceof ModelAction) {
-            return new TableCellActionMore();
+            return new TableCellActionMore1();
         }
         return super.getCellEditor(row, col);
     }

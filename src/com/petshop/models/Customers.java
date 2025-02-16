@@ -4,7 +4,7 @@
  */
 package com.petshop.models;
 
-import java.util.Date;
+import java.sql.Date;
 
 /**
  *
@@ -17,15 +17,12 @@ public class Customers {
     private String phoneNumber;
     private String email;
     private String address;
-    private Boolean gender;
+    private boolean gender;
     private Date createdAt;
     private boolean deleted;
     private boolean status;
 
-    public Customers() {
-    }
-
-    public Customers(int id, String customerCode, String customerName, String phoneNumber, String email, String address, Boolean gender, Date createdAt, boolean deleted, boolean status) {
+    public Customers(int id, String customerCode, String customerName, String phoneNumber, String email, String address, boolean gender, Date createdAt, boolean deleted, boolean status) {
         this.id = id;
         this.customerCode = customerCode;
         this.customerName = customerName;
@@ -36,6 +33,21 @@ public class Customers {
         this.createdAt = createdAt;
         this.deleted = deleted;
         this.status = status;
+    }
+
+    public Customers(String customerCode, String customerName, String phoneNumber, String email, String address,boolean status,boolean gender) {
+        this.customerCode = customerCode;
+        this.customerName = customerName;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.address = address;
+        this.status = status;
+        this.gender = gender;
+    }
+
+    
+    
+    public Customers() {
     }
 
     public int getId() {
@@ -86,11 +98,11 @@ public class Customers {
         this.address = address;
     }
 
-    public Boolean getGender() {
+    public boolean isGender() {
         return gender;
     }
 
-    public void setGender(Boolean gender) {
+    public void setGender(boolean gender) {
         this.gender = gender;
     }
 
@@ -118,6 +130,6 @@ public class Customers {
         this.status = status;
     }
 
-    
+   
     
 }

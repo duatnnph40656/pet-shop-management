@@ -91,6 +91,74 @@ public class ProductDetailDAO {
         }
         return list;
     }
+    
+     public List<ProductDetails> getListProductDetailDeleted() {
+        String sql = "SELECT\n"
+                + "    pd.id,\n"
+                + "    p.product_name, \n"
+                + "    pd.product_detail_code,\n"
+                + "    pd.product_detail_name,\n"
+                + "    t.type_pet_name,   \n"
+                + "    pd.expirydate,\n"
+                + "    pd.weight,\n"
+                + "    pd.quantity_in_stock,\n"
+                + "    pd.flavor,\n"
+                + "    pd.describe,\n"
+                + "    pd.price,\n"
+                + "    pd.image_path,\n"
+                + "    pd.created_at,\n"
+                + "    pd.is_deleted,\n"
+                + "    pd.is_status,\n"
+                + "    pd.id_product,\n"
+                + "    pd.bar_code,\n" // Thêm dấu phẩy ở đây
+                + "    pd.production_date\n"
+                + "FROM product_details pd\n"
+                + "JOIN products p ON pd.id_product = p.id    \n"
+                + "JOIN type_pets t ON pd.id_type_pet = t.id    \n"
+                + "WHERE pd.is_deleted = 1;";
+
+        List<ProductDetails> list = new ArrayList<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+//                ProductDetail proD = new ProductDetail();
+//                proD.setId(rs.getInt("id"));
+//                proD.setProductDetailCode(rs.getString("product_detail_code"));
+//                proD.setProductDetailName(rs.getString("product_detail_name"));
+//                proD.setBarCode(rs.getString("bar_code"));
+//
+//                // Set Product
+//                Product product = new Product();
+//                product.setProductName(rs.getString("product_name"));
+//                proD.setProduct(product);
+//
+//                // Set TypePet
+//                TypePet typePet = new TypePet();
+//                typePet.setTypePetName(rs.getString("type_pet_name"));
+//                proD.setTypePet(typePet);
+//
+//                // Nếu `expirydate` là kiểu DATE trong DB
+//                proD.setExpirydate(rs.getInt("expirydate"));
+//                proD.setProductionDate(rs.getDate("production_date"));
+//
+//                proD.setWeight(rs.getBigDecimal("weight"));
+//                proD.setQuantityInStock(rs.getInt("quantity_in_stock"));
+//                proD.setFlavor(rs.getString("flavor"));
+//                proD.setDescription(rs.getString("describe"));
+//                proD.setPrice(rs.getBigDecimal("price"));
+//                proD.setImagePath(rs.getString("image_path"));
+//                proD.setCreatedAt(rs.getDate("created_at"));
+//                proD.setDeleted(rs.getBoolean("is_deleted"));
+//                proD.setStatus(rs.getBoolean("is_status"));
+
+                list.add(mapResultSetToProductDetail(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 
     public boolean addProductDetail(ProductDetails productDetail) {
         String sql = "INSERT INTO product_details ("

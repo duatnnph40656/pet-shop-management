@@ -125,6 +125,30 @@ public class InvoiceDAO {
         return false;
     }
 
+    public Invoices getInvoiceById(int invoiceId) {
+        String sql = "SELECT i.id, i.invoice_code, i.total_price, i.costs_incurred, "
+                + "i.payment_method, i.payment_status, i.note, "
+                + "c.customer_name, e.employee_name "
+                + "FROM invoices i "
+                + "JOIN customers c ON i.id_customer = c.id "
+                + "JOIN employees e ON i.id_employee = e.id "
+                + "WHERE i.id = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapInvoice(rs); // Chuyển đổi kết quả thành object Invoices
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null; // Trả về null nếu không tìm thấy hóa đơn
+    }
+
     public List<Invoices> searchInvoiceByCode(String invoiceCode) {
         String sql = "SELECT i.id, i.invoice_code, i.total_price, i.costs_incurred, "
                 + "i.payment_method, i.payment_status, i.note, "
@@ -201,6 +225,32 @@ public class InvoiceDAO {
         }
 
         return list;
+    }
+
+    public boolean updateTotalPrice(int invoiceId) {
+        String sumSql = "SELECT COALESCE(SUM(total_price), 0) FROM invoice_details WHERE id_invoice = ? AND is_deleted = 0";
+        String updateSql = "UPDATE invoices SET total_price = ? WHERE id = ?";
+
+        try (PreparedStatement sumStmt = conn.prepareStatement(sumSql); PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+
+            // Lấy tổng giá trị từ invoice_details
+            sumStmt.setInt(1, invoiceId);
+            ResultSet rs = sumStmt.executeQuery();
+            BigDecimal totalPrice = BigDecimal.ZERO;
+
+            if (rs.next()) {
+                totalPrice = rs.getBigDecimal(1);
+            }
+
+            // Cập nhật total_price trong invoices
+            updateStmt.setBigDecimal(1, totalPrice);
+            updateStmt.setInt(2, invoiceId);
+
+            return updateStmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public Invoices mapInvoice(ResultSet rs) throws SQLException {

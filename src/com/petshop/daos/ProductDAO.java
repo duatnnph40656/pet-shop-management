@@ -17,13 +17,13 @@ import java.sql.*;
  * @author duat
  */
 public class ProductDAO {
-
+    
     private Connection conn = null;
-
+    
     public ProductDAO() {
         conn = DBConnect.getConnection();
     }
-
+    
     public List<Products> getListProduct() {
         String sql = "SELECT \n"
                 + "    p.id,\n"
@@ -37,25 +37,57 @@ public class ProductDAO {
                 + "FROM \n"
                 + "    [products] p\n"
                 + "JOIN \n"
-                + "    [categories] c\n"
+                + "    [category_products] c\n"
                 + "ON \n"
                 + "    p.id_category = c.id\n"
                 + "WHERE \n"
                 + "    p.is_deleted = 0;";
-
+        
         List<Products> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapProduct(rs));
             }
-
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        
         return list;
     }
-
+    
+    public List<Products> getListProductDeleted() {
+        String sql = "SELECT \n"
+                + "    p.id,\n"
+                + "    p.product_code,\n"
+                + "    p.product_name,\n"
+                + "    c.category_name,\n"
+                + "    p.price_base,\n"
+                + "    p.created_at,\n"
+                + "    p.is_deleted,\n"
+                + "    p.is_status\n"
+                + "FROM \n"
+                + "    [products] p\n"
+                + "JOIN \n"
+                + "    [category_products] c\n"
+                + "ON \n"
+                + "    p.id_category = c.id\n"
+                + "WHERE \n"
+                + "    p.is_deleted = 1;";
+        
+        List<Products> list = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapProduct(rs));
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return list;
+    }
+    
     public boolean addProduct(Products p) {
         String sql = "INSERT INTO products (product_code, product_name, id_category, price_base, is_deleted ,is_status) VALUES (?,?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -75,7 +107,7 @@ public class ProductDAO {
         }
         return false; // Trả về false nếu có lỗi xảy ra
     }
-
+    
     public boolean updateProduct(int id, Products p) {
         String sql = "UPDATE products SET product_code = ?, product_name = ?, price_base = ?,id_category = ?, is_status = ? WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -93,12 +125,12 @@ public class ProductDAO {
         }
         return false;
     }
-
+    
     public boolean deleteProduct(int id) {
         String sql = "UPDATE products SET is_deleted = 1 WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
-
+            
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0; // Trả về true nếu xóa thành công
         } catch (Exception e) {
@@ -106,7 +138,19 @@ public class ProductDAO {
         }
         return false; // Trả về false nếu có lỗi xảy ra
     }
-
+    
+    public boolean updateStatusProduct(int id, boolean status) {
+        String sql = "UPDATE products SET is_status = ? WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(2, id);
+            ps.setBoolean(1, status);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
+    
     public List<Products> searchProduct(String keyword) {
         String sql = "SELECT "
                 + "    p.id, "
@@ -120,7 +164,7 @@ public class ProductDAO {
                 + "FROM "
                 + "    [products] p "
                 + "JOIN "
-                + "    [categories] c "
+                + "    [category_products] c "
                 + "ON "
                 + "    p.id_category = c.id "
                 + "WHERE "
@@ -140,13 +184,13 @@ public class ProductDAO {
         }
         return null;
     }
-
+    
     public List<Products> selectProductByCategoryId(int categoryId) {
         String sql = "SELECT p.*, c.category_name " // Lấy cả category_name
                 + "FROM products p "
-                + "JOIN categories c ON p.id_category = c.id " // JOIN bảng categories
+                + "JOIN category_products c ON p.id_category = c.id " // JOIN bảng categories
                 + "WHERE p.id_category = ? AND p.is_deleted = 0";
-
+        
         List<Products> products = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, categoryId); // Gán tham số categoryId
@@ -162,12 +206,12 @@ public class ProductDAO {
                     category.setId(rs.getInt("id_category"));
                     category.setCategoryProductName(rs.getString("category_name")); // Gán typeProductName
                     product.setCategoryProduct(category);
-
+                    
                     product.setPriceBase(rs.getBigDecimal("price_base"));
                     product.setCreatedAt(rs.getDate("created_at"));
                     product.setDeleted(rs.getBoolean("is_deleted"));
                     product.setStatus(rs.getBoolean("is_status"));
-
+                    
                     products.add(product); // Thêm sản phẩm vào danh sách
                 }
             }
@@ -176,7 +220,7 @@ public class ProductDAO {
         }
         return products;
     }
-
+    
     private Products mapProduct(ResultSet rs) throws SQLException {
         Products product = new Products();
         product.setId(rs.getInt("id"));
@@ -186,10 +230,10 @@ public class ProductDAO {
         product.setCreatedAt(rs.getTimestamp("created_at"));
         product.setDeleted(rs.getBoolean("is_deleted"));
         product.setStatus(rs.getBoolean("is_status"));
-
+        
         CategoryProducts categoryProduct = new CategoryProducts();
         categoryProduct.setCategoryProductName(rs.getString("category_name"));
-
+        
         product.setCategoryProduct(categoryProduct);
         return product;
     }

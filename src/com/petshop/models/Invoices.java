@@ -6,6 +6,7 @@ package com.petshop.models;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.text.DecimalFormat;
 
 /**
  *
@@ -119,6 +120,14 @@ public class Invoices {
         return totalPrice;
     }
 
+    public String getFormattedTotalPrice() {
+        if (totalPrice == null) {
+            return "N/A"; // Nếu giá là null, trả về chuỗi mặc định
+        }
+        DecimalFormat decimalFormat = new DecimalFormat("#,###"); // Định dạng giá thành 1,000
+        return decimalFormat.format(totalPrice) + " VND"; // Thêm đơn vị "VND"
+    }
+    
     public void setTotalPrice(BigDecimal totalPrice) {
         this.totalPrice = totalPrice;
     }

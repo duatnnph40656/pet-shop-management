@@ -21,7 +21,7 @@ public class InvoiceDetails {
     public Pets pet;
     public PetServices petService;
     public int usageOrQuantity;
-    public BigDecimal price;
+    public BigDecimal totalPrice;
     public Date createdAt;
     public boolean deleted;
     public boolean status;
@@ -29,7 +29,7 @@ public class InvoiceDetails {
     public InvoiceDetails() {
     }
 
-    public InvoiceDetails(int id, String invoiceDetailCode,Invoices invoice, ProductDetails productDetail, Pets pet, PetServices petService, int usageOrQuantity, BigDecimal price, Date createdAt, boolean deleted, boolean status) {
+    public InvoiceDetails(int id, String invoiceDetailCode,Invoices invoice, ProductDetails productDetail, Pets pet, PetServices petService, int usageOrQuantity, BigDecimal totalPrice, Date createdAt, boolean deleted, boolean status) {
         this.id = id;
         this.invoiceDetailCode = invoiceDetailCode;
         this.invoice = invoice;
@@ -37,7 +37,7 @@ public class InvoiceDetails {
         this.pet = pet;
         this.petService = petService;
         this.usageOrQuantity = usageOrQuantity;
-        this.price = price;
+        this.totalPrice = totalPrice;
         this.createdAt = createdAt;
         this.deleted = deleted;
         this.status = status;
@@ -75,6 +75,10 @@ public class InvoiceDetails {
         this.productDetail = productDetail;
     }
 
+    public void setTotalPrice(BigDecimal totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
     public Pets getPet() {
         return pet;
     }
@@ -99,12 +103,16 @@ public class InvoiceDetails {
         this.usageOrQuantity = usageOrQuantity;
     }
 
-    public BigDecimal getPrice() {
-        return price;
+    public BigDecimal getTotalPrice() {
+        return totalPrice;
     }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
+    public String getFormattedTotalPrice() {
+        if (totalPrice == null) {
+            return "N/A"; // Nếu giá là null, trả về chuỗi mặc định
+        }
+        DecimalFormat decimalFormat = new DecimalFormat("#,###"); // Định dạng giá thành 1,000
+        return decimalFormat.format(totalPrice) + " VND"; // Thêm đơn vị "VND"
     }
 
     public Date getCreatedAt() {
@@ -140,15 +148,5 @@ public class InvoiceDetails {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         return dateFormat.format(createdAt);
     }
-
-    // Getter tùy chỉnh: Định dạng giá theo tiền tệ VND
-    public String getFormattedPriceBase() {
-        if (price == null) {
-            return "N/A"; // Nếu giá là null, trả về chuỗi mặc định
-        }
-        DecimalFormat decimalFormat = new DecimalFormat("#,###"); // Định dạng giá thành 1,000
-        return decimalFormat.format(price) + " VND"; // Thêm đơn vị "VND"
-    }
-    
     
 }

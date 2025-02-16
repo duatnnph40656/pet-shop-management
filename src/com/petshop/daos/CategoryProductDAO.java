@@ -35,7 +35,7 @@ public class CategoryProductDAO {
                 + "    c.is_deleted,\n"
                 + "    c.is_status\n"
                 + "FROM \n"
-                + "    [categories] c\n"
+                + "    [category_products] c\n"
                 + "WHERE \n"
                 + "    c.is_deleted = 0 AND c.is_status = 1";
         List<CategoryProducts> list = new ArrayList<>();
@@ -58,7 +58,7 @@ public class CategoryProductDAO {
     }
 
     public boolean addCategoryProduct(CategoryProducts c) {
-        sql = "INSERT INTO categories(category_code, category_name, is_deleted, is_status) VALUES (?,?,?,?)";
+        sql = "INSERT INTO category_products(category_code, category_name, is_deleted, is_status) VALUES (?,?,?,?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, c.getCategoryProductCode());
             ps.setString(2, c.getCategoryProductName());
@@ -73,7 +73,7 @@ public class CategoryProductDAO {
 
     
     public boolean isCategoryNameExists(String categoryName) {
-    sql = "SELECT COUNT(*) FROM categories WHERE category_name = ? AND is_deleted = 0";
+    sql = "SELECT COUNT(*) FROM category_products WHERE category_name = ? AND is_deleted = 0";
     try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setString(1, categoryName);
         rs = ps.executeQuery();

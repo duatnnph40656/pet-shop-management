@@ -81,6 +81,11 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
         model = (DefaultTableModel) tbCategoryProduct.getModel();
         model.setRowCount(0);
         int stt = 1;
+        
+         if (list == null || list.isEmpty()) {
+            return; // Nếu danh sách null hoặc rỗng, thoát khỏi phương thức
+        }
+         
         for (CategoryProducts c : list) {
             model.addRow(new Object[]{
                 stt++, // STT

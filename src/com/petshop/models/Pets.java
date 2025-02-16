@@ -48,6 +48,22 @@ public class Pets {
         this.age = age;
     }
 
+    public Pets(String petCode, String petName, Customers customer, TypePets typePet, String breed, double weight, String color, boolean gender, boolean vaccinated, String owner, String age) {
+        this.petCode = petCode;
+        this.petName = petName;
+        this.customer = customer;
+        this.typePet = typePet;
+        this.breed = breed;
+        this.weight = weight;
+        this.color = color;
+        this.gender = gender;
+        this.vaccinated = vaccinated;
+        this.owner = owner;
+        this.age = age;
+    }
+
+    
+    
     public int getId() {
         return id;
     }

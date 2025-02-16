@@ -5,6 +5,7 @@
 package com.petshop.swing.message;
 
 import com.petshop.event.ConfirmListener;
+import com.petshop.event.ConfirmListenerInput;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -21,11 +22,11 @@ public class DialogInput extends javax.swing.JPanel {
     /**
      * Creates new form DialogInput
      */
-    private ConfirmListener listener;
+    private ConfirmListenerInput listener;
     private int amount;
 
     // Đăng ký ConfirmListener
-    public void setConfirmListener(ConfirmListener listener) {
+    public void setConfirmListener(ConfirmListenerInput listener) {
         this.listener = listener;
     }
 
@@ -33,17 +34,16 @@ public class DialogInput extends javax.swing.JPanel {
         this.amount = amount;
         initComponents();
         setOpaque(false);
-        textField11.setBackground(new Color(0, 0, 0, 0));
-        textField11.setSelectionColor(new Color(48, 170, 63, 200));
-        textField11.setOpaque(false);
+        
         textField11.setText(String.valueOf(amount));
 
         btnOk.addActionListener(evt -> {
             if (listener != null) {
-                listener.onConfirm();
+                int enteredAmount = getEnteredAmount();
+                listener.onConfirm(enteredAmount); // Gửi số lượng đã nhập về listener
             }
-
         });
+
         btnCancel.addActionListener(evt -> {
             if (listener != null) {
                 listener.onCancel();
@@ -52,12 +52,23 @@ public class DialogInput extends javax.swing.JPanel {
         });
     }
 
+    public int getEnteredAmount() {
+        try {
+            return Integer.parseInt(textField11.getText().trim()); // Lấy giá trị từ textField11
+        } catch (NumberFormatException e) {
+            return 0; // Trả về 0 nếu nhập sai định dạng số
+        }
+    }
+
     @Override
     protected void paintComponent(Graphics grphcs) {
         Graphics2D g2 = (Graphics2D) grphcs.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(getBackground());
-        g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 15, 15));
+
+        // Đặt màu nền cho Panel
+        g2.setColor(new Color(255, 255, 255, 230)); // Màu trắng có độ trong suốt nhẹ
+        g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 25, 25)); // Bo góc 25px
+
         g2.dispose();
         super.paintComponent(grphcs);
     }
@@ -82,7 +93,7 @@ public class DialogInput extends javax.swing.JPanel {
         jPanel1.setPreferredSize(new java.awt.Dimension(210, 120));
 
         jLabel1.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
-        jLabel1.setText("Form input");
+        jLabel1.setText("Nhập số lượng");
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-confirm-35.png"))); // NOI18N
 
@@ -109,15 +120,15 @@ public class DialogInput extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnOk, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(15, 15, 15)
-                        .addComponent(jLabel1)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(textField11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

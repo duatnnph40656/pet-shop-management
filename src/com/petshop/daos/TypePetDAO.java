@@ -60,6 +60,29 @@ public class TypePetDAO {
         return false;
     }
 
+    public TypePets getTypePetByName(String typePetName) {
+        String sql = "SELECT id, type_pet_code, type_pet_name, created_at, is_deleted, is_status FROM type_pets WHERE type_pet_name = ? AND is_deleted = 0 AND is_status = 1";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, typePetName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    TypePets t = new TypePets();
+                    t.setId(rs.getInt("id"));
+                    t.setTypePetCode(rs.getString("type_pet_code"));
+                    t.setTypePetName(rs.getString("type_pet_name"));
+                    t.setCreatedAt(rs.getDate("created_at"));
+                    t.setDeleted(rs.getBoolean("is_deleted"));
+                    t.setStatus(rs.getBoolean("is_status"));
+                    return t;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null; // Trả về null nếu không tìm thấy
+    }
+
     public boolean deleteTypePet(int id) {
         String sql = "UPDATE type_pets SET is_deleted = 1 WHERE id = ?";
 
