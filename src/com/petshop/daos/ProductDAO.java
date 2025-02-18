@@ -127,10 +127,22 @@ public class ProductDAO {
     }
     
     public boolean deleteProduct(int id) {
-        String sql = "UPDATE products SET is_deleted = 1 WHERE id = ?";
+        String sql = "UPDATE products SET is_deleted = 1, is_status = 0 WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0; // Trả về true nếu xóa thành công
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false; // Trả về false nếu có lỗi xảy ra
+    }
+    
+    public boolean restoreProduct(int id) {
+        String sql = "UPDATE products SET is_deleted = 0, is_status = 1 WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0; // Trả về true nếu xóa thành công
         } catch (Exception e) {
@@ -144,6 +156,7 @@ public class ProductDAO {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(2, id);
             ps.setBoolean(1, status);
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -4,6 +4,7 @@
  */
 package com.petshop.models;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -17,7 +18,7 @@ public class Pets {
     private Customers customer;
     private TypePets typePet;
     private String breed;
-    private double weight;
+    private BigDecimal weight;
     private String color;
     private boolean gender;
     private boolean vaccinated;
@@ -27,10 +28,7 @@ public class Pets {
     private String owner;
     private String age;
 
-    public Pets() {
-    }
-
-    public Pets(int id, String petCode, String petName, Customers customer, TypePets typePet, String breed, double weight, String color, boolean gender, boolean vaccinated, Date createdAt, boolean deleted, boolean status, String owner, String age) {
+    public Pets(int id, String petCode, String petName, Customers customer, TypePets typePet, String breed, BigDecimal weight, String color, boolean gender, boolean vaccinated, Date createdAt, boolean deleted, boolean status, String owner, String age) {
         this.id = id;
         this.petCode = petCode;
         this.petName = petName;
@@ -48,22 +46,9 @@ public class Pets {
         this.age = age;
     }
 
-    public Pets(String petCode, String petName, Customers customer, TypePets typePet, String breed, double weight, String color, boolean gender, boolean vaccinated, String owner, String age) {
-        this.petCode = petCode;
-        this.petName = petName;
-        this.customer = customer;
-        this.typePet = typePet;
-        this.breed = breed;
-        this.weight = weight;
-        this.color = color;
-        this.gender = gender;
-        this.vaccinated = vaccinated;
-        this.owner = owner;
-        this.age = age;
+    public Pets() {
     }
 
-    
-    
     public int getId() {
         return id;
     }
@@ -112,11 +97,11 @@ public class Pets {
         this.breed = breed;
     }
 
-    public double getWeight() {
+    public BigDecimal getWeight() {
         return weight;
     }
 
-    public void setWeight(double weight) {
+    public void setWeight(BigDecimal weight) {
         this.weight = weight;
     }
 
@@ -183,7 +168,6 @@ public class Pets {
     public void setAge(String age) {
         this.age = age;
     }
-    
-    
+
     
 }

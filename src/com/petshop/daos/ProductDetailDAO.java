@@ -201,6 +201,17 @@ public class ProductDetailDAO {
         }
         return false;
     }
+    
+    public boolean restoreProductDetail(int id) {
+        String sql = "UPDATE product_details SET is_deleted = 0 WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
     public boolean updateProductDetail(int id, ProductDetails productDetail) {
         String sql = "UPDATE product_details SET "

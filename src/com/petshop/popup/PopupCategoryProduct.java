@@ -7,10 +7,13 @@ package com.petshop.popup;
 import com.petshop.daos.CategoryProductDAO;
 import com.petshop.event.ConfirmListener;
 import com.petshop.models.CategoryProducts;
+import com.petshop.models.Products;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogMessageError;
 import com.petshop.swing.message.DialogMessageFail;
 import com.petshop.swing.message.DialogMessageSuccess;
+import com.petshop.swing.table.EventAction;
+import com.petshop.swing.table.ModelAction;
 import com.petshop.ultils.Ultil;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -88,11 +91,29 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
          
         for (CategoryProducts c : list) {
             model.addRow(new Object[]{
+                c.getId(),
                 stt++, // STT
                 c.getCategoryProductCode(),
                 c.getCategoryProductName(),
                 c.getCreatedAt(),
-                c.isStatus() ? "Hoạt động" : "Không hoạt động"
+                c.isStatus() ? "Hoạt động" : "Không hoạt động",
+                new ModelAction<>(c, new EventAction<CategoryProducts>() {
+                        @Override
+                        public void delete(CategoryProducts c) {
+                            showMessageConfirm("Xác nhận xóa sản phẩm?", () -> {
+                                deleteCProduct();
+                            });
+                        }
+
+                        @Override
+                        public void update(CategoryProducts c) {
+
+                        }
+
+                        @Override
+                        public void add(CategoryProducts c) {
+                        }
+                    })
             });
         }
     }
@@ -172,6 +193,20 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
         }
     }
 
+    private int getSelectedRow(){
+        return tbCategoryProduct.getSelectedRow();
+    }
+    
+    private void deleteCProduct(){
+        if(getSelectedRow() == -1){
+            showMessageFail("Vui lòng chọn thông tin để xóa");
+            return;
+        }
+        int id = (int)tbCategoryProduct.getValueAt(getSelectedRow(), 0);
+        categoryDao.deleteCategoryProduct(id);
+        findAll(categoryDao.getListCategoryProduct());
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -220,6 +255,8 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
                 btnThemActionPerformed(evt);
             }
         });
+
+        txtCode.setEnabled(false);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -273,11 +310,11 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
 
             },
             new String [] {
-                "STT", "Mã LSP", "Tên LSP", "Ngày tạo", "Trạng thái", "Thao tác"
+                "", "STT", "Mã LSP", "Tên LSP", "Ngày tạo", "Trạng thái", "Thao tác"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, true, true
+                true, false, false, false, false, true, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -285,6 +322,10 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
             }
         });
         jProduct.setViewportView(tbCategoryProduct);
+        if (tbCategoryProduct.getColumnModel().getColumnCount() > 0) {
+            tbCategoryProduct.getColumnModel().getColumn(0).setMinWidth(0);
+            tbCategoryProduct.getColumnModel().getColumn(0).setMaxWidth(0);
+        }
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);

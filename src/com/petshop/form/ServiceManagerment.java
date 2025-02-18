@@ -50,7 +50,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
     public void init() {
         txtServiceCode.setText("SV" + Ultil.generateRandomCode());
-        getListService(petServiceDAO.getList());
+        getListService(petServiceDAO.getListService());
         loadCBBTypeService(typeServiceDAO.getListTypeS());
         loadCbbFilterTypeService(typeServiceDAO.getListTypeS());
         loadCBBTimeUnit();
@@ -140,12 +140,12 @@ public class ServiceManagerment extends javax.swing.JPanel {
         tPopup.setConfirmListener(new ConfirmListener() {
             @Override
             public void onConfirm() {
-
+                loadCBBTypeService(typeServiceDAO.getListTypeS());
             }
 
             @Override
             public void onCancel() {
-
+                loadCBBTypeService(typeServiceDAO.getListTypeS());
             }
         });
         GlassPanePopup.showPopup(tPopup, "tPopup");
@@ -190,7 +190,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
         List<PetServices> filteredList;
         if (typeServiceId == null || status == true) {
-            filteredList = petServiceDAO.getList();
+            filteredList = petServiceDAO.getListService();
         } else {
             filteredList = petServiceDAO.filterServiceByIdTypeService(typeServiceId, status);
         }
@@ -221,7 +221,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
                 p.getServiceName(),
                 p.getTypeService().getTypeServiceName(),
                 p.getDuration(),
-                p.getTime_unit(),
+                p.getTimeUnit(),
                 p.getFormattedPriceService(),
                 p.getDescribeService(),
                 p.getFormattedCreatedAt(),
@@ -261,7 +261,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         p.setTypeService(t);
 
         String timeDuration = cbbTimeUnit.getSelectedItem().toString();
-        p.setTime_unit(timeDuration);
+        p.setTimeUnit(timeDuration);
 
         p.setDeleted(false);
         p.setStatus(true);
@@ -281,7 +281,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         p.setTypeService(t);
 
         String timeDuration = cbbTimeUnit.getSelectedItem().toString();
-        p.setTime_unit(timeDuration);
+        p.setTimeUnit(timeDuration);
         return p;
     }
 
@@ -467,7 +467,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         }
         if (petServiceDAO.insertPetService(readForm())) {
             showMessageSuccess("Thêm thành công!!");
-            getListService(petServiceDAO.getList());
+            getListService(petServiceDAO.getListService());
             resetFormService();
         } else {
             showMessageFail("Thêm thất bại!!");
@@ -480,7 +480,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
             int id = p.getId();
             petServiceDAO.deletePetService(id);
             showMessageSuccess("Xóa thành công!");
-            getListService(petServiceDAO.getList());
+            getListService(petServiceDAO.getListService());
         } else {
             showMessageFail("Xóa thất bại!");
         }
@@ -494,7 +494,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         int id = (int) tbService.getValueAt(selectedRow, 0);
         if (petServiceDAO.updatePetService(id, readFormUpdate())) {
             showMessageSuccess("Cập nhập thành công!");
-            getListService(petServiceDAO.getList());
+            getListService(petServiceDAO.getListService());
         } else {
             showMessageFail("Cập nhập thất bại!!!");
         }
@@ -506,7 +506,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         int id = (int) tbService.getValueAt(selectRow, 0);
         boolean status = tbService.getValueAt(selectRow, 10).equals("Tạm ngưng");
         petServiceDAO.updateStatusService(id, status);
-        getListService(petServiceDAO.getList());
+        getListService(petServiceDAO.getListService());
     }
 
     public void searchServiceByName(String keyword) {
@@ -610,21 +610,22 @@ public class ServiceManagerment extends javax.swing.JPanel {
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel8Layout.createSequentialGroup()
                         .addComponent(txtServiceCode, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(txtServiceName, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
+                        .addComponent(txtServiceName, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
+                        .addComponent(cbbTypeService, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(button2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel8Layout.createSequentialGroup()
                         .addComponent(txtDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(7, 7, 7)
                         .addComponent(cbbTimeUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel8Layout.createSequentialGroup()
-                        .addComponent(cbbTypeService, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(button2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(30, 30, 30)
-                        .addComponent(txtPriceService, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(txtPriceService, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addComponent(textAreaScroll1, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
                 .addContainerGap())
@@ -641,12 +642,17 @@ public class ServiceManagerment extends javax.swing.JPanel {
                                 .addComponent(txtServiceCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(txtServiceName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(txtDuration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(txtPriceService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(button2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(cbbTypeService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(jPanel8Layout.createSequentialGroup()
+                                    .addGap(18, 18, 18)
+                                    .addComponent(txtPriceService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(button2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanel8Layout.createSequentialGroup()
+                                .addGap(22, 22, 22)
+                                .addComponent(cbbTypeService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(textAreaScroll1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -815,9 +821,9 @@ public class ServiceManagerment extends javax.swing.JPanel {
                         .addComponent(cbbFilterStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(cbbFilterTypeService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(txtSearchService, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 2, Short.MAX_VALUE)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 357, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(20, 20, 20))
         );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -838,7 +844,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(30, Short.MAX_VALUE))
+                .addContainerGap(41, Short.MAX_VALUE))
         );
 
         materialTabbed1.addTab("Quản lý dịch vụ", jPanel2);

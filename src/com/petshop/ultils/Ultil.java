@@ -32,14 +32,17 @@ import com.itextpdf.layout.property.UnitValue;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 /**
@@ -47,6 +50,14 @@ import java.util.Random;
  * @author duat
  */
 public class Ultil {
+
+    public static String formatCurrency(BigDecimal amount) {
+        if (amount == null) {
+            return "0 VND";
+        }
+        NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+        return formatter.format(amount);
+    }
 
     public static String generateRandomCode() {
         int length = 5; // Độ dài mã sản phẩm
@@ -159,7 +170,7 @@ public class Ultil {
             PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
             PdfFont boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
-            
+
             // Tiêu đề hóa đơn
             Paragraph title = new Paragraph("INVOICE").setFont(boldFont).setFontSize(16).setTextAlignment(TextAlignment.CENTER);
             document.add(title);

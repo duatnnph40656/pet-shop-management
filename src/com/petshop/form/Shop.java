@@ -9,6 +9,8 @@ import com.petshop.daos.CustomerDAO;
 import com.petshop.daos.EmployeeDAO;
 import com.petshop.daos.InvoiceDAO;
 import com.petshop.daos.InvoiceDetailDAO;
+import com.petshop.daos.PetDAO;
+import com.petshop.daos.PetServiceDAO;
 import com.petshop.daos.ProductDAO;
 import com.petshop.daos.ProductDetailDAO;
 import com.petshop.event.ConfirmListener;
@@ -19,8 +21,10 @@ import com.petshop.models.Employees;
 import com.petshop.models.InvoiceDetails;
 import com.petshop.models.Invoices;
 import com.petshop.models.PetServices;
+import com.petshop.models.Pets;
 import com.petshop.models.ProductDetails;
 import com.petshop.popup.PopupCustomer;
+import com.petshop.popup.PopupService;
 import com.petshop.services.RememberMeService;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogInput;
@@ -53,6 +57,8 @@ public class Shop extends javax.swing.JPanel {
     private final InvoiceDetailDAO invoiceDetailDAO;
     private final CustomerDAO customerDAO;
     private final EmployeeDAO employeeDAO;
+    private final PetServiceDAO petServiceDAO;
+    private final PetDAO petDAO;
     private RememberMeService rememberMeService;
 
     public Shop() {
@@ -67,6 +73,8 @@ public class Shop extends javax.swing.JPanel {
         invoiceDetailDAO = new InvoiceDetailDAO();
         customerDAO = new CustomerDAO();
         employeeDAO = new EmployeeDAO();
+        petServiceDAO = new PetServiceDAO();
+        petDAO = new PetDAO();
         rememberMeService = new RememberMeService();
         loadCbbPaymen();
         init();
@@ -74,6 +82,7 @@ public class Shop extends javax.swing.JPanel {
 
     public void init() {
         getListProductDetail(productDetailDAO.getListProductDetail());
+        getListService(petServiceDAO.getListService());
         getListInvoice(invoiceDAO.getListInvoice());
         resetForm();
     }
@@ -134,8 +143,24 @@ public class Shop extends javax.swing.JPanel {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="{Popup...">
+    private void showPopupService(PetServices p) {
+        PopupService poup = new PopupService();
+        poup.setServiceCode(p.getServiceCode());
+        poup.setConfirmListener(new ConfirmListener() {
+            @Override
+            public void onConfirm() {
+                addServiceToInvoiceD(p, 1, poup.getPetCode());
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+        GlassPanePopup.showPopup(poup, "pPet");
+    }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="{CBB...">
     public void loadCbbPaymen() {
         cbbPayment.removeAllItems();
@@ -143,7 +168,7 @@ public class Shop extends javax.swing.JPanel {
         cbbPayment.addItem("Thanh toán qua banking");
         cbbPayment.setSelectedIndex(-1);
     }
-//</editor-fold>
+    //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="{ProductDetail...">
     public void getListProductDetail(List<ProductDetails> list) {
@@ -163,7 +188,7 @@ public class Shop extends javax.swing.JPanel {
                     p.getWeight() + "KG",
                     p.getFormattedProductionDate(),
                     p.getExpirydate() + " Tháng",
-                    p.getFormattedPriceBase(),
+                    Ultil.formatCurrency(p.getPrice()),
                     p.isStatus() ? "Còn hàng" : "Hết hàng",
                     new ModelAction<>(p, new EventAction<ProductDetails>() {
                         @Override
@@ -190,9 +215,8 @@ public class Shop extends javax.swing.JPanel {
 
         }
     }
-
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="{Invoice...">
     public void getListInvoice(List<Invoices> list) {
         int stt = 1;
@@ -204,7 +228,7 @@ public class Shop extends javax.swing.JPanel {
                 i.getInvoiceCode(),
                 i.getCustomer().getCustomerName(),
                 i.getEmployee().getEmployeeName(),
-                i.getFormattedTotalPrice(),
+                Ultil.formatCurrency(i.getTotalPrice()),
                 i.isPaymentStatus() ? "Đã thanh toán" : "Chưa thanh toán",});
             stt++;
         }
@@ -224,8 +248,10 @@ public class Shop extends javax.swing.JPanel {
 
     public void showDataInvoice() {
         lbCustomerCode.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 2));
-        lbCustomerName.setText((String)tbInvoice.getValueAt(getSelectedRowInvoice(), 3));
+        lbCustomerName.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 3));
         lbTotalPrice.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 5));
+        lbTotalPrice1.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 5));
+
     }
 
     public void resetForm() {
@@ -291,18 +317,26 @@ public class Shop extends javax.swing.JPanel {
     }
 
     public void updateToTalPriceInvoice(int id) {
-        int selectedRow = tbInvoice.getSelectedRow(); // Lưu dòng đang chọn
+        int selectedRow = getSelectedRowInvoice(); // Lưu dòng đang chọn
         Integer selectedId = null;
         BigDecimal totalPrice = null;
 
         if (selectedRow >= 0) {
-            selectedId = (Integer) tbInvoice.getValueAt(selectedRow, 0); // Lưu ID hóa đơn
+            selectedId = getIdSelectedInvoice(); // Lưu ID hóa đơn
             Object priceObj = tbInvoice.getValueAt(selectedRow, 5); // Lấy giá trị từ cột 5 (total price)
 
             if (priceObj instanceof BigDecimal) {
                 totalPrice = (BigDecimal) priceObj;
             } else if (priceObj instanceof Number) {
                 totalPrice = BigDecimal.valueOf(((Number) priceObj).doubleValue());
+            } else if (priceObj instanceof String) {
+                try {
+                    // Xóa mọi ký tự không phải số
+                    String priceStr = ((String) priceObj).replaceAll("[^\\d]", "").trim();
+                    totalPrice = new BigDecimal(priceStr);
+                } catch (NumberFormatException e) {
+                    System.out.println("Lỗi chuyển đổi totalPrice: " + priceObj);
+                }
             } else {
                 System.out.println("Giá trị totalPrice không hợp lệ: " + priceObj);
             }
@@ -314,6 +348,11 @@ public class Shop extends javax.swing.JPanel {
         // Set lb total price
         // Cập nhật lại danh sách hóa đơn trên bảng
         getListInvoice(invoiceDAO.getListInvoice());
+
+        Object priceObj = tbInvoice.getValueAt(selectedRow, 5);
+
+        lbTotalPrice.setText(priceObj.toString());
+        lbTotalPrice1.setText(priceObj.toString());
 
         // Nếu có ID hóa đơn đã chọn trước đó, tìm lại và chọn nó
         if (selectedId != null) {
@@ -332,7 +371,6 @@ public class Shop extends javax.swing.JPanel {
             tbInvoice.scrollRectToVisible(tbInvoice.getCellRect(0, 0, true));
         }
     }
-
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="{InvoiceDetail...">
@@ -340,15 +378,31 @@ public class Shop extends javax.swing.JPanel {
         int stt = 1;
         tbInvoiceDetail.setRowCount(0);
         for (InvoiceDetails i : list) {
+            String name = (i.getProductDetail() != null && i.getProductDetail().getProductDetailName() != null)
+                    ? i.getProductDetail().getProductDetailName()
+                    : (i.getPetService() != null ? i.getPetService().getServiceName() : "N/A");
+
+            String code = (i.getProductDetail() != null && i.getProductDetail().getProductDetailCode() != null)
+                    ? i.getProductDetail().getProductDetailCode()
+                    : (i.getPetService() != null ? i.getPetService().getServiceCode() : "N/A");
+            String petName = (i.getPet() != null) ? i.getPet().getPetName() : "N/A";
+
+            BigDecimal price = (i.getProductDetail() != null && i.getProductDetail().getPrice() != null)
+                    ? i.getProductDetail().getPrice()
+                    : (i.getPetService() != null && i.getPetService().getPriceService() != null)
+                    ? i.getPetService().getPriceService()
+                    : BigDecimal.ZERO; // Nếu không có giá thì để là 0
+
             tbInvoiceDetail.addRow(new Object[]{
                 i.getId(),
                 stt,
                 i.getInvoiceDetailCode(),
-                i.getProductDetail().getProductDetailCode(),
-                i.getProductDetail().getProductDetailName(),
+                code,
+                name,
                 i.getUsageOrQuantity(),
-                i.getProductDetail().getFormattedPriceBase(),
-                i.getFormattedTotalPrice(),
+                Ultil.formatCurrency(price),
+                Ultil.formatCurrency(i.getTotalPrice()),
+                petName == null ? "N/A" : petName,
                 new ModelAction<>(i, new EventAction<InvoiceDetails>() {
                     @Override
                     public void delete(InvoiceDetails i) {
@@ -359,7 +413,7 @@ public class Shop extends javax.swing.JPanel {
 
                     @Override
                     public void update(InvoiceDetails i) {
-                        showInputDialog(1, inputAmount -> { // Gọi form nhập số lượng, mặc định là 1
+                        showInputDialog(1, inputAmount -> {
                             updateQuantityInvoiceDetail(i, inputAmount);
                         });
                     }
@@ -374,6 +428,18 @@ public class Shop extends javax.swing.JPanel {
         }
     }
 
+    private int getSelectedInvoiceD() {
+        return tbInvoiceDetail.getSelectedRow();
+    }
+
+    private Integer getIdInvoiceD() {
+        int selectedRow = getSelectedInvoiceD();
+        if (selectedRow == -1) {
+            return null; // Không có dòng nào được chọn
+        }
+        return (Integer) tbInvoiceDetail.getValueAt(selectedRow, 0);
+    }
+
     public void updateQuantityInvoiceDetail(InvoiceDetails detail, int amount) {
         if (amount < 1) {
             showMessageFail("Số lượng không được nhỏ hơn 1");
@@ -381,9 +447,15 @@ public class Shop extends javax.swing.JPanel {
             return;
         }
         int id = detail.getId();
-        BigDecimal totalPrice = detail.getProductDetail().getPrice().multiply(BigDecimal.valueOf(amount));
+        BigDecimal totalPrice = BigDecimal.ZERO; // Đặt giá trị mặc định là 0
 
-        // Cập nhật số lượng và tổng tiền của InvoiceDetail trước
+        if (detail.getProductDetail() != null && detail.getProductDetail().getPrice() != null) {
+            totalPrice = detail.getProductDetail().getPrice().multiply(BigDecimal.valueOf(amount));
+        } else if (detail.getPetService() != null && detail.getPetService().getPriceService() != null) {
+            totalPrice = detail.getPetService().getPriceService().multiply(BigDecimal.valueOf(amount));
+        }
+
+// Cập nhật số lượng và tổng tiền của InvoiceDetail trước
         invoiceDetailDAO.updateUsageOrQuantityAndTprice(id, amount, totalPrice);
 
         // Sau khi dữ liệu đã thay đổi, cập nhật tổng tiền của Invoice
@@ -398,11 +470,11 @@ public class Shop extends javax.swing.JPanel {
         // Xóa chi tiết hóa đơn trước
         invoiceDetailDAO.deleteInvoiceDetail(i.getId());
 
-        int selectedRow = tbInvoice.getSelectedRow(); // Lưu dòng đang chọn
+        // Lưu dòng đang chọn
         Integer selectedId = null;
 
-        if (selectedRow >= 0) {
-            selectedId = (Integer) tbInvoice.getValueAt(selectedRow, 0); // Lưu ID hóa đơn
+        if (getSelectedInvoiceD() >= 0) {
+            selectedId = getIdSelectedInvoice(); // Lưu ID hóa đơn
         }
 
         // Sau đó cập nhật tổng tiền của hóa đơn chính xác
@@ -413,12 +485,12 @@ public class Shop extends javax.swing.JPanel {
     }
 
     public void showInvoiceDetailByIdInvoice() {
-        int selectedRow = tbInvoice.getSelectedRow();
-        if (selectedRow == -1) { // Kiểm tra xem có hàng nào được chọn không
+        if (getSelectedRowInvoice() == -1) {
+            showMessageFail("Bạn chưa chọn hóa đơn!!");// Kiểm tra xem có hàng nào được chọn không
             return;
         }
 
-        int id = (int) tbInvoice.getValueAt(selectedRow, 0); // Lấy ID hóa đơn
+        int id = getIdSelectedInvoice(); // Lấy ID hóa đơn
 
         List<InvoiceDetails> list = invoiceDetailDAO.getInvoiceDetailsByInvoiceId(id);
         getListInvoiceDetail(list); // Load dữ liệu lên bảng
@@ -429,8 +501,7 @@ public class Shop extends javax.swing.JPanel {
 
         detail.setInvoiceDetailCode("HDCT" + Ultil.generateRandomCode()); // Tạo mã hóa đơn chi tiết tự động
 
-        int selectRow = tbInvoice.getSelectedRow();
-        int id = (int) tbInvoice.getValueAt(selectRow, 0);
+        int id = getIdSelectedInvoice(); // Lấy ID hóa đơn
         Invoices invoice = invoiceDAO.getInvoiceById(id);
 
         detail.setInvoice(invoice);
@@ -444,14 +515,13 @@ public class Shop extends javax.swing.JPanel {
     }
 
     public void insertPToInvoiceD(ProductDetails p, int inputAmount) {
-        int selectedRow = tbInvoice.getSelectedRow();
-        if (selectedRow == -1) {
+        if (getSelectedRowInvoice() == -1) {
             showMessageFail("Vui lòng chọn hóa đơn!!");
             GlassPanePopup.closePopup("pInput");
             return;
         }
 
-        int id = (int) tbInvoice.getValueAt(selectedRow, 0); // Lấy ID hóa đơn
+        int id = getIdSelectedInvoice(); // Lấy ID hóa đơn
         InvoiceDetails existingDetail = invoiceDetailDAO.getInvoiceDetailByProductDetailId(id, p.getId());
 
         boolean isUpdatedOrInserted = false;
@@ -490,9 +560,8 @@ public class Shop extends javax.swing.JPanel {
     public void clearInvoiceDetailTable() {
         tbInvoiceDetail.setRowCount(0); // Xóa toàn bộ dữ liệu trong bảng invoiceDetail
     }
-
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="{Customers...">
     public Customers readFormCustomer() {
 
@@ -523,6 +592,95 @@ public class Shop extends javax.swing.JPanel {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="{PetService...">
+    private void getListService(List<PetServices> list) {
+        int stt = 1;
+        tbService.setRowCount(0);
+        for (PetServices p : list) {
+            tbService.addRow(new Object[]{
+                p.getId(),
+                stt,
+                p.getServiceCode(),
+                p.getServiceName(),
+                ">= " + p.getDuration(),
+                p.getTimeUnit(),
+                p.getFormattedPriceService(),
+                p.isStatus() ? "Hoạt động" : "Ngưng nhận",
+                new ModelAction<>(p, new EventAction<PetServices>() {
+                    @Override
+                    public void delete(PetServices p) {
+
+                    }
+
+                    @Override
+                    public void update(PetServices p) {
+
+                    }
+
+                    @Override
+                    public void add(PetServices model) {
+                        showPopupService(model);
+                    }
+                })
+            });
+            stt++;
+        }
+    }
+
+    public void addServiceToInvoiceD(PetServices p, int inputAmount, String petCode) {
+        if (getSelectedRowInvoice() == -1) {
+            showMessageFail("Vui lòng chọn hóa đơn!!");
+            GlassPanePopup.closePopup("pInput");
+            return;
+        }
+
+        int id = getIdSelectedInvoice(); // Lấy ID hóa đơn
+
+        Pets c = petDAO.getPetByCode(petCode);
+
+        if (c == null) {
+            showMessageFail("Bạn chưa chọn thông tin pet");
+            return;
+        }
+
+        InvoiceDetails existingDetail = invoiceDetailDAO.getInvoiceDetailByServiceId(id, p.getId(), c.getId());
+
+        boolean isUpdatedOrInserted = false;
+
+        if (existingDetail != null) {
+            int newQuantity = existingDetail.getUsageOrQuantity() + inputAmount;
+            BigDecimal totalPrice = p.getPriceService().multiply(BigDecimal.valueOf(newQuantity));
+
+            // Cập nhật số lượng và tổng tiền trước
+            isUpdatedOrInserted = invoiceDetailDAO.updateUsageOrQuantityAndTprice(existingDetail.getId(), newQuantity, totalPrice);
+
+        } else { // Nếu chưa tồn tại, thêm mới
+            InvoiceDetails detail = new InvoiceDetails();
+            detail.setInvoiceDetailCode("HDCT" + Ultil.generateRandomCode());
+            detail.setTotalPrice(p.getPriceService().multiply(BigDecimal.valueOf(inputAmount)));
+
+            Invoices i = new Invoices();
+            i.setId(id);
+            detail.setInvoice(i);
+            detail.setPetService(p);
+            detail.setPet(c);
+            detail.setUsageOrQuantity(inputAmount);
+
+            // Chèn dữ liệu trước
+            isUpdatedOrInserted = invoiceDetailDAO.insertInvoiceDetailService(detail);
+        }
+
+        if (isUpdatedOrInserted) {
+            // Sau khi cập nhật hoặc thêm sản phẩm, mới cập nhật tổng tiền
+            this.updateToTalPriceInvoice(id);
+            showInvoiceDetailByIdInvoice();
+            GlassPanePopup.closePopup("pPet");
+        } else {
+            System.out.println("Thêm dịch vụ thất bại!");
+        }
+    }
+
+    //</editor-fold>
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -532,7 +690,6 @@ public class Shop extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel3 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -580,17 +737,6 @@ public class Shop extends javax.swing.JPanel {
         comboboxRounded3 = new com.petshop.swing.combobox.ComboboxRounded();
         jScrollPane4 = new javax.swing.JScrollPane();
         tbService = new com.petshop.swing.tableMore.TableMore();
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 100, Short.MAX_VALUE)
-        );
 
         setMaximumSize(new java.awt.Dimension(1058, 741));
         setPreferredSize(new java.awt.Dimension(1058, 741));
@@ -849,13 +995,13 @@ public class Shop extends javax.swing.JPanel {
 
         tbInvoiceDetail.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "STT", "Mã HDCT", "Mã SP", "Tên SP", "Số lượng", "Giá bán", "Tổng giá", "Thao tác"
+                "", "STT", "Mã HDCT", "Mã SP or SV", "Tên SP or SV", "SL", "Giá bán or Giá SV", "Tổng giá", "Thông tin khác", "Thao tác"
             }
         ));
         jScrollPane2.setViewportView(tbInvoiceDetail);
@@ -864,6 +1010,14 @@ public class Shop extends javax.swing.JPanel {
             tbInvoiceDetail.getColumnModel().getColumn(0).setMaxWidth(0);
             tbInvoiceDetail.getColumnModel().getColumn(1).setMinWidth(40);
             tbInvoiceDetail.getColumnModel().getColumn(1).setMaxWidth(40);
+            tbInvoiceDetail.getColumnModel().getColumn(2).setMinWidth(80);
+            tbInvoiceDetail.getColumnModel().getColumn(2).setMaxWidth(80);
+            tbInvoiceDetail.getColumnModel().getColumn(3).setMinWidth(80);
+            tbInvoiceDetail.getColumnModel().getColumn(3).setMaxWidth(80);
+            tbInvoiceDetail.getColumnModel().getColumn(4).setMinWidth(200);
+            tbInvoiceDetail.getColumnModel().getColumn(4).setMaxWidth(200);
+            tbInvoiceDetail.getColumnModel().getColumn(5).setMinWidth(40);
+            tbInvoiceDetail.getColumnModel().getColumn(5).setMaxWidth(40);
         }
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
@@ -924,6 +1078,8 @@ public class Shop extends javax.swing.JPanel {
             tbProductDetail.getColumnModel().getColumn(0).setMaxWidth(0);
             tbProductDetail.getColumnModel().getColumn(1).setMinWidth(40);
             tbProductDetail.getColumnModel().getColumn(1).setMaxWidth(40);
+            tbProductDetail.getColumnModel().getColumn(2).setMinWidth(180);
+            tbProductDetail.getColumnModel().getColumn(2).setMaxWidth(180);
         }
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -980,16 +1136,22 @@ public class Shop extends javax.swing.JPanel {
 
         tbService.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "", "STT", "Mã DV", "Tên DV", "Thời gian", "Đơn vị thời gian", "Giá DV", "Trạng thái", "Thao tác"
             }
         ));
         jScrollPane4.setViewportView(tbService);
+        if (tbService.getColumnModel().getColumnCount() > 0) {
+            tbService.getColumnModel().getColumn(0).setMinWidth(0);
+            tbService.getColumnModel().getColumn(0).setMaxWidth(0);
+            tbService.getColumnModel().getColumn(4).setMinWidth(80);
+            tbService.getColumnModel().getColumn(4).setMaxWidth(80);
+        }
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
@@ -1134,7 +1296,6 @@ public class Shop extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;

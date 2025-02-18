@@ -7,6 +7,7 @@ package com.petshop.daos;
 import com.petshop.connect.DBConnect;
 import com.petshop.models.PetServices;
 import com.petshop.models.TypeServices;
+import java.security.Provider;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ public class PetServiceDAO {
         conn = DBConnect.getConnection();
     }
 
-    public List<PetServices> getList() {
+    public List<PetServices> getListService() {
         String sql = "SELECT\n"
                 + "    sd.id,\n"
                 + "    sd.service_code,\n"
@@ -36,8 +37,8 @@ public class PetServiceDAO {
                 + "    sd.is_status,\n"
                 + "    sd.duration,\n"
                 + "    sd.time_unit\n"
-                + "FROM PETSHOP.dbo.service_details sd\n"
-                + "JOIN PETSHOP.dbo.type_services ts ON sd.id_service_type = ts.id\n"
+                + "FROM service_details sd\n"
+                + "JOIN type_services ts ON sd.id_service_type = ts.id\n"
                 + "WHERE sd.is_deleted = 0;";
         List<PetServices> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
@@ -62,7 +63,7 @@ public class PetServiceDAO {
             ps.setBoolean(6, petService.isDeleted());
             ps.setBoolean(7, petService.isStatus());
             ps.setInt(8, petService.getDuration());
-            ps.setString(9, petService.getTime_unit());
+            ps.setString(9, petService.getTimeUnit());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -78,7 +79,7 @@ public class PetServiceDAO {
             ps.setBigDecimal(3, petService.getPriceService());
             ps.setString(4, petService.getDescribeService());
             ps.setInt(5, petService.getDuration());
-            ps.setString(6, petService.getTime_unit());
+            ps.setString(6, petService.getTimeUnit());
             ps.setInt(7, id);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -111,8 +112,8 @@ public class PetServiceDAO {
                 + "    sd.is_status,\n"
                 + "    sd.duration,\n"
                 + "    sd.time_unit\n"
-                + "FROM PETSHOP.dbo.service_details sd\n"
-                + "JOIN PETSHOP.dbo.type_services ts ON sd.id_service_type = ts.id\n"
+                + "FROM service_details sd\n"
+                + "JOIN type_services ts ON sd.id_service_type = ts.id\n"
                 + "WHERE (sd.service_name LIKE ? OR sd.service_code LIKE ?) AND sd.is_deleted = 0";
 
         List<PetServices> list = new ArrayList<>();
@@ -127,6 +128,25 @@ public class PetServiceDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public PetServices getPetServiceByCode(String code) {
+        String sql = "SELECT id, service_code, service_name FROM service_details WHERE service_code = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code); // Đặt giá trị tham số trước khi thực thi truy vấn
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) { // Sử dụng if thay vì while vì chỉ cần lấy 1 kết quả
+                    PetServices p = new PetServices();
+                    p.setId(rs.getInt("id"));
+                    p.setServiceCode(rs.getString("service_code"));
+                    p.setServiceName(rs.getString("service_name"));
+                    return p;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public List<PetServices> searchByTypeServiceId(int typeServiceId) {
@@ -169,8 +189,8 @@ public class PetServiceDAO {
                 + "    sd.is_status, "
                 + "    sd.duration, "
                 + "    sd.time_unit "
-                + "FROM PETSHOP.dbo.service_details sd "
-                + "JOIN PETSHOP.dbo.type_services ts ON sd.id_service_type = ts.id "
+                + "FROM service_details sd "
+                + "JOIN type_services ts ON sd.id_service_type = ts.id "
                 + "WHERE sd.id_service_type = ? AND sd.is_status = ? AND sd.is_deleted = 0";
 
         List<PetServices> list = new ArrayList<>();
@@ -213,7 +233,7 @@ public class PetServiceDAO {
 
         p.setPriceService(rs.getBigDecimal("price_service"));
         p.setDuration(rs.getInt("duration"));
-        p.setTime_unit(rs.getString("time_unit"));
+        p.setTimeUnit(rs.getString("time_unit"));
         p.setDescribeService(rs.getString("describe_service"));
         p.setCreatedAt(rs.getDate("created_at"));
         p.setDeleted(rs.getBoolean("is_deleted"));

@@ -11,6 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.swing.JFrame;
+import javax.swing.JLayeredPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -37,6 +39,7 @@ public final class DateChooser extends javax.swing.JPanel {
 
     public DateChooser() {
         initComponents();
+        popup.setLightWeightPopupEnabled(false);
         execute();
     }
 
@@ -208,6 +211,7 @@ public final class DateChooser extends javax.swing.JPanel {
     public void showPopup() {
         popup.show(textRefernce, 0, textRefernce.getHeight());
     }
+
 
     public void hidePopup() {
         popup.setVisible(false);
