@@ -37,7 +37,7 @@ public class ProductDAO {
                 + "FROM \n"
                 + "    [products] p\n"
                 + "JOIN \n"
-                + "    [category_products] c\n"
+                + "    [categories] c\n"
                 + "ON \n"
                 + "    p.id_category = c.id\n"
                 + "WHERE \n"

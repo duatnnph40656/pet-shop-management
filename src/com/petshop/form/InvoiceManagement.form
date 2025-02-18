@@ -567,6 +567,7 @@
                                   <Component id="lblKhachHang" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="txtSerch" min="-2" pref="230" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="471" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="lblKhachHang1" min="-2" max="-2" attributes="0"/>
@@ -578,13 +579,12 @@
                                   <Component id="cbbTrangThai1" min="-2" pref="79" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="lblKhachHang3" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="32767" attributes="0"/>
+                                  <Component id="lblKhachHang4" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="153" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace min="-2" pref="288" max="-2" attributes="0"/>
-                          <Component id="lblKhachHang4" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="152" max="-2" attributes="0"/>
                           <Component id="btnDeleteHistory" min="-2" pref="91" max="-2" attributes="0"/>
-                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="lblKhachHang5" min="-2" max="-2" attributes="0"/>
@@ -596,7 +596,7 @@
                           <Component id="btnDeleteHistory5" min="-2" pref="83" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                           <Component id="lblKhachHang7" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="76" max="32767" attributes="0"/>
                           <Component id="btnDeleteHistory6" min="-2" pref="83" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="btnDeleteHistory7" min="-2" pref="83" max="-2" attributes="0"/>
@@ -628,15 +628,13 @@
                               <Component id="txtSerch" alignment="3" min="-2" pref="42" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="lblKhachHang4" min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="cbbTrangThai" alignment="3" min="-2" pref="30" max="-2" attributes="0"/>
-                                  <Component id="lblKhachHang1" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="cbbTrangThai1" alignment="3" min="-2" pref="30" max="-2" attributes="0"/>
-                                  <Component id="lblKhachHang2" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="lblKhachHang3" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="cbbTrangThai" alignment="3" min="-2" pref="30" max="-2" attributes="0"/>
+                              <Component id="lblKhachHang1" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="cbbTrangThai1" alignment="3" min="-2" pref="30" max="-2" attributes="0"/>
+                              <Component id="lblKhachHang2" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="lblKhachHang3" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="lblKhachHang4" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>

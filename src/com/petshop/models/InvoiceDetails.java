@@ -25,6 +25,35 @@ public class InvoiceDetails {
     public Date createdAt;
     public boolean deleted;
     public boolean status;
+    private String productOrServiceName;
+    private String productOrServiceCode;
+    public BigDecimal total;
+    public String duration;
+    public BigDecimal price;
+
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
+
+    public String getDuration() {
+        return duration;
+    }
+
+    public void setDuration(String duration) {
+        this.duration = duration;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
 
     public InvoiceDetails() {
     }
@@ -41,6 +70,22 @@ public class InvoiceDetails {
         this.createdAt = createdAt;
         this.deleted = deleted;
         this.status = status;
+    }
+
+    public String getProductOrServiceName() {
+        return productOrServiceName;
+    }
+
+    public void setProductOrServiceName(String productOrServiceName) {
+        this.productOrServiceName = productOrServiceName;
+    }
+
+    public String getProductOrServiceCode() {
+        return productOrServiceCode;
+    }
+
+    public void setProductOrServiceCode(String productOrServiceCode) {
+        this.productOrServiceCode = productOrServiceCode;
     }
 
     public int getId() {
