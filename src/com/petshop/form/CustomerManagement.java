@@ -794,7 +794,6 @@ public class CustomerManagement extends javax.swing.JPanel {
         this.txtEmail.setText(email);
         this.txtNgayTao.setText(ngayTao);
         if (trangThai.equals("Đã kích hoạt")) {
-            System.out.println(trangThai);
             this.rdoActive.setSelected(true);
         } else {
             this.rdoInActive.setSelected(true);
