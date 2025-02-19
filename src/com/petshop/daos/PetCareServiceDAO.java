@@ -25,26 +25,29 @@ public class PetCareServiceDAO {
     }
 
     public List<PetCareServices> getListPetCareService() {
-        List<PetCareServices> list = new ArrayList<>();
-        String sql = "SELECT pcs.*, p.id AS pet_id, p.pet_name, p.pet_code, "
-                + "s.service_name FROM pet_care_services pcs "
-                + "JOIN pets p ON pcs.pet_id = p.id "
-                + "JOIN service_details s ON pcs.service_id = s.id";
+    List<PetCareServices> list = new ArrayList<>();
+    String sql = "SELECT pcs.id, pcs.pet_id, pcs.service_id, pcs.service_start, pcs.service_end, "
+               + "pcs.actual_end, pcs.notes, pcs.created_at, pcs.is_status, "
+               + "p.pet_name, p.pet_code, p.breed, "
+               + "s.service_code, s.service_name "
+               + "FROM pet_care_services pcs "
+               + "JOIN pets p ON pcs.pet_id = p.id "
+               + "JOIN service_details s ON pcs.service_id = s.id";
 
-        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                list.add(mapResult(rs));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+            list.add(mapResult(rs));
         }
-
-        return list;
+    } catch (Exception e) {
+        e.printStackTrace();
     }
 
+    return list;
+}
+
+
     public boolean insertPetCareService(PetCareServices service) {
-        String sql = "INSERT INTO pet_care_services (pet_id, service_id, service_start, service_end, notes, created_at, is_status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO pet_care_services (pet_id, service_id, service_start, service_end, notes, created_at, is_deleted,is_status) VALUES (?, ?, ?, ?, ?, ?, 0,?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, service.getPet().getId());
@@ -66,13 +69,14 @@ public class PetCareServiceDAO {
         p.setId(rs.getInt("id"));
 
         PetServices s = new PetServices();
+        s.setServiceCode(rs.getString("service_code"));
         s.setServiceName(rs.getString("service_name"));
         p.setPetS(s);
 
         Pets e = new Pets();
-        e.setId(rs.getInt("id"));
-        e.setPetName("pet_name");
-        e.setPetCode("pet_code");
+        e.setPetName(rs.getString("pet_name"));
+        e.setPetCode(rs.getString("pet_code"));
+        e.setBreed(rs.getString("breed"));
         p.setPet(e);
 
         p.setDateStart(rs.getDate("service_start"));

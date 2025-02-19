@@ -13,6 +13,7 @@ import com.petshop.daos.PetDAO;
 import com.petshop.daos.PetServiceDAO;
 import com.petshop.daos.ProductDAO;
 import com.petshop.daos.ProductDetailDAO;
+import com.petshop.daos.TypePetDAO;
 import com.petshop.event.ConfirmListener;
 import com.petshop.event.ConfirmListenerInput;
 import com.petshop.main.Main;
@@ -23,6 +24,8 @@ import com.petshop.models.Invoices;
 import com.petshop.models.PetServices;
 import com.petshop.models.Pets;
 import com.petshop.models.ProductDetails;
+import com.petshop.models.Products;
+import com.petshop.models.TypePets;
 import com.petshop.popup.PopupCustomer;
 import com.petshop.popup.PopupService;
 import com.petshop.services.RememberMeService;
@@ -37,6 +40,7 @@ import com.petshop.swing.table.ModelImage;
 import com.petshop.ultils.Ultil;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.JOptionPane;
@@ -53,6 +57,7 @@ public class Shop extends javax.swing.JPanel {
      */
     private final ProductDetailDAO productDetailDAO;
     private final ProductDAO productDAO;
+    private final TypePetDAO typePetDAO;
     private final InvoiceDAO invoiceDAO;
     private final InvoiceDetailDAO invoiceDetailDAO;
     private final CustomerDAO customerDAO;
@@ -75,8 +80,10 @@ public class Shop extends javax.swing.JPanel {
         employeeDAO = new EmployeeDAO();
         petServiceDAO = new PetServiceDAO();
         petDAO = new PetDAO();
+        typePetDAO = new TypePetDAO();
         rememberMeService = new RememberMeService();
-        loadCbbPaymen();
+        loadCbbPaymentMethod();
+        loadCbbSort();
         init();
     }
 
@@ -84,6 +91,8 @@ public class Shop extends javax.swing.JPanel {
         getListProductDetail(productDetailDAO.getListProductDetail());
         getListService(petServiceDAO.getListService());
         getListInvoice(invoiceDAO.getListInvoice());
+        loadCbbFilterTypePet(typePetDAO.getListTypePet());
+        loadCbbFilterProduct(productDAO.getListProduct());
         resetForm();
     }
 
@@ -144,6 +153,10 @@ public class Shop extends javax.swing.JPanel {
 
     //<editor-fold defaultstate="collapsed" desc="{Popup...">
     private void showPopupService(PetServices p) {
+        if (getSelectedRowInvoice() == -1) {
+            showMessageFail("Vui lòng chọn hóa đơn!!");
+            return;
+        }
         PopupService poup = new PopupService();
         poup.setServiceCode(p.getServiceCode());
         poup.setConfirmListener(new ConfirmListener() {
@@ -162,12 +175,109 @@ public class Shop extends javax.swing.JPanel {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="{CBB...">
-    public void loadCbbPaymen() {
+    public void loadCbbPaymentMethod() {
         cbbPayment.removeAllItems();
         cbbPayment.addItem("Tiền mặt");
         cbbPayment.addItem("Thanh toán qua banking");
         cbbPayment.setSelectedIndex(-1);
     }
+
+       
+    private void loadCbbFilterTypePet(List<TypePets> list) {
+        cbbFilterTypePet.removeAllItems();
+
+        if (list == null || list.isEmpty()) {
+            return; // Nếu danh sách null hoặc rỗng, thoát khỏi phương thức
+        }
+
+        for (TypePets t : list) {
+            cbbFilterTypePet.addItem(t);
+        }
+        cbbFilterTypePet.setSelectedIndex(-1);
+
+        // Thêm sự kiện cho JComboBox
+        cbbFilterTypePet.addActionListener(e -> filterAndSortProductDetails());
+    }
+
+    private void loadCbbFilterProduct(List<Products> productList) {
+        cbbFilterProduct.removeAllItems();
+
+        if (productList == null || productList.isEmpty()) {
+            return; // Nếu danh sách null hoặc rỗng, thoát khỏi phương thức
+        }
+
+        for (Products p : productList) {
+            cbbFilterProduct.addItem(p);
+        }
+        cbbFilterProduct.setSelectedIndex(-1);
+
+        // Thêm sự kiện cho JComboBox
+        cbbFilterProduct.addActionListener(e -> filterAndSortProductDetails());
+    }
+
+    private void loadCbbSort() {
+        cbbSort.removeAllItems();
+        cbbSort.addItem("Theo giá tăng dần");
+        cbbSort.addItem("Theo giá giảm dần");
+        cbbSort.setSelectedIndex(-1); // Không chọn mục nào mặc định
+
+        // Thêm sự kiện cho JComboBox
+        cbbSort.addActionListener(e -> filterAndSortProductDetails());
+    }
+
+    private void filterAndSortProductDetails() {
+        // Lấy giá trị được chọn từ các JComboBox
+        Products selectedProduct = (Products) cbbFilterProduct.getSelectedItem();
+        TypePets selectedTypePet = (TypePets) cbbFilterTypePet.getSelectedItem();
+        String selectedSort = (String) cbbSort.getSelectedItem();
+
+        // Xác định các tham số lọc
+        Integer productId = (selectedProduct != null) ? selectedProduct.getId() : null;
+        Integer typePetId = (selectedTypePet != null) ? selectedTypePet.getId() : null;
+
+        // Lấy danh sách sản phẩm chi tiết dựa trên bộ lọc
+        List<ProductDetails> filteredList;
+        if (productId == null && typePetId == null) {
+            filteredList = productDetailDAO.getListProductDetail(); // Lấy toàn bộ danh sách nếu không có bộ lọc
+        } else {
+            filteredList = productDetailDAO.searchProductDetails(productId, typePetId); // Lọc theo sản phẩm và loại thú cưng
+        }
+
+        // Sắp xếp danh sách nếu có yêu cầu sắp xếp
+        if (selectedSort != null) {
+            switch (selectedSort) {
+                case "Theo giá tăng dần":
+                    filteredList.sort(Comparator.comparing(ProductDetails::getPrice)); // Sắp xếp tăng dần theo giá
+                    break;
+                case "Theo giá giảm dần":
+                    filteredList.sort(Comparator.comparing(ProductDetails::getPrice).reversed()); // Sắp xếp giảm dần theo giá
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Hiển thị danh sách đã lọc và sắp xếp
+        getListProductDetail(filteredList);
+    }
+    
+//    private void filterProductDetails() {
+//        TypePets selectedTypePet = (TypePets) cbbFilterTypePet.getSelectedItem();
+//        Products selectedProduct = (Products) cbbFilterProduct.getSelectedItem();
+//
+//        Integer typePetId = (selectedTypePet != null) ? selectedTypePet.getId() : null;
+//        Integer productId = (selectedProduct != null) ? selectedProduct.getId() : null;
+//
+//        // Nếu cả hai đều null, lấy toàn bộ danh sách
+//        List<ProductDetails> filteredList;
+//        if (typePetId == null && productId == null) {
+//            filteredList = productDetailDAO.getListProductDetail();
+//        } else {
+//            filteredList = productDetailDAO.searchProductDetails(productId, typePetId);
+//        }
+//
+//        getListProductDetail(filteredList); // Cập nhật giao diện với danh sách lọc
+//    }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="{ProductDetail...">
@@ -215,6 +325,18 @@ public class Shop extends javax.swing.JPanel {
 
         }
     }
+
+    private int getSelectedProductD() {
+        return tbInvoiceDetail.getSelectedRow();
+    }
+
+    private Integer getIdProductD() {
+        int selectedRow = getSelectedProductD();
+        if (selectedRow == -1) {
+            return null; // Không có dòng nào được chọn
+        }
+        return (Integer) tbInvoiceDetail.getValueAt(selectedRow, 1);
+    }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="{Invoice...">
@@ -224,6 +346,7 @@ public class Shop extends javax.swing.JPanel {
         for (Invoices i : list) {
             tbInvoice.addRow(new Object[]{
                 i.getId(),
+                i.getCustomer().getCustomerCode(),
                 stt,
                 i.getInvoiceCode(),
                 i.getCustomer().getCustomerName(),
@@ -247,10 +370,10 @@ public class Shop extends javax.swing.JPanel {
     }
 
     public void showDataInvoice() {
-        lbCustomerCode.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 2));
-        lbCustomerName.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 3));
-        lbTotalPrice.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 5));
-        lbTotalPrice1.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 5));
+        lbInvoiceCode.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 3));
+        lbCustomerName.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 4));
+        lbTotalPrice.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 6));
+        lbTotalPrice1.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 6));
 
     }
 
@@ -258,9 +381,23 @@ public class Shop extends javax.swing.JPanel {
         Customers c = customerDAO.searchCustomerById(1);
         lbCustomerName.setText(c.getCustomerName());
         lbCustomerCode.setText(c.getCustomerCode());
+
+        lbTotalPrice.setText("₫");
+        lbTotalPrice1.setText("₫");
+        checkBoxPaymStatus.setSelected(false);
+        cbbPayment.setSelectedIndex(0);
+
+        tbInvoice.clearSelection();
+        clearInvoiceDetailTable();
+        
+        cbbFilterProduct.setSelectedIndex(-1);
+        cbbFilterTypePet.setSelectedIndex(-1);
+        cbbSort.setSelectedIndex(-1);
     }
 
     public Invoices readFormInsert() {
+        Invoices i = new Invoices();
+
         String invoiceCode = "HD" + Ultil.generateRandomCode();
 //        Ultil.generateInvoice(invoiceCode, invoiceCode, new ArrayList<>(), invoiceCode);
 
@@ -273,15 +410,32 @@ public class Shop extends javax.swing.JPanel {
 
         Employees e = employeeDAO.findEmployeeById(idEmployee);
 
-//        BigDecimal totalPrice = BigDecimal.ZERO;
-//        BigDecimal costsIncurred = BigDecimal.ZERO;
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        BigDecimal costsIncurred = BigDecimal.ZERO;
 //        boolean paymentMethod = "Tiền mặt".equals(cbbPayment.getSelectedItem());
 //        boolean paymentStatus = checkBoxPaymStatus.isSelected();
-//        String note = "";
+        String note = "";
 //        boolean deleted = false;
         boolean status = true; // Mặc định hóa đơn hoạt động
 
-        return new Invoices(invoiceCode, c, e, status);
+        i.setInvoiceCode(invoiceCode);
+        i.setTotalPrice(totalPrice);
+        i.setCostsIncurred(costsIncurred);
+        i.setNote(note);
+        i.setCustomer(c);
+        i.setEmployee(e);
+        i.setStatus(status);
+        return i;
+    }
+
+    public Invoices readFormUpdate() {
+        Invoices i = new Invoices();
+        boolean paymentMethod = cbbPayment.getSelectedItem().equals("Tiền mặt");
+        i.setPaymentMethod(paymentMethod);
+        i.setPaymentStatus(checkBoxPaymStatus.isSelected());
+        i.setNote(null);
+        i.setCostsIncurred(new BigDecimal(0));
+        return i;
     }
 
     public void insertInvoice() {
@@ -323,7 +477,7 @@ public class Shop extends javax.swing.JPanel {
 
         if (selectedRow >= 0) {
             selectedId = getIdSelectedInvoice(); // Lưu ID hóa đơn
-            Object priceObj = tbInvoice.getValueAt(selectedRow, 5); // Lấy giá trị từ cột 5 (total price)
+            Object priceObj = tbInvoice.getValueAt(selectedRow, 6); // Lấy giá trị từ cột 5 (total price)
 
             if (priceObj instanceof BigDecimal) {
                 totalPrice = (BigDecimal) priceObj;
@@ -354,7 +508,6 @@ public class Shop extends javax.swing.JPanel {
         lbTotalPrice.setText(priceObj.toString());
         lbTotalPrice1.setText(priceObj.toString());
 
-        // Nếu có ID hóa đơn đã chọn trước đó, tìm lại và chọn nó
         if (selectedId != null) {
             for (int i = 0; i < tbInvoice.getRowCount(); i++) {
                 if (tbInvoice.getValueAt(i, 0).equals(selectedId)) {
@@ -365,14 +518,42 @@ public class Shop extends javax.swing.JPanel {
             }
         }
 
-        // Nếu không tìm thấy ID cũ hoặc không có dòng nào, chọn dòng đầu tiên
         if (tbInvoice.getRowCount() > 0) {
             tbInvoice.setRowSelectionInterval(0, 0);
             tbInvoice.scrollRectToVisible(tbInvoice.getCellRect(0, 0, true));
         }
     }
+
+    public void updateInvoice() {
+        if (getSelectedRowInvoice() == -1) {
+            showMessageFail("Vui lòng chọn hóa đơn");
+            return;
+        }
+        if(!invoiceDAO.isValidInvoiceTotal(getIdSelectedInvoice())){
+            showMessageFail("Không thể hoàn thành hóa đơn 0đ");
+            return;
+        }
+        if (invoiceDAO.updateInvoice(getIdSelectedInvoice(), readFormUpdate())) {
+            List<InvoiceDetails> list = invoiceDetailDAO.getInvoiceDetails(getIdSelectedInvoice());
+            updateRemoveQuantityInProductDetail(list);
+            showMessageSuccess("Thành công");
+            getListInvoice(invoiceDAO.getListInvoice());
+            clearInvoiceDetailTable();
+        } else {
+            showMessageFail("Thất bại!!");
+        }
+    }
+
+    private void updateRemoveQuantityInProductDetail(List<InvoiceDetails> list) {
+        productDetailDAO.deductStockFromInvoice(list);
+        getListProductDetail(productDetailDAO.getListProductDetail());
+    }
+
+    private void printInvoice() {
+
+    }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="{InvoiceDetail...">
     public void getListInvoiceDetail(List<InvoiceDetails> list) {
         int stt = 1;
@@ -395,6 +576,7 @@ public class Shop extends javax.swing.JPanel {
 
             tbInvoiceDetail.addRow(new Object[]{
                 i.getId(),
+                i.getProductDetail().getId(),
                 stt,
                 i.getInvoiceDetailCode(),
                 code,
@@ -446,22 +628,24 @@ public class Shop extends javax.swing.JPanel {
             GlassPanePopup.closePopup("pInput");
             return;
         }
+
+        if (!productDetailDAO.isEnoughStock(getIdProductD(), amount)) {
+            showMessageFail("Số lượng nhập lớn hơn số lượng SP!!");
+            return;
+        }
+
         int id = detail.getId();
         BigDecimal totalPrice = BigDecimal.ZERO; // Đặt giá trị mặc định là 0
-
         if (detail.getProductDetail() != null && detail.getProductDetail().getPrice() != null) {
             totalPrice = detail.getProductDetail().getPrice().multiply(BigDecimal.valueOf(amount));
         } else if (detail.getPetService() != null && detail.getPetService().getPriceService() != null) {
             totalPrice = detail.getPetService().getPriceService().multiply(BigDecimal.valueOf(amount));
         }
 
-// Cập nhật số lượng và tổng tiền của InvoiceDetail trước
         invoiceDetailDAO.updateUsageOrQuantityAndTprice(id, amount, totalPrice);
 
-        // Sau khi dữ liệu đã thay đổi, cập nhật tổng tiền của Invoice
         this.updateToTalPriceInvoice(getIdSelectedInvoice());
 
-        // Hiển thị lại danh sách chi tiết hóa đơn
         showInvoiceDetailByIdInvoice();
         GlassPanePopup.closePopup("pInput");
     }
@@ -518,6 +702,11 @@ public class Shop extends javax.swing.JPanel {
         if (getSelectedRowInvoice() == -1) {
             showMessageFail("Vui lòng chọn hóa đơn!!");
             GlassPanePopup.closePopup("pInput");
+            return;
+        }
+
+        if (!productDetailDAO.isEnoughStock(p.getId(), inputAmount)) {
+            showMessageFail("Số lượng nhập lớn hơn số lượng trong kho!!");
             return;
         }
 
@@ -582,7 +771,7 @@ public class Shop extends javax.swing.JPanel {
         Customers t = customerDAO.searchCustomerByPhoneNumber(keyword);
         if (t != null) {
             txtSearchCustomer.setText(t.getPhoneNumber());
-            lbCustomerCode.setText(t.getCustomerCode());
+            lbInvoiceCode.setText(t.getCustomerCode());
             lbCustomerName.setText(t.getCustomerName());
         } else {
             showMessageConfirm("Không tìm thấy khách hàng \nbạn có muốn thêm mới khách hàng", () -> {
@@ -604,7 +793,7 @@ public class Shop extends javax.swing.JPanel {
                 p.getServiceName(),
                 ">= " + p.getDuration(),
                 p.getTimeUnit(),
-                p.getFormattedPriceService(),
+                Ultil.formatCurrency(p.getPriceService()),
                 p.isStatus() ? "Hoạt động" : "Ngưng nhận",
                 new ModelAction<>(p, new EventAction<PetServices>() {
                     @Override
@@ -679,7 +868,6 @@ public class Shop extends javax.swing.JPanel {
             System.out.println("Thêm dịch vụ thất bại!");
         }
     }
-
     //</editor-fold>
     /**
      * This method is called from within the constructor to initialize the form.
@@ -703,7 +891,7 @@ public class Shop extends javax.swing.JPanel {
         btnSearchCustomer = new com.petshop.swing.Button();
         jLabel34 = new javax.swing.JLabel();
         jLabel35 = new javax.swing.JLabel();
-        lbCustomerCode = new javax.swing.JLabel();
+        lbInvoiceCode = new javax.swing.JLabel();
         lbCustomerName = new javax.swing.JLabel();
         btnAddInvoice = new com.petshop.swing.Button();
         btnDeleteInvoice = new com.petshop.swing.Button();
@@ -715,6 +903,8 @@ public class Shop extends javax.swing.JPanel {
         checkBoxPaymStatus = new com.petshop.swing.checkbox.JCheckBoxCustom();
         cbbPayment = new com.petshop.swing.combobox.Combobox();
         txtSearchCustomer = new com.petshop.swing.textfield.TextField1();
+        lbCustomerCode = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jLabel42 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -723,7 +913,7 @@ public class Shop extends javax.swing.JPanel {
         jPanel2 = new javax.swing.JPanel();
         jLabel43 = new javax.swing.JLabel();
         txtSearchProductDetail = new com.petshop.swing.textfield.TextFieldAnimation();
-        comboboxRounded2 = new com.petshop.swing.combobox.ComboboxRounded();
+        cbbSort = new com.petshop.swing.combobox.ComboboxRounded();
         cbbFilterTypePet = new com.petshop.swing.combobox.ComboboxRounded();
         cbbFilterProduct = new com.petshop.swing.combobox.ComboboxRounded();
         btnScanBarcode = new com.petshop.swing.Button1();
@@ -749,15 +939,23 @@ public class Shop extends javax.swing.JPanel {
 
         tbInvoice.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "STT", "Mã HD", "Tên khách hàng", "Tên nhân viên", "Tổng giá", "Trạng thái thanh toán"
+                "", "", "STT", "Mã HD", "Tên khách hàng", "Tên nhân viên", "Tổng giá", "Trạng thái thanh toán"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         tbInvoice.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tbInvoiceMouseClicked(evt);
@@ -767,8 +965,10 @@ public class Shop extends javax.swing.JPanel {
         if (tbInvoice.getColumnModel().getColumnCount() > 0) {
             tbInvoice.getColumnModel().getColumn(0).setMinWidth(0);
             tbInvoice.getColumnModel().getColumn(0).setMaxWidth(0);
-            tbInvoice.getColumnModel().getColumn(1).setMinWidth(40);
-            tbInvoice.getColumnModel().getColumn(1).setMaxWidth(40);
+            tbInvoice.getColumnModel().getColumn(1).setMinWidth(0);
+            tbInvoice.getColumnModel().getColumn(1).setMaxWidth(0);
+            tbInvoice.getColumnModel().getColumn(2).setMinWidth(40);
+            tbInvoice.getColumnModel().getColumn(2).setMaxWidth(40);
         }
 
         button12.setText("Quét hóa đơn");
@@ -827,6 +1027,11 @@ public class Shop extends javax.swing.JPanel {
         btnConfirmInvoice.setBackground(new java.awt.Color(0, 255, 255));
         btnConfirmInvoice.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-yes-30.png"))); // NOI18N
         btnConfirmInvoice.setText("Xác nhận");
+        btnConfirmInvoice.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConfirmInvoiceActionPerformed(evt);
+            }
+        });
 
         jLabel33.setText("Nhập số điện thại khách hàng:");
 
@@ -838,13 +1043,13 @@ public class Shop extends javax.swing.JPanel {
             }
         });
 
-        jLabel34.setText("Mã kh  :");
+        jLabel34.setText("HD:");
 
-        jLabel35.setText("Tên kh : ");
+        jLabel35.setText("Tên KH:");
 
-        lbCustomerCode.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
-        lbCustomerCode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lbCustomerCode.setText("KH");
+        lbInvoiceCode.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
+        lbInvoiceCode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lbInvoiceCode.setText("HD");
 
         lbCustomerName.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
         lbCustomerName.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -900,6 +1105,12 @@ public class Shop extends javax.swing.JPanel {
             }
         });
 
+        lbCustomerCode.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        lbCustomerCode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lbCustomerCode.setText("KH");
+
+        jLabel3.setText("KH:");
+
         javax.swing.GroupLayout jPanel13Layout = new javax.swing.GroupLayout(jPanel13);
         jPanel13.setLayout(jPanel13Layout);
         jPanel13Layout.setHorizontalGroup(
@@ -922,13 +1133,17 @@ public class Shop extends javax.swing.JPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lbTotalPrice, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .addGroup(jPanel13Layout.createSequentialGroup()
-                                .addComponent(jLabel34)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lbCustomerCode, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(jPanel13Layout.createSequentialGroup()
                                 .addComponent(jLabel35)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lbCustomerName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(jPanel13Layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lbCustomerCode, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel34)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lbInvoiceCode, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel13Layout.createSequentialGroup()
                                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(jPanel13Layout.createSequentialGroup()
@@ -942,7 +1157,7 @@ public class Shop extends javax.swing.JPanel {
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(btnSearchCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(checkBoxPaymStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 0, Short.MAX_VALUE)))
+                                .addGap(0, 2, Short.MAX_VALUE)))
                         .addContainerGap())))
         );
         jPanel13Layout.setVerticalGroup(
@@ -959,7 +1174,9 @@ public class Shop extends javax.swing.JPanel {
                 .addGap(0, 0, 0)
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel34)
-                    .addComponent(lbCustomerCode))
+                    .addComponent(lbInvoiceCode)
+                    .addComponent(lbCustomerCode)
+                    .addComponent(jLabel3))
                 .addGap(5, 5, 5)
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel35)
@@ -970,7 +1187,7 @@ public class Shop extends javax.swing.JPanel {
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel38)
                     .addComponent(lbTotalPrice))
-                .addGap(5, 5, 5)
+                .addGap(10, 10, 10)
                 .addComponent(cbbPayment, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(10, 10, 10)
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -978,12 +1195,12 @@ public class Shop extends javax.swing.JPanel {
                     .addComponent(lbTotalPrice1))
                 .addGap(5, 5, 5)
                 .addComponent(checkBoxPaymStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(5, 5, 5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnResetInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnDeleteInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnConfirmInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnConfirmInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -995,29 +1212,39 @@ public class Shop extends javax.swing.JPanel {
 
         tbInvoiceDetail.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "STT", "Mã HDCT", "Mã SP or SV", "Tên SP or SV", "SL", "Giá bán or Giá SV", "Tổng giá", "Thông tin khác", "Thao tác"
+                "", "", "STT", "Mã HDCT", "Mã SP or SV", "Tên SP or SV", "SL", "Giá bán or Giá SV", "Tổng giá", "Thông tin khác", "Thao tác"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false, true
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane2.setViewportView(tbInvoiceDetail);
         if (tbInvoiceDetail.getColumnModel().getColumnCount() > 0) {
             tbInvoiceDetail.getColumnModel().getColumn(0).setMinWidth(0);
             tbInvoiceDetail.getColumnModel().getColumn(0).setMaxWidth(0);
-            tbInvoiceDetail.getColumnModel().getColumn(1).setMinWidth(40);
-            tbInvoiceDetail.getColumnModel().getColumn(1).setMaxWidth(40);
-            tbInvoiceDetail.getColumnModel().getColumn(2).setMinWidth(80);
-            tbInvoiceDetail.getColumnModel().getColumn(2).setMaxWidth(80);
+            tbInvoiceDetail.getColumnModel().getColumn(1).setMinWidth(0);
+            tbInvoiceDetail.getColumnModel().getColumn(1).setMaxWidth(0);
+            tbInvoiceDetail.getColumnModel().getColumn(2).setMinWidth(40);
+            tbInvoiceDetail.getColumnModel().getColumn(2).setMaxWidth(40);
             tbInvoiceDetail.getColumnModel().getColumn(3).setMinWidth(80);
             tbInvoiceDetail.getColumnModel().getColumn(3).setMaxWidth(80);
-            tbInvoiceDetail.getColumnModel().getColumn(4).setMinWidth(200);
-            tbInvoiceDetail.getColumnModel().getColumn(4).setMaxWidth(200);
-            tbInvoiceDetail.getColumnModel().getColumn(5).setMinWidth(40);
-            tbInvoiceDetail.getColumnModel().getColumn(5).setMaxWidth(40);
+            tbInvoiceDetail.getColumnModel().getColumn(4).setMinWidth(80);
+            tbInvoiceDetail.getColumnModel().getColumn(4).setMaxWidth(80);
+            tbInvoiceDetail.getColumnModel().getColumn(5).setMinWidth(200);
+            tbInvoiceDetail.getColumnModel().getColumn(5).setMaxWidth(200);
+            tbInvoiceDetail.getColumnModel().getColumn(6).setMinWidth(40);
+            tbInvoiceDetail.getColumnModel().getColumn(6).setMaxWidth(40);
         }
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
@@ -1053,7 +1280,7 @@ public class Shop extends javax.swing.JPanel {
 
         txtSearchProductDetail.setBackground(new java.awt.Color(250, 250, 250));
 
-        comboboxRounded2.setLabeText("Sắp xếp theo");
+        cbbSort.setLabeText("Sắp xếp theo");
 
         cbbFilterTypePet.setLabeText("Loại thú cưng");
 
@@ -1071,15 +1298,29 @@ public class Shop extends javax.swing.JPanel {
             new String [] {
                 "", "STT", "Tên SP", "Mã SP", "BarCode", "Dành cho", "Hương vị", "SL", "TL", "NSX", "HSD", "Giá bán", "Trạng thái", "Thao tác"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false, false, false, false, true
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane3.setViewportView(tbProductDetail);
         if (tbProductDetail.getColumnModel().getColumnCount() > 0) {
             tbProductDetail.getColumnModel().getColumn(0).setMinWidth(0);
             tbProductDetail.getColumnModel().getColumn(0).setMaxWidth(0);
             tbProductDetail.getColumnModel().getColumn(1).setMinWidth(40);
             tbProductDetail.getColumnModel().getColumn(1).setMaxWidth(40);
-            tbProductDetail.getColumnModel().getColumn(2).setMinWidth(180);
-            tbProductDetail.getColumnModel().getColumn(2).setMaxWidth(180);
+            tbProductDetail.getColumnModel().getColumn(2).setMinWidth(230);
+            tbProductDetail.getColumnModel().getColumn(2).setMaxWidth(230);
+            tbProductDetail.getColumnModel().getColumn(7).setMinWidth(40);
+            tbProductDetail.getColumnModel().getColumn(7).setMaxWidth(40);
+            tbProductDetail.getColumnModel().getColumn(8).setMinWidth(50);
+            tbProductDetail.getColumnModel().getColumn(8).setMaxWidth(50);
+            tbProductDetail.getColumnModel().getColumn(10).setMinWidth(60);
+            tbProductDetail.getColumnModel().getColumn(10).setMaxWidth(60);
         }
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -1094,7 +1335,7 @@ public class Shop extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbbFilterTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(comboboxRounded2, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(cbbSort, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 75, Short.MAX_VALUE)
                 .addComponent(btnScanBarcode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1112,11 +1353,11 @@ public class Shop extends javax.swing.JPanel {
                         .addComponent(txtSearchProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(btnScanBarcode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(comboboxRounded2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbbSort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(cbbFilterTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(cbbFilterProduct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
 
@@ -1144,7 +1385,15 @@ public class Shop extends javax.swing.JPanel {
             new String [] {
                 "", "STT", "Mã DV", "Tên DV", "Thời gian", "Đơn vị thời gian", "Giá DV", "Trạng thái", "Thao tác"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, true
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane4.setViewportView(tbService);
         if (tbService.getColumnModel().getColumnCount() > 0) {
             tbService.getColumnModel().getColumn(0).setMinWidth(0);
@@ -1183,7 +1432,7 @@ public class Shop extends javax.swing.JPanel {
                             .addComponent(comboboxRounded3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.LEADING))
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
 
@@ -1197,7 +1446,7 @@ public class Shop extends javax.swing.JPanel {
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 322, Short.MAX_VALUE)
+            .addGap(0, 328, Short.MAX_VALUE)
             .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -1238,6 +1487,7 @@ public class Shop extends javax.swing.JPanel {
 
     private void btnResetInvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetInvoiceActionPerformed
         // TODO add your handling code here:
+        resetForm();
     }//GEN-LAST:event_btnResetInvoiceActionPerformed
 
     private void cbbPaymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbbPaymentActionPerformed
@@ -1267,6 +1517,11 @@ public class Shop extends javax.swing.JPanel {
         showInvoiceDetailByIdInvoice();
     }//GEN-LAST:event_tbInvoiceMouseClicked
 
+    private void btnConfirmInvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfirmInvoiceActionPerformed
+        // TODO add your handling code here:
+        updateInvoice();
+    }//GEN-LAST:event_btnConfirmInvoiceActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.Button btnAddInvoice;
@@ -1279,11 +1534,12 @@ public class Shop extends javax.swing.JPanel {
     private com.petshop.swing.combobox.ComboboxRounded cbbFilterProduct;
     private com.petshop.swing.combobox.ComboboxRounded cbbFilterTypePet;
     private com.petshop.swing.combobox.Combobox cbbPayment;
+    private com.petshop.swing.combobox.ComboboxRounded cbbSort;
     private com.petshop.swing.checkbox.JCheckBoxCustom checkBoxPaymStatus;
     private com.petshop.swing.combobox.ComboboxRounded comboboxRounded1;
-    private com.petshop.swing.combobox.ComboboxRounded comboboxRounded2;
     private com.petshop.swing.combobox.ComboboxRounded comboboxRounded3;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel32;
     private javax.swing.JLabel jLabel33;
     private javax.swing.JLabel jLabel34;
@@ -1306,6 +1562,7 @@ public class Shop extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JLabel lbCustomerCode;
     private javax.swing.JLabel lbCustomerName;
+    private javax.swing.JLabel lbInvoiceCode;
     private javax.swing.JLabel lbTotalPrice;
     private javax.swing.JLabel lbTotalPrice1;
     private com.petshop.swing.tabbed.MaterialTabbed materialTabbed1;

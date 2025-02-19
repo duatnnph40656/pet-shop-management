@@ -5,6 +5,7 @@
 package com.petshop.daos;
 
 import com.petshop.connect.DBConnect;
+import com.petshop.models.InvoiceDetails;
 import com.petshop.models.Products;
 import com.petshop.models.ProductDetails;
 import com.petshop.models.TypePets;
@@ -91,8 +92,8 @@ public class ProductDetailDAO {
         }
         return list;
     }
-    
-     public List<ProductDetails> getListProductDetailDeleted() {
+
+    public List<ProductDetails> getListProductDetailDeleted() {
         String sql = "SELECT\n"
                 + "    pd.id,\n"
                 + "    p.product_name, \n"
@@ -160,6 +161,84 @@ public class ProductDetailDAO {
         return list;
     }
 
+    // Hàm lấy danh sách sản phẩm theo giá tăng dần
+    public List<ProductDetails> getListProductDetailByPriceAsc() {
+        String sql = "SELECT\n"
+                + "    pd.id,\n"
+                + "    p.product_name, \n"
+                + "    pd.product_detail_code,\n"
+                + "    pd.product_detail_name,\n"
+                + "    t.type_pet_name,   \n"
+                + "    pd.expirydate,\n"
+                + "    pd.weight,\n"
+                + "    pd.quantity_in_stock,\n"
+                + "    pd.flavor,\n"
+                + "    pd.describe,\n"
+                + "    pd.price,\n"
+                + "    pd.image_path,\n"
+                + "    pd.created_at,\n"
+                + "    pd.is_deleted,\n"
+                + "    pd.is_status,\n"
+                + "    pd.id_product,\n"
+                + "    pd.bar_code,\n"
+                + "    pd.production_date\n"
+                + "FROM product_details pd\n"
+                + "JOIN products p ON pd.id_product = p.id    \n"
+                + "JOIN type_pets t ON pd.id_type_pet = t.id    \n"
+                + "WHERE pd.is_deleted = 0 ORDER BY pd.price ASC;";  // Thêm ORDER BY ASC
+
+        List<ProductDetails> list = new ArrayList<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(mapResultSetToProductDetail(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+// Hàm lấy danh sách sản phẩm theo giá giảm dần
+    public List<ProductDetails> getListProductDetailByPriceDesc() {
+        String sql = "SELECT\n"
+                + "    pd.id,\n"
+                + "    p.product_name, \n"
+                + "    pd.product_detail_code,\n"
+                + "    pd.product_detail_name,\n"
+                + "    t.type_pet_name,   \n"
+                + "    pd.expirydate,\n"
+                + "    pd.weight,\n"
+                + "    pd.quantity_in_stock,\n"
+                + "    pd.flavor,\n"
+                + "    pd.describe,\n"
+                + "    pd.price,\n"
+                + "    pd.image_path,\n"
+                + "    pd.created_at,\n"
+                + "    pd.is_deleted,\n"
+                + "    pd.is_status,\n"
+                + "    pd.id_product,\n"
+                + "    pd.bar_code,\n"
+                + "    pd.production_date\n"
+                + "FROM product_details pd\n"
+                + "JOIN products p ON pd.id_product = p.id    \n"
+                + "JOIN type_pets t ON pd.id_type_pet = t.id    \n"
+                + "WHERE pd.is_deleted = 0 ORDER BY pd.price DESC;";  // Thêm ORDER BY DESC
+
+        List<ProductDetails> list = new ArrayList<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                list.add(mapResultSetToProductDetail(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public boolean addProductDetail(ProductDetails productDetail) {
         String sql = "INSERT INTO product_details ("
                 + "product_detail_code, product_detail_name, bar_code, id_product, id_type_pet, "
@@ -201,7 +280,7 @@ public class ProductDetailDAO {
         }
         return false;
     }
-    
+
     public boolean restoreProductDetail(int id) {
         String sql = "UPDATE product_details SET is_deleted = 0 WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -242,6 +321,56 @@ public class ProductDetailDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public boolean isEnoughStock(int id, int quantity) {
+        String sql = "SELECT quantity_in_stock FROM product_details WHERE id = ? AND is_deleted = 0";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int stock = rs.getInt("quantity_in_stock");
+                    return quantity <= stock; // Nếu số lượng yêu cầu nhỏ hơn hoặc bằng số lượng tồn kho thì trả về true
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false; // Trả về false nếu có lỗi hoặc không tìm thấy sản phẩm
+    }
+
+    // Hàm trừ số lượng sản phẩm từ danh sách sản phẩm của hóa đơn
+    public boolean deductStockFromInvoice(List<InvoiceDetails> productList) {
+        String query = "UPDATE product_details "
+                + "SET quantity_in_stock = quantity_in_stock - ?, "
+                + "    is_status = CASE WHEN (quantity_in_stock - ?) = 0 THEN 0 ELSE is_status END "
+                + "WHERE id = ? AND quantity_in_stock >= ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            for (InvoiceDetails item : productList) {
+                int productId = item.getProductDetail().getId();
+                int quantity = item.getUsageOrQuantity();
+
+                ps.setInt(1, quantity); // Giảm số lượng
+                ps.setInt(2, quantity); // Kiểm tra nếu số lượng sau khi trừ = 0 thì cập nhật is_status = 0
+                ps.setInt(3, productId); // ID sản phẩm
+                ps.setInt(4, quantity); // Điều kiện không trừ nếu không đủ hàng
+
+                ps.addBatch(); // Thêm vào batch để tối ưu cập nhật
+            }
+
+            int[] result = ps.executeBatch(); // Thực hiện cập nhật hàng loạt
+
+            for (int count : result) {
+                if (count == 0) {
+                    return false; // Nếu có sản phẩm không đủ hàng, trả về false
+                }
+            }
+            return true; // Nếu tất cả sản phẩm đều được trừ thành công
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // Trả về false nếu có lỗi SQL
+        }
     }
 
     public List<ProductDetails> searchByNameOrFlavor(String keyword) {

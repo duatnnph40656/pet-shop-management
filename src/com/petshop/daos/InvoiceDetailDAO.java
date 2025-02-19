@@ -60,8 +60,8 @@ public class InvoiceDetailDAO {
     public boolean insertInvoiceDetailProduct(InvoiceDetails invoiceDetail) {
         String sql = """
         INSERT INTO invoice_details (invoice_detail_code, id_invoice, usage_or_quantity, total_price, 
-                                     id_product_detail, is_deleted,is_status)
-        VALUES ( ?, ?, ?, ?, ?, 0,?)
+                                     id_product_detail, is_deleted,is_status,type_invoice_detail)
+        VALUES ( ?, ?, ?, ?, ?, 0,?,0)
     """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -90,8 +90,8 @@ public class InvoiceDetailDAO {
     public boolean insertInvoiceDetailService(InvoiceDetails invoiceDetail) {
         String sql = """
         INSERT INTO invoice_details (invoice_detail_code, id_invoice, usage_or_quantity, total_price, 
-                                     id_service_detail,id_pet, is_deleted,is_status)
-        VALUES ( ?, ?, ?, ?,?, ?, 0,?)
+                                     id_service_detail,id_pet, is_deleted,is_status,type_invoice_detail)
+        VALUES ( ?, ?, ?, ?,?, ?, 0,?,1)
     """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -176,6 +176,28 @@ public class InvoiceDetailDAO {
         }
 
         return false;
+    }
+
+    // Hàm lấy danh sách sản phẩm từ invoice_details
+    public List<InvoiceDetails> getInvoiceDetails(int invoiceId) {
+        List<InvoiceDetails> productList = new ArrayList<>();
+        String query = "SELECT id_product_detail, usage_or_quantity FROM invoice_details WHERE id_invoice = ? AND type_invoice_detail = 0 AND is_deleted = 0";
+
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, invoiceId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                int productId = rs.getInt("id_product_detail");
+                int quantity = rs.getInt("usage_or_quantity");
+                ProductDetails p = new ProductDetails();
+                p.setId(productId);
+                productList.add(new InvoiceDetails(p, quantity));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return productList;
     }
 
     public InvoiceDetails getInvoiceDetailByProductDetailId(int invoiceId, int productDetailId) {
@@ -289,8 +311,10 @@ public class InvoiceDetailDAO {
             id.usage_or_quantity, 
             id.total_price, 
             id.created_at,
+            id.type_invoice_detail,
             id.is_status,
             id.id_invoice,
+            pd.id AS id_product_detail,
             pd.product_detail_code,
             pd.product_detail_name,
             pd.price AS product_price,
@@ -322,54 +346,58 @@ public class InvoiceDetailDAO {
     }
 
     public InvoiceDetails mapInvoiceDetail(ResultSet rs) throws SQLException {
-    InvoiceDetails i = new InvoiceDetails();
-    i.setId(rs.getInt("id"));
-    i.setInvoiceDetailCode(rs.getString("invoice_detail_code"));
-    i.setUsageOrQuantity(rs.getInt("usage_or_quantity"));
-    i.setTotalPrice(rs.getBigDecimal("total_price"));
-    i.setCreatedAt(rs.getDate("created_at"));
-    i.setStatus(rs.getBoolean("is_status"));
+        InvoiceDetails i = new InvoiceDetails();
+        i.setId(rs.getInt("id"));
+        i.setInvoiceDetailCode(rs.getString("invoice_detail_code"));
+        i.setUsageOrQuantity(rs.getInt("usage_or_quantity"));
+        i.setTotalPrice(rs.getBigDecimal("total_price"));
+        i.setCreatedAt(rs.getDate("created_at"));
+        i.setStatus(rs.getBoolean("is_status"));
+        i.setTypeInvoiceDetail(rs.getBoolean("type_invoice_detail"));
 
-    // Set Invoice
-    Invoices ic = new Invoices();
-    ic.setId(rs.getInt("id_invoice"));
-    i.setInvoice(ic);
+        // Set Invoice
+        Invoices ic = new Invoices();
+        ic.setId(rs.getInt("id_invoice"));
+        i.setInvoice(ic);
 
-    // Set ProductDetails (nếu có)
-    ProductDetails p = new ProductDetails();
-    if (hasColumn(rs, "product_detail_code")) {
-        p.setProductDetailCode(rs.getString("product_detail_code"));
-    }
-    if (hasColumn(rs, "product_detail_name")) {
-        p.setProductDetailName(rs.getString("product_detail_name"));
-    }
-    if (hasColumn(rs, "product_price")) {
-        p.setPrice(rs.getBigDecimal("product_price"));
-    }
-    i.setProductDetail(p);
+        // Set ProductDetails (nếu có)
+        ProductDetails p = new ProductDetails();
+        if (hasColumn(rs, "id_product_detail")) {
+            p.setId(rs.getInt("id_product_detail"));
+        }
+        if (hasColumn(rs, "product_detail_code")) {
+            p.setProductDetailCode(rs.getString("product_detail_code"));
+        }
+        if (hasColumn(rs, "product_detail_name")) {
+            p.setProductDetailName(rs.getString("product_detail_name"));
+        }
+        if (hasColumn(rs, "product_price")) {
+            p.setPrice(rs.getBigDecimal("product_price"));
+        }
+        i.setProductDetail(p);
 
-    // Set PetServices (nếu có)
-    PetServices ps = new PetServices();
-    if (hasColumn(rs, "service_code")) {
-        ps.setServiceCode(rs.getString("service_code"));
-    }
-    if (hasColumn(rs, "service_name")) {
-        ps.setServiceName(rs.getString("service_name"));
-    }
-    if (hasColumn(rs, "service_price")) {
-        ps.setPriceService(rs.getBigDecimal("service_price"));
-    }
-    i.setPetService(ps);
-        
-    // Set Pets (nếu có)
-    Pets pet = new Pets();
-    if (hasColumn(rs, "pet_name")) {
-        pet.setPetName(rs.getString("pet_name"));
-    }
-    i.setPet(pet);
+        // Set PetServices (nếu có)
+        PetServices ps = new PetServices();
+        if (hasColumn(rs, "service_code")) {
+            ps.setServiceCode(rs.getString("service_code"));
+        }
+        if (hasColumn(rs, "service_name")) {
+            ps.setServiceName(rs.getString("service_name"));
+        }
+        if (hasColumn(rs, "service_price")) {
+            ps.setPriceService(rs.getBigDecimal("service_price"));
+        }
+        i.setPetService(ps);
 
-    return i;
-}
+        // Set Pets (nếu có)
+        Pets pet = new Pets();
+        if (hasColumn(rs, "pet_name")) {
+            pet.setPetName(rs.getString("pet_name"));
+        }
+        i.setPet(pet);
+
+        return i;
+    }
 
 // Kiểm tra cột có tồn tại trong ResultSet không (tránh lỗi khi truy xuất dữ liệu không có)
     private boolean hasColumn(ResultSet rs, String columnName) {

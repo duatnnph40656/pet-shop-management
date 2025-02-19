@@ -13,12 +13,15 @@ import com.petshop.event.EventTextField;
 import com.petshop.models.Customers;
 import com.petshop.models.PetCareServices;
 import com.petshop.models.Pets;
+import com.petshop.models.ProductDetails;
 import com.petshop.models.TypePets;
 import com.petshop.popup.PopupCategoryPet;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogMessageError;
 import com.petshop.swing.message.DialogMessageFail;
 import com.petshop.swing.message.DialogMessageSuccess;
+import com.petshop.swing.table.EventAction;
+import com.petshop.swing.table.ModelAction;
 import com.petshop.ultils.Ultil;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -46,7 +49,7 @@ public class PetManagement extends javax.swing.JPanel {
         initComponents();
         init();
     }
-    
+
     private void init() {
         tblPet.fixTable(jScrollPane3);
         tbPetCareService.fixTable(jScrollPane4);
@@ -55,10 +58,11 @@ public class PetManagement extends javax.swing.JPanel {
 //        fillCboLocGiongThuCung(petDao.loadCboLocGiong());
         search();
         txtMaThuCung.setText("PET" + Ultil.generateRandomCode());
+        
+        getListPetCareS(careServiceDAO.getListPetCareService());
     }
-    
-    //<editor-fold defaultstate="collapsed" desc="{Pets...">
 
+    //<editor-fold defaultstate="collapsed" desc="{Pets...">
     public void fillCboLoaiThuCung(List<TypePets> list) {
         cboLoaiThuCung.removeAllItems();
         for (TypePets typePet : list) {
@@ -470,16 +474,46 @@ public class PetManagement extends javax.swing.JPanel {
 //        GlassPanePopup.showPopup(deleteHistory, "pdeleteHistory");
 //
 //    }
-    
     //</editor-fold>
-    
     //<editor-fold defaultstate="collapsed" desc="{PetCareService...">
-    private void getListPetCareS(List<PetCareServices> list){
+    private void getListPetCareS(List<PetCareServices> list) {
+        int stt = 1;
         tbPetCareService.setRowCount(0);
+        for (PetCareServices p : list) {
+            tbPetCareService.addRow(new Object[]{
+                p.getId(),
+                stt,
+                p.getPetS().getServiceCode(),
+                p.getPetS().getServiceName(),
+                p.getPet().getPetCode(),
+                p.getPet().getPetName(),
+                p.getPet().getBreed(),
+                p.getDateStart(),
+                p.getDateEnd(),
+                p.getActualEnd() == null ? "Chưa có thông tin" : p.getActualEnd(),
+                p.getNote()== null ? "Chưa có thông tin" :  p.getNote(),
+                p.isStatus() ? "Đang tiến hành" : "Đã hoàn thành",
+                new ModelAction<>(p, new EventAction<PetCareServices>() {
+                    @Override
+                    public void delete(PetCareServices p) {
+                        
+                    }
+
+                    @Override
+                    public void update(PetCareServices p) {
+
+                    }
+
+                    @Override
+                    public void add(PetCareServices model) {
+                    }
+                })
+            });
+            stt++;
+        }
     }
-    
+
     //</editor-fold>
-    
     private void showPopTypePet() {
         PopupCategoryPet typePet = new PopupCategoryPet();
         typePet.setConfirmListener(new com.petshop.event.ConfirmListener() {
@@ -510,20 +544,6 @@ public class PetManagement extends javax.swing.JPanel {
         textFieldAnimation1 = new com.petshop.swing.textfield.TextFieldAnimation();
         jScrollPane4 = new javax.swing.JScrollPane();
         tbPetCareService = new com.petshop.swing.tableMore.TableMore3();
-        jPanel9 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        textField11 = new com.petshop.swing.textfield.TextField1();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        textField12 = new com.petshop.swing.textfield.TextField1();
-        jLabel6 = new javax.swing.JLabel();
-        textField13 = new com.petshop.swing.textfield.TextField1();
-        combobox1 = new com.petshop.swing.combobox.Combobox();
-        combobox2 = new com.petshop.swing.combobox.Combobox();
-        button11 = new com.petshop.swing.Button1();
-        button12 = new com.petshop.swing.Button1();
-        textAreaScroll2 = new com.petshop.swing.textarea.TextAreaScroll();
-        textArea2 = new com.petshop.swing.textarea.TextArea();
         jPanel2 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jPanel10 = new javax.swing.JPanel();
@@ -573,13 +593,13 @@ public class PetManagement extends javax.swing.JPanel {
 
         tbPetCareService.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Title 1", "STT", "Mã DV", "Tên DV", "Mã Pet", "Tên Pet", "Giống loài", "Ngày bắt đầu", "Ngày kết thúc", "Ngày kết thúc thực tế", "Note", "Trạng thái"
+                "Title 1", "STT", "Mã DV", "Tên DV", "Mã Pet", "Tên Pet", "Giống loài", "Ngày bắt đầu", "Ngày kết thúc", "Ngày kết thúc thực tế", "Note", "Trạng thái", "Thao tác"
             }
         ));
         jScrollPane4.setViewportView(tbPetCareService);
@@ -601,7 +621,7 @@ public class PetManagement extends javax.swing.JPanel {
                     .addGroup(jPanel8Layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addGap(437, 437, 437)
-                        .addComponent(textFieldAnimation1, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE))))
+                        .addComponent(textFieldAnimation1, javax.swing.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE))))
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -611,88 +631,7 @@ public class PetManagement extends javax.swing.JPanel {
                     .addComponent(jLabel2)
                     .addComponent(textFieldAnimation1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane4))
-        );
-
-        jLabel3.setText("THÔNG TIN DỊCH VỤ");
-
-        jLabel4.setText("Mã dịch vụ");
-
-        jLabel5.setText("Ngày bắt đầu");
-
-        jLabel6.setText("Ngày kết thúc");
-
-        combobox1.setLabeText("Dịch vụ");
-
-        combobox2.setLabeText("Pet");
-
-        button11.setText("Thêm mới");
-
-        button12.setText("Reset");
-
-        textArea2.setColumns(20);
-        textArea2.setRows(5);
-        textAreaScroll2.setViewportView(textArea2);
-
-        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
-        jPanel9.setLayout(jPanel9Layout);
-        jPanel9Layout.setHorizontalGroup(
-            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
-                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(textField11, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(textField12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(textField13, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(combobox2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(combobox1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel9Layout.createSequentialGroup()
-                                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel5)
-                                    .addComponent(jLabel6))
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel9Layout.createSequentialGroup()
-                                .addComponent(button12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(button11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap())
-            .addGroup(jPanel9Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(textAreaScroll2, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(15, Short.MAX_VALUE))
-        );
-        jPanel9Layout.setVerticalGroup(
-            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel9Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel4)
-                .addGap(2, 2, 2)
-                .addComponent(textField11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel5)
-                .addGap(0, 0, 0)
-                .addComponent(textField13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel6)
-                .addGap(0, 0, 0)
-                .addComponent(textField12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(combobox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(combobox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(textAreaScroll2, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(button11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(button12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(137, Short.MAX_VALUE))
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -700,18 +639,14 @@ public class PetManagement extends javax.swing.JPanel {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, 0)
+                .addComponent(jPanel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1124,7 +1059,6 @@ public class PetManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_btnLichSuaXoaActionPerformed
 
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.Button btnCapNhat;
     private com.petshop.swing.Button btnLamMoi;
@@ -1132,23 +1066,15 @@ public class PetManagement extends javax.swing.JPanel {
     private com.petshop.swing.ButtonBadges btnPopupPets;
     private com.petshop.swing.Button btnThem;
     private com.petshop.swing.Button btnXoa;
-    private com.petshop.swing.Button1 button11;
-    private com.petshop.swing.Button1 button12;
     private javax.swing.ButtonGroup buttonGroup1;
     private com.petshop.swing.checkbox.JCheckBoxCustom cbDaTiem;
     com.petshop.swing.combobox.Combobox cboKhachHang;
     com.petshop.swing.combobox.Combobox cboLoaiThuCung;
     private com.petshop.swing.combobox.Combobox cboLocGiongThuCung;
     private com.petshop.swing.combobox.Combobox cboLocLoaiThuCung;
-    private com.petshop.swing.combobox.Combobox combobox1;
-    private com.petshop.swing.combobox.Combobox combobox2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel43;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
@@ -1157,7 +1083,6 @@ public class PetManagement extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel8;
-    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private com.petshop.swing.tabbed.MaterialTabbed materialTabbed1;
@@ -1165,11 +1090,6 @@ public class PetManagement extends javax.swing.JPanel {
     private com.petshop.swing.radio_button.RadioButtonCustom rdoDuc;
     private com.petshop.swing.tableMore.TableMore3 tbPetCareService;
     private com.petshop.swing.table.Table tblPet;
-    private com.petshop.swing.textarea.TextArea textArea2;
-    private com.petshop.swing.textarea.TextAreaScroll textAreaScroll2;
-    private com.petshop.swing.textfield.TextField1 textField11;
-    private com.petshop.swing.textfield.TextField1 textField12;
-    private com.petshop.swing.textfield.TextField1 textField13;
     private com.petshop.swing.textfield.TextFieldAnimation textFieldAnimation1;
     private com.petshop.swing.textfield.TextFieldRounded txtCanNang;
     private com.petshop.swing.textfield.TextFieldRounded txtGiongThuCung;

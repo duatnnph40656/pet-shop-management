@@ -84,7 +84,7 @@ public class PopupService extends javax.swing.JPanel {
 
     public void init() {
         txtPetCode.setText("PET" + Ultil.generateRandomCode());
-        getListPet(petDAO.getListPet());
+        getListPet(petDAO.getListPetSortId());
         loadCBBTypePet(typePetDAO.getListTypePet());
         eventDateChooser();
         eventTable();
@@ -117,10 +117,10 @@ public class PopupService extends javax.swing.JPanel {
         return txtPetCode.getText();
     }
 
-    public int getPetId(){
+    public int getPetId() {
         return (int) tbPet.getValueAt(getSeletedRowTable(), 0);
     }
-    
+
     private void eventTable() {
         tbPet.addMouseListener(new MouseAdapter() {
             @Override
@@ -312,6 +312,7 @@ public class PopupService extends javax.swing.JPanel {
             showMessageSuccess("Thêm thành công");
             getListPet(petDAO.getListPet());
             resetForm();
+            selectFirstRow();
         } else {
             showMessageFail("Thêm thất bại");
         }
@@ -360,6 +361,8 @@ public class PopupService extends javax.swing.JPanel {
         e.setId((int) tbPet.getValueAt(getSeletedRowTable(), 0));
         c.setPet(e);
 
+        c.setStatus(true);
+
         return c;
     }
 
@@ -372,6 +375,13 @@ public class PopupService extends javax.swing.JPanel {
             showMessageSuccess("Đã lưu vào quản lý dịch vụ!");
         } else {
             showMessageFail("Lưu thất bại!!!");
+        }
+    }
+
+    private void selectFirstRow() {
+        if (tbPet.getRowCount() > 0) { // Kiểm tra nếu bảng có dữ liệu
+            tbPet.setRowSelectionInterval(0, 0); // Chọn dòng đầu tiên
+            showDataPet(); // Gọi hàm để lấy dữ liệu dòng đã chọn
         }
     }
 
@@ -700,8 +710,7 @@ public class PopupService extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(36, 36, 36)))
+                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()

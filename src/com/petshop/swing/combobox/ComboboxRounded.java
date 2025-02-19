@@ -35,10 +35,6 @@ import com.petshop.swing.scrollbar.ScrollBarCustom;
 
 public class ComboboxRounded<E> extends JComboBox<E> {
 
-    private String labeText = "Label";
-    private Color lineColor = new Color(3, 155, 216);
-    private boolean mouseOver;
-
     public String getLabeText() {
         return labeText;
     }
@@ -54,6 +50,10 @@ public class ComboboxRounded<E> extends JComboBox<E> {
     public void setLineColor(Color lineColor) {
         this.lineColor = lineColor;
     }
+
+    private String labeText = "Label";
+    private Color lineColor = new Color(3, 155, 216);
+    private boolean mouseOver;
 
     @Override
     public void updateUI() {
@@ -79,7 +79,6 @@ public class ComboboxRounded<E> extends JComboBox<E> {
     public ComboboxRounded() {
         setBackground(Color.WHITE);
         setBorder(new EmptyBorder(15, 3, 5, 3));
-        setOpaque(false); // Make the component non-opaque
         installUI();
     }
 
@@ -162,6 +161,7 @@ public class ComboboxRounded<E> extends JComboBox<E> {
                     location = fraction;
                     repaint();
                 }
+
             };
             animator = new Animator(300, target);
             animator.setResolution(0);
@@ -171,7 +171,7 @@ public class ComboboxRounded<E> extends JComboBox<E> {
 
         @Override
         public void paintCurrentValueBackground(Graphics grphcs, Rectangle rctngl, boolean bln) {
-            // No background for current value
+
         }
 
         @Override
@@ -194,7 +194,7 @@ public class ComboboxRounded<E> extends JComboBox<E> {
                     return scroll;
                 }
             };
-            pop.setBorder(new LineBorder(new Color(200, 200, 200), 1));
+            pop.setBorder(new LineBorder(new Color(200, 200, 200), 1, true)); // Bo tròn viền popup
             return pop;
         }
 
@@ -204,15 +204,15 @@ public class ComboboxRounded<E> extends JComboBox<E> {
             Graphics2D g2 = (Graphics2D) grphcs;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB);
-            
+
             int width = getWidth();
             int height = getHeight();
 
-            // Draw a rounded rectangle for the combo box background
-            g2.setColor(Color.WHITE);
-            g2.fillRoundRect(0, 0, width, height, 15, 15); // Change 15 to adjust corner roundness
+            // Vẽ hình chữ nhật bo tròn làm nền
+            g2.setColor(Color.WHITE); // Màu nền của combo box
+            g2.fillRoundRect(0, 0, width, height, 15, 15); // Bo tròn 4 góc với bán kính 15
 
-            // Draw the line beneath the combo box
+            // Vẽ đường gạch dưới
             if (mouseOver) {
                 g2.setColor(lineColor);
             } else {
@@ -220,8 +220,20 @@ public class ComboboxRounded<E> extends JComboBox<E> {
             }
             g2.fillRect(2, height - 1, width - 4, 1);
 
+            // Vẽ văn bản được chọn
+            if (getSelectedIndex() != -1) { // Chỉ vẽ nếu có mục được chọn
+                g2.setColor(getForeground()); // Màu văn bản
+                FontMetrics ft = g2.getFontMetrics();
+                String text = getSelectedItem().toString();
+                Rectangle2D r2 = ft.getStringBounds(text, g2);
+                double textY = (height - r2.getHeight()) / 2 + ft.getAscent(); // Căn giữa theo chiều dọc
+                g2.drawString(text, 5, (int) textY); // Vẽ văn bản
+            }
+
+            // Vẽ hint text và line style
             createHintText(g2);
             createLineStyle(g2);
+
             g2.dispose();
         }
 
@@ -286,13 +298,26 @@ public class ComboboxRounded<E> extends JComboBox<E> {
                 super.paint(grphcs);
                 Graphics2D g2 = (Graphics2D) grphcs;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
                 int width = getWidth();
                 int height = getHeight();
-                g2.setColor(Color.WHITE);
-                g2.fillRoundRect(0, 0, width, height, 15, 15); // Rounded corners
-                g2.setColor(new Color(100, 100, 100));
-                g2.fillPolygon(new int[]{width / 2 - 5, width / 2 + 5, width / 2}, new int[]{height / 2 + 5, height / 2 + 5, height / 2 - 5}, 3);
+
+                // Vẽ hình chữ nhật bo tròn làm nền cho nút mũi tên
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, width, height, 15, 15); // Bo tròn 4 góc với bán kính 15
+
+                // Vẽ mũi tên
+                int size = 10;
+                int x = (width - size) / 2;
+                int y = (height - size) / 2 + 5;
+                int px[] = {x, x + size, x + size / 2};
+                int py[] = {y, y, y + size};
+                g2.setColor(new Color(100, 100, 100)); // Màu mũi tên
+                g2.fillPolygon(px, py, px.length);
+
+                g2.dispose();
             }
+
         }
     }
 }

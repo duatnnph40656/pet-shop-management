@@ -52,6 +52,34 @@ public class PetServiceDAO {
         return list;
     }
 
+    public List<PetServices> getListServiceDeleted() {
+        String sql = "SELECT\n"
+                + "    sd.id,\n"
+                + "    sd.service_code,\n"
+                + "    sd.service_name,\n"
+                + "    ts.type_service_name,\n"
+                + "    sd.price_service,\n"
+                + "    sd.describe_service,\n"
+                + "    sd.created_at,\n"
+                + "    sd.is_deleted,\n"
+                + "    sd.is_status,\n"
+                + "    sd.duration,\n"
+                + "    sd.time_unit\n"
+                + "FROM service_details sd\n"
+                + "JOIN type_services ts ON sd.id_service_type = ts.id\n"
+                + "WHERE sd.is_deleted = 1;";
+        List<PetServices> list = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapPetService(rs));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     public boolean insertPetService(PetServices petService) {
         String sql = "INSERT INTO service_details (service_code, service_name, id_service_type, price_service, describe_service,  is_deleted, is_status, duration, time_unit) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -169,6 +197,17 @@ public class PetServiceDAO {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(2, id);
             ps.setBoolean(1, status);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    public boolean restoreService(int id) {
+        String sql = "UPDATE service_details SET is_deleted = 0 WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();

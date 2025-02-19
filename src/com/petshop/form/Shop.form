@@ -125,18 +125,24 @@
             <Component class="com.petshop.swing.table.Table" name="tbInvoice">
               <Properties>
                 <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                  <Table columnCount="7" rowCount="4">
-                    <Column editable="true" title="" type="java.lang.Object"/>
-                    <Column editable="true" title="STT" type="java.lang.Object"/>
-                    <Column editable="true" title="M&#xe3; HD" type="java.lang.Object"/>
-                    <Column editable="true" title="T&#xea;n kh&#xe1;ch h&#xe0;ng" type="java.lang.Object"/>
-                    <Column editable="true" title="T&#xea;n nh&#xe2;n vi&#xea;n" type="java.lang.Object"/>
-                    <Column editable="true" title="T&#x1ed5;ng gi&#xe1;" type="java.lang.Object"/>
-                    <Column editable="true" title="Tr&#x1ea1;ng th&#xe1;i thanh to&#xe1;n" type="java.lang.Object"/>
+                  <Table columnCount="8" rowCount="4">
+                    <Column editable="false" title="" type="java.lang.Object"/>
+                    <Column editable="false" title="" type="java.lang.Object"/>
+                    <Column editable="false" title="STT" type="java.lang.Object"/>
+                    <Column editable="false" title="M&#xe3; HD" type="java.lang.Object"/>
+                    <Column editable="false" title="T&#xea;n kh&#xe1;ch h&#xe0;ng" type="java.lang.Object"/>
+                    <Column editable="false" title="T&#xea;n nh&#xe2;n vi&#xea;n" type="java.lang.Object"/>
+                    <Column editable="false" title="T&#x1ed5;ng gi&#xe1;" type="java.lang.Object"/>
+                    <Column editable="false" title="Tr&#x1ea1;ng th&#xe1;i thanh to&#xe1;n" type="java.lang.Object"/>
                   </Table>
                 </Property>
                 <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                   <TableColumnModel selectionModel="0">
+                    <Column maxWidth="0" minWidth="0" prefWidth="-1" resizable="true">
+                      <Title/>
+                      <Editor/>
+                      <Renderer/>
+                    </Column>
                     <Column maxWidth="0" minWidth="0" prefWidth="-1" resizable="true">
                       <Title/>
                       <Editor/>
@@ -251,14 +257,18 @@
                                   <Component id="lbTotalPrice" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="jLabel34" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="lbCustomerCode" max="32767" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
                                   <Component id="jLabel35" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="lbCustomerName" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="lbCustomerCode" max="32767" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="jLabel34" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="lbInvoiceCode" min="-2" pref="67" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
@@ -277,7 +287,7 @@
                                       </Group>
                                       <Component id="checkBoxPaymStatus" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="2" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -301,7 +311,9 @@
                   <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabel34" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="lbInvoiceCode" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="lbCustomerCode" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -315,7 +327,7 @@
                       <Component id="jLabel38" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="lbTotalPrice" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                   <Component id="cbbPayment" min="-2" pref="42" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -324,13 +336,13 @@
                   </Group>
                   <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                   <Component id="checkBoxPaymStatus" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="btnResetInvoice" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="btnDeleteInvoice" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
-                  <Component id="btnConfirmInvoice" min="-2" pref="44" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="btnConfirmInvoice" min="-2" pref="32" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -356,6 +368,9 @@
             </Property>
             <Property name="text" type="java.lang.String" value="X&#xe1;c nh&#x1ead;n"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnConfirmInvoiceActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel33">
           <Properties>
@@ -377,21 +392,21 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel34">
           <Properties>
-            <Property name="text" type="java.lang.String" value="M&#xe3; kh  :"/>
+            <Property name="text" type="java.lang.String" value="HD:"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel35">
           <Properties>
-            <Property name="text" type="java.lang.String" value="T&#xea;n kh : "/>
+            <Property name="text" type="java.lang.String" value="T&#xea;n KH:"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="lbCustomerCode">
+        <Component class="javax.swing.JLabel" name="lbInvoiceCode">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="SansSerif" size="12" style="1"/>
             </Property>
             <Property name="horizontalAlignment" type="int" value="0"/>
-            <Property name="text" type="java.lang.String" value="KH"/>
+            <Property name="text" type="java.lang.String" value="HD"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="lbCustomerName">
@@ -494,6 +509,20 @@
         </Component>
         <Component class="com.petshop.swing.textfield.TextField1" name="txtSearchCustomer">
         </Component>
+        <Component class="javax.swing.JLabel" name="lbCustomerCode">
+          <Properties>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+              <Font name="Segoe UI" size="12" style="1"/>
+            </Property>
+            <Property name="horizontalAlignment" type="int" value="0"/>
+            <Property name="text" type="java.lang.String" value="KH"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel3">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="KH:"/>
+          </Properties>
+        </Component>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPanel" name="jPanel4">
@@ -555,21 +584,27 @@
             <Component class="com.petshop.swing.tableMore.TableMore1" name="tbInvoiceDetail">
               <Properties>
                 <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                  <Table columnCount="10" rowCount="4">
-                    <Column editable="true" title="" type="java.lang.Object"/>
-                    <Column editable="true" title="STT" type="java.lang.Object"/>
-                    <Column editable="true" title="M&#xe3; HDCT" type="java.lang.Object"/>
-                    <Column editable="true" title="M&#xe3; SP or SV" type="java.lang.Object"/>
-                    <Column editable="true" title="T&#xea;n SP or SV" type="java.lang.Object"/>
-                    <Column editable="true" title="SL" type="java.lang.Object"/>
-                    <Column editable="true" title="Gi&#xe1; b&#xe1;n or Gi&#xe1; SV" type="java.lang.Object"/>
-                    <Column editable="true" title="T&#x1ed5;ng gi&#xe1;" type="java.lang.Object"/>
-                    <Column editable="true" title="Th&#xf4;ng tin kh&#xe1;c" type="java.lang.Object"/>
+                  <Table columnCount="11" rowCount="4">
+                    <Column editable="false" title="" type="java.lang.Object"/>
+                    <Column editable="false" title="" type="java.lang.Object"/>
+                    <Column editable="false" title="STT" type="java.lang.Object"/>
+                    <Column editable="false" title="M&#xe3; HDCT" type="java.lang.Object"/>
+                    <Column editable="false" title="M&#xe3; SP or SV" type="java.lang.Object"/>
+                    <Column editable="false" title="T&#xea;n SP or SV" type="java.lang.Object"/>
+                    <Column editable="false" title="SL" type="java.lang.Object"/>
+                    <Column editable="false" title="Gi&#xe1; b&#xe1;n or Gi&#xe1; SV" type="java.lang.Object"/>
+                    <Column editable="false" title="T&#x1ed5;ng gi&#xe1;" type="java.lang.Object"/>
+                    <Column editable="false" title="Th&#xf4;ng tin kh&#xe1;c" type="java.lang.Object"/>
                     <Column editable="true" title="Thao t&#xe1;c" type="java.lang.Object"/>
                   </Table>
                 </Property>
                 <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                   <TableColumnModel selectionModel="0">
+                    <Column maxWidth="0" minWidth="0" prefWidth="-1" resizable="true">
+                      <Title/>
+                      <Editor/>
+                      <Renderer/>
+                    </Column>
                     <Column maxWidth="0" minWidth="0" prefWidth="-1" resizable="true">
                       <Title/>
                       <Editor/>
@@ -670,7 +705,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cbbFilterTypePet" min="-2" pref="100" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="comboboxRounded2" min="-2" pref="119" max="-2" attributes="0"/>
+                      <Component id="cbbSort" min="-2" pref="119" max="-2" attributes="0"/>
                       <EmptySpace pref="75" max="32767" attributes="0"/>
                       <Component id="btnScanBarcode" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -691,13 +726,13 @@
                               <Component id="btnScanBarcode" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                              <Component id="comboboxRounded2" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="cbbSort" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="cbbFilterTypePet" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="cbbFilterProduct" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
-                      <Component id="jScrollPane3" pref="274" max="32767" attributes="0"/>
+                      <Component id="jScrollPane3" pref="280" max="32767" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -719,7 +754,7 @@
                 </Property>
               </Properties>
             </Component>
-            <Component class="com.petshop.swing.combobox.ComboboxRounded" name="comboboxRounded2">
+            <Component class="com.petshop.swing.combobox.ComboboxRounded" name="cbbSort">
               <Properties>
                 <Property name="labeText" type="java.lang.String" value="S&#x1eaf;p x&#x1ebf;p theo"/>
               </Properties>
@@ -750,19 +785,19 @@
                   <Properties>
                     <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                       <Table columnCount="14" rowCount="4">
-                        <Column editable="true" title="" type="java.lang.Object"/>
-                        <Column editable="true" title="STT" type="java.lang.Object"/>
-                        <Column editable="true" title="T&#xea;n SP" type="java.lang.Object"/>
-                        <Column editable="true" title="M&#xe3; SP" type="java.lang.Object"/>
-                        <Column editable="true" title="BarCode" type="java.lang.Object"/>
-                        <Column editable="true" title="D&#xe0;nh cho" type="java.lang.Object"/>
-                        <Column editable="true" title="H&#x1b0;&#x1a1;ng v&#x1ecb;" type="java.lang.Object"/>
-                        <Column editable="true" title="SL" type="java.lang.Object"/>
-                        <Column editable="true" title="TL" type="java.lang.Object"/>
-                        <Column editable="true" title="NSX" type="java.lang.Object"/>
-                        <Column editable="true" title="HSD" type="java.lang.Object"/>
-                        <Column editable="true" title="Gi&#xe1; b&#xe1;n" type="java.lang.Object"/>
-                        <Column editable="true" title="Tr&#x1ea1;ng th&#xe1;i" type="java.lang.Object"/>
+                        <Column editable="false" title="" type="java.lang.Object"/>
+                        <Column editable="false" title="STT" type="java.lang.Object"/>
+                        <Column editable="false" title="T&#xea;n SP" type="java.lang.Object"/>
+                        <Column editable="false" title="M&#xe3; SP" type="java.lang.Object"/>
+                        <Column editable="false" title="BarCode" type="java.lang.Object"/>
+                        <Column editable="false" title="D&#xe0;nh cho" type="java.lang.Object"/>
+                        <Column editable="false" title="H&#x1b0;&#x1a1;ng v&#x1ecb;" type="java.lang.Object"/>
+                        <Column editable="false" title="SL" type="java.lang.Object"/>
+                        <Column editable="false" title="TL" type="java.lang.Object"/>
+                        <Column editable="false" title="NSX" type="java.lang.Object"/>
+                        <Column editable="false" title="HSD" type="java.lang.Object"/>
+                        <Column editable="false" title="Gi&#xe1; b&#xe1;n" type="java.lang.Object"/>
+                        <Column editable="false" title="Tr&#x1ea1;ng th&#xe1;i" type="java.lang.Object"/>
                         <Column editable="true" title="Thao t&#xe1;c" type="java.lang.Object"/>
                       </Table>
                     </Property>
@@ -778,7 +813,7 @@
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="180" minWidth="180" prefWidth="-1" resizable="true">
+                        <Column maxWidth="230" minWidth="230" prefWidth="-1" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
@@ -803,7 +838,12 @@
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                        <Column maxWidth="40" minWidth="40" prefWidth="-1" resizable="true">
+                          <Title/>
+                          <Editor/>
+                          <Renderer/>
+                        </Column>
+                        <Column maxWidth="50" minWidth="50" prefWidth="-1" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
@@ -813,12 +853,7 @@
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                          <Title/>
-                          <Editor/>
-                          <Renderer/>
-                        </Column>
-                        <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                        <Column maxWidth="60" minWidth="60" prefWidth="-1" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
@@ -869,7 +904,7 @@
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="322" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="328" max="32767" attributes="0"/>
                   <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
                       <Component id="jPanel7" alignment="0" max="32767" attributes="0"/>
                   </Group>
@@ -925,7 +960,7 @@
                               <Component id="jLabel8" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
-                          <Component id="jScrollPane4" pref="276" max="32767" attributes="0"/>
+                          <Component id="jScrollPane4" pref="282" max="32767" attributes="0"/>
                           <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -968,14 +1003,14 @@
                       <Properties>
                         <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                           <Table columnCount="9" rowCount="4">
-                            <Column editable="true" title="" type="java.lang.Object"/>
-                            <Column editable="true" title="STT" type="java.lang.Object"/>
-                            <Column editable="true" title="M&#xe3; DV" type="java.lang.Object"/>
-                            <Column editable="true" title="T&#xea;n DV" type="java.lang.Object"/>
-                            <Column editable="true" title="Th&#x1edd;i gian" type="java.lang.Object"/>
-                            <Column editable="true" title="&#x110;&#x1a1;n v&#x1ecb; th&#x1edd;i gian" type="java.lang.Object"/>
-                            <Column editable="true" title="Gi&#xe1; DV" type="java.lang.Object"/>
-                            <Column editable="true" title="Tr&#x1ea1;ng th&#xe1;i" type="java.lang.Object"/>
+                            <Column editable="false" title="" type="java.lang.Object"/>
+                            <Column editable="false" title="STT" type="java.lang.Object"/>
+                            <Column editable="false" title="M&#xe3; DV" type="java.lang.Object"/>
+                            <Column editable="false" title="T&#xea;n DV" type="java.lang.Object"/>
+                            <Column editable="false" title="Th&#x1edd;i gian" type="java.lang.Object"/>
+                            <Column editable="false" title="&#x110;&#x1a1;n v&#x1ecb; th&#x1edd;i gian" type="java.lang.Object"/>
+                            <Column editable="false" title="Gi&#xe1; DV" type="java.lang.Object"/>
+                            <Column editable="false" title="Tr&#x1ea1;ng th&#xe1;i" type="java.lang.Object"/>
                             <Column editable="true" title="Thao t&#xe1;c" type="java.lang.Object"/>
                           </Table>
                         </Property>

@@ -38,6 +38,7 @@ import com.petshop.swing.table.ModelProfile;
 import com.petshop.ultils.Ultil;
 import java.awt.Color;
 import java.awt.Dialog;
+import java.awt.TextArea;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,9 +55,11 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.sql.Date;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -85,8 +88,8 @@ public class ProductManagement extends javax.swing.JPanel {
         typePetDAO = new TypePetDAO();
         tbProduct.fixTable(jScrollPane1);
         tbProductDetail.fixTable(jScrollPane2);
+        loadCbbSort();
         init();
-        this.getListProductDetail(productDetailDao.getListProductDetail());
     }
 
     void init() {
@@ -102,6 +105,7 @@ public class ProductManagement extends javax.swing.JPanel {
         this.loadCBBProduct(productDao.getListProduct());
         this.loadCbbFilterTypePet(typePetDAO.getListTypePet());
         this.loadCbbFilterProduct(productDao.getListProduct());
+        txtProductCode.setEditable(false);
     }
 
     private void addTableEvent() {
@@ -333,12 +337,14 @@ public class ProductManagement extends javax.swing.JPanel {
     }
 
     private void reloadTableProduct(PopupShowHistoryDeleted popup) {
+        int stt = 1;
         List<Products> products = productDao.getListProductDeleted();
         List<Object[]> data = new ArrayList<>();
 
         for (Products p : products) {
             data.add(new Object[]{
                 p.getId(),
+                stt,
                 p.getProductCode(),
                 p.getProductName(),
                 p.getCategoryProduct().getCategoryProductName(),
@@ -363,10 +369,11 @@ public class ProductManagement extends javax.swing.JPanel {
                     }
                 })
             });
+            stt++;
         }
 
         // Cập nhật lại bảng
-        popup.fillTable(data, new String[]{"ID", "Mã SP", "Tên SP", "Danh Mục", "Giá", "Ngày Tạo", "Trạng thái", "Thao tác"});
+        popup.fillTable(data, new String[]{"STT", "Mã SP", "Tên SP", "Danh Mục", "Giá", "Ngày Tạo", "Trạng thái", "Thao tác"});
     }
 
     public void showPopupHistoryDeletedProductD() {
@@ -470,7 +477,7 @@ public class ProductManagement extends javax.swing.JPanel {
         popup.fillTable(data, columnNames);
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="{Loadcbb...">
     public void loadCBBCategoryProduct(List<CategoryProducts> categoryList) {
         cbbCategoryProduct.removeAllItems();
@@ -509,7 +516,7 @@ public class ProductManagement extends javax.swing.JPanel {
             TypePets t = (TypePets) cbbFilterTypePet.getSelectedItem();
             if (t != null) {
                 int typePetId = t.getId();
-                filterProductDetailByTypePet(typePetId);
+//                filterProductDetailByTypePet(typePetId);
             }
         });
     }
@@ -533,7 +540,7 @@ public class ProductManagement extends javax.swing.JPanel {
             CategoryProducts selectedCategory = (CategoryProducts) cbbFilterCategory.getSelectedItem();
             if (selectedCategory != null) {
                 int categoryId = selectedCategory.getId();
-                filterProductByCategory(categoryId);
+//                filterProductByCategory(categoryId);
             }
         });
 
@@ -566,7 +573,8 @@ public class ProductManagement extends javax.swing.JPanel {
         }
         cbbFilterTypePet.setSelectedIndex(-1);
 
-        cbbFilterTypePet.addActionListener(e -> filterProductDetails());
+        // Thêm sự kiện cho JComboBox
+        cbbFilterTypePet.addActionListener(e -> filterAndSortProductDetails());
     }
 
     private void loadCbbFilterProduct(List<Products> productList) {
@@ -580,44 +588,58 @@ public class ProductManagement extends javax.swing.JPanel {
             cbbFilterProduct.addItem(p);
         }
         cbbFilterProduct.setSelectedIndex(-1);
-        cbbFilterProduct.addActionListener(e -> filterProductDetails());
+
+        // Thêm sự kiện cho JComboBox
+        cbbFilterProduct.addActionListener(e -> filterAndSortProductDetails());
     }
 
-    private void filterProductDetails() {
-        TypePets selectedTypePet = (TypePets) cbbFilterTypePet.getSelectedItem();
+    private void loadCbbSort() {
+        cbbSort.removeAllItems();
+        cbbSort.addItem("Theo giá tăng dần");
+        cbbSort.addItem("Theo giá giảm dần");
+        cbbSort.setSelectedIndex(-1); // Không chọn mục nào mặc định
+
+        // Thêm sự kiện cho JComboBox
+        cbbSort.addActionListener(e -> filterAndSortProductDetails());
+    }
+
+    private void filterAndSortProductDetails() {
+        // Lấy giá trị được chọn từ các JComboBox
         Products selectedProduct = (Products) cbbFilterProduct.getSelectedItem();
+        TypePets selectedTypePet = (TypePets) cbbFilterTypePet.getSelectedItem();
+        String selectedSort = (String) cbbSort.getSelectedItem();
 
-        Integer typePetId = (selectedTypePet != null) ? selectedTypePet.getId() : null;
+        // Xác định các tham số lọc
         Integer productId = (selectedProduct != null) ? selectedProduct.getId() : null;
+        Integer typePetId = (selectedTypePet != null) ? selectedTypePet.getId() : null;
 
-        // Nếu cả hai đều null, lấy toàn bộ danh sách
+        // Lấy danh sách sản phẩm chi tiết dựa trên bộ lọc
         List<ProductDetails> filteredList;
-        if (typePetId == null && productId == null) {
-            filteredList = productDetailDao.getListProductDetail();
+        if (productId == null && typePetId == null) {
+            filteredList = productDetailDao.getListProductDetail(); // Lấy toàn bộ danh sách nếu không có bộ lọc
         } else {
-            filteredList = productDetailDao.searchProductDetails(productId, typePetId);
+            filteredList = productDetailDao.searchProductDetails(productId, typePetId); // Lọc theo sản phẩm và loại thú cưng
         }
 
-        getListProductDetail(filteredList); // Cập nhật giao diện với danh sách lọc
-    }
+        // Sắp xếp danh sách nếu có yêu cầu sắp xếp
+        if (selectedSort != null) {
+            switch (selectedSort) {
+                case "Theo giá tăng dần":
+                    filteredList.sort(Comparator.comparing(ProductDetails::getPrice)); // Sắp xếp tăng dần theo giá
+                    break;
+                case "Theo giá giảm dần":
+                    filteredList.sort(Comparator.comparing(ProductDetails::getPrice).reversed()); // Sắp xếp giảm dần theo giá
+                    break;
+                default:
+                    break;
+            }
+        }
 
-    public void filterProductDetailByProduct(int productId) {
-        List<ProductDetails> list = productDetailDao.searchByProductId(productId);
-        getListProductDetail(list);
-    }
-
-    public void filterProductByCategory(int categoryId) {
-        List<Products> filteredProducts = productDao.selectProductByCategoryId(categoryId); // Lấy sản phẩm từ DAO
-        getListProduct(filteredProducts); // Hiển thị sản phẩm trong bảng
-
-    }
-
-    public void filterProductDetailByTypePet(int typePetId) {
-        List<ProductDetails> filteredProducts = productDetailDao.findByTypePetId(typePetId);
-        getListProductDetail(filteredProducts);
+        // Hiển thị danh sách đã lọc và sắp xếp
+        getListProductDetail(filteredList);
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="{crud product...">
     public void getListProduct(List<Products> list) {
         int stt = 1;
@@ -709,8 +731,9 @@ public class ProductManagement extends javax.swing.JPanel {
             }
         }
         String priceText = tbProduct.getValueAt(index, 5).toString();
-        priceText = priceText.replace("₫", "").replace(".", "");
+        priceText = priceText.replace("₫", "").replace(".", "").replace("\u00A0", "").replaceAll("\\s+", "").trim();
         txtPriceProduct.setText(priceText);
+
         boolean status = tbProduct.getValueAt(getSelectedRowProduct(), 7).equals("Ngưng hoạt động");
         if (status) {
             btnUpdateStatusP.setText("Hoạt động");
@@ -850,7 +873,7 @@ public class ProductManagement extends javax.swing.JPanel {
         }
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="{crud product detail...">
     public void getListProductDetail(List<ProductDetails> list) {
         int stt = 1;
@@ -949,8 +972,8 @@ public class ProductManagement extends javax.swing.JPanel {
         String quantityInStock = tbProductDetail.getValueAt(selectedRow, 9).toString(); // Số lượng tồn kho
         String weight = tbProductDetail.getValueAt(selectedRow, 10).toString().replace("KG", ""); // Cân nặng (loại bỏ "KG")
         String productionDate = tbProductDetail.getValueAt(selectedRow, 11).toString(); // Ngày sản xuất
-        String expiryDate = tbProductDetail.getValueAt(selectedRow, 12).toString().replace(" Tháng", ""); // Hạn sử dụng (loại bỏ "Tháng")
-        String price = tbProductDetail.getValueAt(selectedRow, 13).toString().replace("₫", "").replace(".", ""); // Giá sản phẩm
+        String expiryDate = tbProductDetail.getValueAt(selectedRow, 12).toString().replace("Tháng", "").trim(); // Hạn sử dụng (loại bỏ "Tháng")
+        String price = tbProductDetail.getValueAt(selectedRow, 13).toString().replace("₫", "").replace(".", "").replace("\u00A0", "").replaceAll("\\s+", "").trim(); // Giá sản phẩm
         String description = tbProductDetail.getValueAt(selectedRow, 14).toString(); // Mô tả sản phẩm
         String imagePath = tbProductDetail.getValueAt(selectedRow, 1).toString(); // Đường dẫn ảnh
         boolean status = tbProductDetail.getValueAt(selectedRow, 15).equals("Hết hàng");
@@ -1057,7 +1080,7 @@ public class ProductManagement extends javax.swing.JPanel {
         String description = txtDescribe.getText().trim();
         String imagePath = (String) pic.getClientProperty("imagePath");
         if (imagePath == null || imagePath.isEmpty()) {
-            imagePath = "01.jpg";
+            imagePath = "default.jpg";
         }
 
         boolean statusP = amount > 0;
@@ -1148,91 +1171,87 @@ public class ProductManagement extends javax.swing.JPanel {
     }
 
     public boolean checkProductD() {
-        if (txtProductDetailName.getText().isEmpty()) {
-            return false;
-        } else if (txtPriceProductDetail.getText().isEmpty()) {
-            return false;
-        } else if (txtWeightProductDetail.getText().isEmpty()) {
-            return false;
-        } else if (txtFlavor.getText().isEmpty()) {
-            return false;
-        } else if (txtQuantityInStock.getText().isEmpty()) {
-            return false;
-        } else if (txtDescribe.getText().isEmpty()) {
-            return false;
-        } else if (txtExpiry.getText().isEmpty()) {
-            return false;
-        } else if (txtProductDate.getText().isEmpty()) {
-            return false;
-        }
-
         try {
-            // Kiểm tra giá không âm và không vượt quá 1 tỷ
-            double price = Double.parseDouble(txtPriceProductDetail.getText());
-            if (price < 0) {
-                this.showMessageFail("Giá không được là số âm!");
-                return false;
-            }
-            if (price > 1_000_000_000) {
-                this.showMessageFail("Giá không được vượt quá 1 tỷ!");
+            // Kiểm tra các trường không được để trống
+            if (checkEmpty(txtProductDetailName, "Tên sản phẩm")
+                    || checkEmpty(txtPriceProductDetail, "Giá sản phẩm")
+                    || checkEmpty(txtWeightProductDetail, "Trọng lượng")
+                    || checkEmpty(txtFlavor, "Hương vị")
+                    || checkEmpty(txtQuantityInStock, "Số lượng tồn")
+                    || checkEmptyTextArea(txtDescribe, "Mô tả")
+                    || checkEmpty(txtExpiry, "Hạn sử dụng")
+                    || checkEmpty(txtProductDate, "Ngày sản xuất")) {
                 return false;
             }
 
-            // Kiểm tra số lượng không âm
-            int quantity = Integer.parseInt(txtQuantityInStock.getText());
-            if (quantity < 0) {
-                this.showMessageFail("Số lượng không được là số âm!");
-                return false;
-            }
+            // Kiểm tra giá sản phẩm (>= 0 và <= 1 tỷ)
+            double price = checkNumber(txtPriceProductDetail, "Giá sản phẩm", 0, 1_000_000_000, true);
+
+            // Kiểm tra số lượng sản phẩm (>= 0)
+            int quantity = (int) checkNumber(txtQuantityInStock, "Số lượng tồn", 0, Integer.MAX_VALUE, false);
+
+            // Kiểm tra trọng lượng (>= 0 và <= 100kg)
+            double weight = checkNumber(txtWeightProductDetail, "Trọng lượng", 0, 100, true);
+
+            // Kiểm tra hạn sử dụng (>= 0)
+            int expiry = (int) checkNumber(txtExpiry, "Hạn sử dụng", 0, Integer.MAX_VALUE, false);
 
             // Kiểm tra hương vị không chứa số
             if (!txtFlavor.getText().matches("^[^0-9]*$")) {
-                this.showMessageFail("Hương vị không được chứa số!");
-                return false;
-            }
-
-            // Kiểm tra trọng lượng không âm và không quá 100kg
-            double weight = Double.parseDouble(txtWeightProductDetail.getText());
-            if (weight < 0) {
-                this.showMessageFail("Trọng lượng không được là số âm!");
-                return false;
-            }
-            if (weight > 100) {
-                this.showMessageFail("Trọng lượng không được vượt quá 100kg!");
-                return false;
-            }
-
-            // Kiểm tra ngày hết hạn không âm
-            int expiry = Integer.parseInt(txtExpiry.getText());
-            if (expiry < 0) {
-                this.showMessageFail("Hạn sử dụng không được là số âm!");
+                showMessageFail("Hương vị không được chứa số!");
                 return false;
             }
 
             // Kiểm tra ngày sản xuất không lớn hơn ngày hiện tại
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            LocalDate productDate = LocalDate.parse(txtProductDate.getText(), formatter);
+            LocalDate productDate = LocalDate.parse(txtProductDate.getText().trim(), formatter);
             if (productDate.isAfter(LocalDate.now())) {
-                this.showMessageFail("Ngày sản xuất không được lớn hơn ngày hiện tại!");
+                showMessageFail("Ngày sản xuất không được lớn hơn ngày hiện tại!");
                 return false;
             }
 
             // Kiểm tra combobox
-            if (cbbProduct.getSelectedIndex() == -1) {
-                return false;
-            } else if (cbbTypePet.getSelectedIndex() == -1) {
+            if (cbbProduct.getSelectedIndex() == -1 || cbbTypePet.getSelectedIndex() == -1) {
+                showMessageFail("Vui lòng chọn loại sản phẩm và loại thú cưng!");
                 return false;
             }
 
         } catch (NumberFormatException e) {
-            this.showMessageFail("Định dạng số không hợp lệ!");
+            showMessageFail("Giá trị nhập vào không hợp lệ!");
             return false;
         } catch (DateTimeParseException e) {
-            this.showMessageFail("Định dạng ngày không hợp lệ! (yyyy-MM-dd)");
+            showMessageFail("Định dạng ngày không hợp lệ! (dd/MM/yyyy)");
             return false;
         }
 
         return true;
+    }
+
+    private boolean checkEmpty(JTextField field, String fieldName) {
+        if (field.getText().trim().isEmpty()) {
+            showMessageFail(fieldName + " không được để trống!");
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean checkEmptyTextArea(com.petshop.swing.textarea.TextArea field, String fieldName) {
+        if (field.getText().trim().isEmpty()) {
+            showMessageFail(fieldName + " không được để trống!");
+            return true;
+        }
+        return false;
+    }
+
+    private double checkNumber(JTextField field, String fieldName, double min, double max, boolean isDouble) throws NumberFormatException {
+        String text = field.getText().replaceAll("[^\\d.]", "").trim(); // Loại bỏ ký tự không mong muốn
+        double value = isDouble ? Double.parseDouble(text) : Integer.parseInt(text);
+
+        if (value < min || value > max) {
+            showMessageFail(fieldName + " phải từ " + min + " đến " + max + "!");
+            throw new NumberFormatException();
+        }
+        return value;
     }
 
     public void insertProductD() {
@@ -1256,7 +1275,7 @@ public class ProductManagement extends javax.swing.JPanel {
                 int id = p.getId();
                 productDetailDao.deleteProductDetail(id);
                 this.showMessageSuccess("Xóa thành công!!");
-                 getListProductDetail(productDetailDao.getListProductDetail());
+                getListProductDetail(productDetailDao.getListProductDetail());
                 resetFormProductD();
             } else {
                 this.showMessageFail("Vui lòng chọn thông tin để xóa!");
@@ -1285,7 +1304,7 @@ public class ProductManagement extends javax.swing.JPanel {
             int id = (int) tbProductDetail.getValueAt(selectedRow, 0);
             if (productDetailDao.updateProductDetail(id, readFormProductDetailForUpdate())) {
                 showMessageSuccess("Cập nhập thành công!");
-                 getListProductDetail(productDetailDao.getListProductDetail());
+                getListProductDetail(productDetailDao.getListProductDetail());
             } else {
                 showMessageFail("Cập nhập thất bại");
             }
@@ -1300,7 +1319,7 @@ public class ProductManagement extends javax.swing.JPanel {
         if (selectedRow != -1) {
             boolean status = tbProductDetail.getValueAt(selectedRow, 15).equals("Hết hàng");
             productDetailDao.updateStatusProductDetail(status, (int) tbProductDetail.getValueAt(selectedRow, 0));
-             getListProductDetail(productDetailDao.getListProductDetail());
+            getListProductDetail(productDetailDao.getListProductDetail());
             showMessageSuccess("Thay đổi trạng thái thành công!");
         } else {
             showMessageFail("Vui lòng chọn sản phẩm");
@@ -1344,7 +1363,7 @@ public class ProductManagement extends javax.swing.JPanel {
         txtProductName = new com.petshop.swing.textfield.TextFieldRounded();
         txtPriceProduct = new com.petshop.swing.textfield.TextFieldRounded();
         cbbCategoryProduct = new com.petshop.swing.combobox.Combobox();
-        txtProductCode = new com.petshop.swing.textfield.TextField1();
+        txtProductCode = new com.petshop.swing.textfield.TextField();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tbProduct = new com.petshop.swing.table.Table();
@@ -1502,7 +1521,7 @@ public class ProductManagement extends javax.swing.JPanel {
         cbbCategoryProduct.setFont(new java.awt.Font("Segoe UI", 0, 13)); // NOI18N
         cbbCategoryProduct.setLabeText("Loại sản phẩm");
 
-        txtProductCode.setEnabled(false);
+        txtProductCode.setLabelText("Mã SP");
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
@@ -1512,8 +1531,8 @@ public class ProductManagement extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel7Layout.createSequentialGroup()
-                        .addComponent(txtProductCode, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(15, 15, 15)
+                        .addComponent(txtProductCode, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
                         .addComponent(txtProductName, javax.swing.GroupLayout.PREFERRED_SIZE, 273, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel7Layout.createSequentialGroup()
                         .addComponent(cbbCategoryProduct, javax.swing.GroupLayout.PREFERRED_SIZE, 369, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1713,7 +1732,7 @@ public class ProductManagement extends javax.swing.JPanel {
         textAreaScroll1.setViewportView(txtDescribe);
 
         txtWeightProductDetail.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtWeightProductDetail.setLabelText("Trọng lượng (gram)");
+        txtWeightProductDetail.setLabelText("Trọng lượng (KG)");
 
         txtExpiry.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtExpiry.setLabelText("HSD(tháng)");
@@ -1968,7 +1987,7 @@ public class ProductManagement extends javax.swing.JPanel {
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true
+                false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -2255,7 +2274,7 @@ public class ProductManagement extends javax.swing.JPanel {
     private com.petshop.swing.textfield.TextFieldRounded txtFlavor;
     private com.petshop.swing.textfield.TextFieldRounded txtPriceProduct;
     private com.petshop.swing.textfield.TextFieldRounded txtPriceProductDetail;
-    private com.petshop.swing.textfield.TextField1 txtProductCode;
+    private com.petshop.swing.textfield.TextField txtProductCode;
     private com.petshop.swing.textfield.TextFieldRounded txtProductDate;
     private com.petshop.swing.textfield.TextFieldRounded txtProductDetailName;
     private com.petshop.swing.textfield.TextFieldRounded txtProductName;

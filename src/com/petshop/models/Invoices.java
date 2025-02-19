@@ -7,6 +7,9 @@ package com.petshop.models;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -23,27 +26,13 @@ public class Invoices {
     public String note;
     public BigDecimal costsIncurred;
     public boolean deleted;
-    public Date createdAt;
+    public LocalDateTime createdAt;
     public boolean status;
 
     public Invoices() {
     }
 
-    public Invoices(int id, String invoiceCode, Customers customer, Employees employee, boolean paymentMethod, BigDecimal totalPrice, boolean paymentStatus, String note, BigDecimal costsIncurred, boolean deleted, Date createdAt, boolean status) {
-        this.id = id;
-        this.invoiceCode = invoiceCode;
-        this.customer = customer;
-        this.employee = employee;
-        this.paymentMethod = paymentMethod;
-        this.totalPrice = totalPrice;
-        this.paymentStatus = paymentStatus;
-        this.note = note;
-        this.costsIncurred = costsIncurred;
-        this.deleted = deleted;
-        this.createdAt = createdAt;
-        this.status = status;
-    }
-
+    
     public Invoices(String invoiceCode, Customers customer, Employees employee, boolean paymentMethod, BigDecimal totalPrice, boolean paymentStatus, String note, BigDecimal costsIncurred,boolean deleted, boolean status) {
         this.invoiceCode = invoiceCode;
         this.customer = customer;
@@ -64,8 +53,6 @@ public class Invoices {
         this.status = status;
     }
 
-    
-    
  
 
     public int getId() {
@@ -164,15 +151,15 @@ public class Invoices {
         this.deleted = deleted;
     }
 
-    public Date getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
+
    
-    
     
 }

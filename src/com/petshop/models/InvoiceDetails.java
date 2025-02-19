@@ -16,15 +16,16 @@ import java.util.Date;
 public class InvoiceDetails {
     private int id;
     private String invoiceDetailCode;
-    private Invoices invoice; // Đối tượng Invoice chứa invoiceId
-    public ProductDetails productDetail;
-    public Pets pet;
-    public PetServices petService;
-    public int usageOrQuantity;
-    public BigDecimal totalPrice;
-    public Date createdAt;
-    public boolean deleted;
-    public boolean status;
+    private Invoices invoice; 
+    private ProductDetails productDetail;
+    private Pets pet;
+    private PetServices petService;
+    private int usageOrQuantity;
+    private BigDecimal totalPrice;
+    private Date createdAt;
+    private boolean deleted;
+    private boolean status;
+    private boolean typeInvoiceDetail;
 
     public InvoiceDetails() {
     }
@@ -41,6 +42,20 @@ public class InvoiceDetails {
         this.createdAt = createdAt;
         this.deleted = deleted;
         this.status = status;
+    }
+
+    public InvoiceDetails(ProductDetails productDetail, int usageOrQuantity) {
+        this.productDetail = productDetail;
+        this.usageOrQuantity = usageOrQuantity;
+    }
+
+    
+    public boolean isTypeInvoiceDetail() {
+        return typeInvoiceDetail;
+    }
+
+    public void setTypeInvoiceDetail(boolean typeInvoiceDetail) {
+        this.typeInvoiceDetail = typeInvoiceDetail;
     }
 
     public int getId() {
