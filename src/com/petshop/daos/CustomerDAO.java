@@ -19,7 +19,7 @@ public class CustomerDAO {
         String sql = """
             SELECT id, customer_code, customer_name, phone_number, email, address, 
                    created_at, is_deleted, is_status, gender
-            FROM customers
+            FROM customers WHERE is_deleted = 0
         """;
 
         List<Customers> list = new ArrayList<>();
@@ -124,7 +124,7 @@ public class CustomerDAO {
         }
         return null;
     }
-    
+
     public Customers searchCustomerByCustomerName(String name) {
         String sql = """
             SELECT id, customer_code, customer_name, phone_number, email, address, 
@@ -206,16 +206,32 @@ public class CustomerDAO {
     }
 
     public boolean delete(int id) {
+//        String sql = "UPDATE customers SET is_deleted = 1 WHERE id = ?";
+//        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+//            ps.setInt(1, id);
+//
+//            int rowsAffected = ps.executeUpdate();
+//            return rowsAffected > 0; // Trả về true nếu xóa thành công
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            System.out.println("Lỗi SQL khi xóa khách hàng: " + e.getMessage());
+//        }
+//        return false; // Trả về false nếu có lỗi xảy ra
         String sql = "UPDATE customers SET is_deleted = 1 WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
 
+            System.out.println("Đang thực thi câu lệnh xóa mềm với ID: " + id);
+
             int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0; // Trả về true nếu xóa thành công
+            System.out.println("Số dòng bị ảnh hưởng: " + rowsAffected);
+
+            return rowsAffected > 0;
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("Lỗi SQL khi xóa khách hàng: " + e.getMessage());
         }
-        return false; // Trả về false nếu có lỗi xảy ra
+        return false;
     }
 
     public boolean reset_delete(int id) {
