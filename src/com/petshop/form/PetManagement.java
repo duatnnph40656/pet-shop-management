@@ -493,7 +493,6 @@ public class PetManagement extends javax.swing.JPanel {
     }
     //</editor-fold>
     
-    
     //<editor-fold defaultstate="collapsed" desc="{PetCareService...">
     private void getListPetCareS(List<PetCareServices> list) {
         int stt = 1;
