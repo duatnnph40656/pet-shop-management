@@ -173,14 +173,14 @@ public class Shop extends javax.swing.JPanel {
         });
         GlassPanePopup.showPopup(poup, "pPet");
     }
-    
+
     public void showPopupWebcam() {
         PopupScanBarCode pWebCam = new PopupScanBarCode();
 
         pWebCam.setBarcodeListener((String barcode) -> {
             ProductDetails p = productDetailDAO.searchByBarCodeResultModel(barcode);
             if (p != null) {
-                insertPToInvoiceD(p,1); // Hiển thị thông tin sản phẩm lên giao diện
+                insertPToInvoiceD(p, 1); // Hiển thị thông tin sản phẩm lên giao diện
                 showMessageSuccess("Đã thêm sản phẩm");
                 GlassPanePopup.closePopup("pWebCam");
             } else {
@@ -201,7 +201,6 @@ public class Shop extends javax.swing.JPanel {
         cbbPayment.setSelectedIndex(-1);
     }
 
-       
     private void loadCbbFilterTypePet(List<TypePets> list) {
         cbbFilterTypePet.removeAllItems();
 
@@ -279,7 +278,7 @@ public class Shop extends javax.swing.JPanel {
         // Hiển thị danh sách đã lọc và sắp xếp
         getListProductDetail(filteredList);
     }
-    
+
 //    private void filterProductDetails() {
 //        TypePets selectedTypePet = (TypePets) cbbFilterTypePet.getSelectedItem();
 //        Products selectedProduct = (Products) cbbFilterProduct.getSelectedItem();
@@ -298,7 +297,6 @@ public class Shop extends javax.swing.JPanel {
 //        getListProductDetail(filteredList); // Cập nhật giao diện với danh sách lọc
 //    }
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc="{ProductDetail...">
     public void getListProductDetail(List<ProductDetails> list) {
         int stt = 1;
@@ -356,10 +354,10 @@ public class Shop extends javax.swing.JPanel {
         }
         return (Integer) tbInvoiceDetail.getValueAt(selectedRow, 1);
     }
-    
-    private void searchByBarcode(String barcode){
+
+    private void searchByBarcode(String barcode) {
         ProductDetails p = productDetailDAO.searchByBarCodeResultModel(barcode);
-        insertPToInvoiceD(p,1);
+        insertPToInvoiceD(p, 1);
     }
     //</editor-fold>
 
@@ -413,7 +411,7 @@ public class Shop extends javax.swing.JPanel {
 
         tbInvoice.clearSelection();
         clearInvoiceDetailTable();
-        
+
         cbbFilterProduct.setSelectedIndex(-1);
         cbbFilterTypePet.setSelectedIndex(-1);
         cbbSort.setSelectedIndex(-1);
@@ -445,7 +443,7 @@ public class Shop extends javax.swing.JPanel {
         i.setInvoiceCode(invoiceCode);
         i.setTotalPrice(totalPrice);
         i.setCostsIncurred(costsIncurred);
-        i.setNote(note);
+//        i.setNote(note);
         i.setCustomer(c);
         i.setEmployee(e);
         i.setStatus(status);
@@ -553,7 +551,7 @@ public class Shop extends javax.swing.JPanel {
             showMessageFail("Vui lòng chọn hóa đơn");
             return;
         }
-        if(!invoiceDAO.isValidInvoiceTotal(getIdSelectedInvoice())){
+        if (!invoiceDAO.isValidInvoiceTotal(getIdSelectedInvoice())) {
             showMessageFail("Không thể hoàn thành hóa đơn 0đ");
             return;
         }
@@ -573,11 +571,29 @@ public class Shop extends javax.swing.JPanel {
         getListProductDetail(productDetailDAO.getListProductDetail());
     }
 
-    private void printInvoice() {
+    private void printInvoice(String invoiceId, String employeeName, String customerName, String totalAmount) {
+        List<InvoiceDetails> list = invoiceDetailDAO.getInvoiceDetailsByInvoiceId(getIdSelectedInvoice());
+        List<String[]> items = new ArrayList<>();
 
+        for (InvoiceDetails i : list) {
+            String itemName = (i.getProductDetail() != null && i.getProductDetail().getProductDetailName() != null)
+                    ? i.getProductDetail().getProductDetailName()
+                    : (i.getPetService() != null ? i.getPetService().getServiceName() : "N/A");
+
+            String price = (i.getProductDetail() != null && i.getProductDetail().getPrice() != null)
+                    ? i.getProductDetail().getPrice().toString()
+                    : (i.getPetService() != null ? i.getPetService().getPriceService().toString() : "0");
+
+            String quantity = String.valueOf(i.getUsageOrQuantity());
+            String total = String.valueOf(i.getTotalPrice());
+
+            items.add(new String[]{itemName, quantity, price, total});
+        }
+
+        Ultil.generateInvoice(invoiceId, employeeName, customerName, employeeName, items, totalAmount);
     }
-    //</editor-fold>
 
+    //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="{InvoiceDetail...">
     public void getListInvoiceDetail(List<InvoiceDetails> list) {
         int stt = 1;
@@ -795,7 +811,7 @@ public class Shop extends javax.swing.JPanel {
         Customers t = customerDAO.searchCustomerByPhoneNumber(keyword);
         if (t != null) {
             txtSearchCustomer.setText(t.getPhoneNumber());
-            lbInvoiceCode.setText(t.getCustomerCode());
+            lbCustomerCode.setText(t.getCustomerCode());
             lbCustomerName.setText(t.getCustomerName());
         } else {
             showMessageConfirm("Không tìm thấy khách hàng \nbạn có muốn thêm mới khách hàng", () -> {
@@ -892,6 +908,7 @@ public class Shop extends javax.swing.JPanel {
             System.out.println("Thêm dịch vụ thất bại!");
         }
     }
+
     //</editor-fold>
     /**
      * This method is called from within the constructor to initialize the form.
@@ -1548,7 +1565,9 @@ public class Shop extends javax.swing.JPanel {
 
     private void btnConfirmInvoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfirmInvoiceActionPerformed
         // TODO add your handling code here:
-        updateInvoice();
+        showMessageConfirm("Bạn có muốn in hóa đơn không?", () -> {
+            updateInvoice();
+        });
     }//GEN-LAST:event_btnConfirmInvoiceActionPerformed
 
     private void btnScanBarcodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnScanBarcodeActionPerformed
