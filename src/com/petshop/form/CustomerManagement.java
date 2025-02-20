@@ -6,6 +6,7 @@ import com.petshop.event.EventTextField;
 import com.petshop.models.Customers;
 import com.petshop.popup.PopupCategoryProduct;
 import com.petshop.ultils.Ultil;
+import java.awt.BorderLayout;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -23,6 +24,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import java.io.*;
 import java.util.List;
+import javax.swing.ImageIcon;
+import java.awt.Image;
+
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -43,6 +47,7 @@ public class CustomerManagement extends javax.swing.JPanel {
 
     public CustomerManagement() {
         initComponents();
+        
         tblKhachHang.fixTable(jScrollPane1);
         this.customerRepo = new CustomerDAO();
         loadTable(customerRepo.getListCustomers());
@@ -146,14 +151,13 @@ public class CustomerManagement extends javax.swing.JPanel {
         rdoActive = new com.petshop.swing.radio_button.RadioButtonCustom();
         jLabel2 = new javax.swing.JLabel();
         rdoInActive = new com.petshop.swing.radio_button.RadioButtonCustom();
-        jPanel8 = new javax.swing.JPanel();
-        btnPopupCProduct = new com.petshop.swing.ButtonBadges();
         txtSdt = new com.petshop.swing.textfield.TextFieldRounded();
         txtNgayTao = new com.petshop.swing.textfield.TextFieldRounded();
         txtEmail = new com.petshop.swing.textfield.TextFieldRounded();
         jLabel3 = new javax.swing.JLabel();
         rdoNam = new com.petshop.swing.radio_button.RadioButtonCustom();
         rdoNu = new com.petshop.swing.radio_button.RadioButtonCustom();
+        jButton1 = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jPanel10 = new javax.swing.JPanel();
         lblKhachHang = new javax.swing.JLabel();
@@ -364,6 +368,8 @@ public class CustomerManagement extends javax.swing.JPanel {
             }
         });
 
+        txtMaKH.setEditable(false);
+        txtMaKH.setBackground(new java.awt.Color(204, 204, 204));
         txtMaKH.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtMaKH.setLabelText("Mã khách hàng");
 
@@ -378,34 +384,6 @@ public class CustomerManagement extends javax.swing.JPanel {
 
         buttonGroup1.add(rdoInActive);
         rdoInActive.setText("Chưa kích hoạt");
-
-        jPanel8.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel8.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        btnPopupCProduct.setBackground(new java.awt.Color(204, 255, 255));
-        btnPopupCProduct.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-add-24 (1).png"))); // NOI18N
-        btnPopupCProduct.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnPopupCProductActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
-        jPanel8.setLayout(jPanel8Layout);
-        jPanel8Layout.setHorizontalGroup(
-            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel8Layout.createSequentialGroup()
-                .addGap(71, 71, 71)
-                .addComponent(btnPopupCProduct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(72, Short.MAX_VALUE))
-        );
-        jPanel8Layout.setVerticalGroup(
-            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel8Layout.createSequentialGroup()
-                .addGap(55, 55, 55)
-                .addComponent(btnPopupCProduct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(58, Short.MAX_VALUE))
-        );
 
         txtSdt.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtSdt.setLabelText("SĐT");
@@ -437,6 +415,16 @@ public class CustomerManagement extends javax.swing.JPanel {
         buttonGroup2.add(rdoNu);
         rdoNu.setText("Nữ");
 
+        jButton1.setBackground(new java.awt.Color(255, 255, 255));
+        jButton1.setForeground(new java.awt.Color(255, 255, 255));
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/resources/images/customer.png"))); // NOI18N
+        jButton1.setBorder(null);
+        jButton1.setBorderPainted(false);
+        jButton1.setContentAreaFilled(false);
+        jButton1.setOpaque(false);
+        jButton1.setRequestFocusEnabled(false);
+        jButton1.setVerifyInputWhenFocusTarget(false);
+
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
         jPanel7Layout.setHorizontalGroup(
@@ -452,19 +440,24 @@ public class CustomerManagement extends javax.swing.JPanel {
                         .addComponent(txtMaKH, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(33, 33, 33)
                         .addComponent(txtSdt, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(49, 49, 49)
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel7Layout.createSequentialGroup()
-                        .addComponent(rdoActive, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(rdoInActive, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel7Layout.createSequentialGroup()
-                        .addComponent(rdoNam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(rdoNu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(49, 49, 49)
+                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel7Layout.createSequentialGroup()
+                                .addComponent(rdoActive, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(rdoInActive, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel7Layout.createSequentialGroup()
+                                .addComponent(rdoNam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(rdoNu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(36, 36, 36)))
                 .addContainerGap(22, Short.MAX_VALUE))
         );
         jPanel7Layout.setVerticalGroup(
@@ -491,15 +484,15 @@ public class CustomerManagement extends javax.swing.JPanel {
                             .addComponent(rdoNam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(rdoNu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel7Layout.createSequentialGroup()
                         .addComponent(txtDiaChi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtNgayTao, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(22, 22, 22))
+                    .addComponent(jButton1))
+                .addContainerGap())
         );
 
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
@@ -725,15 +718,15 @@ public class CustomerManagement extends javax.swing.JPanel {
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -742,7 +735,7 @@ public class CustomerManagement extends javax.swing.JPanel {
                             .addComponent(lblKhachHang7)
                             .addComponent(btnDeleteHistory6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(btnDeleteHistory7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addContainerGap(23, Short.MAX_VALUE))))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -759,12 +752,6 @@ public class CustomerManagement extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_btnThemActionPerformed
 
-    private void btnPopupCProductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPopupCProductActionPerformed
-        // TODO add your handling code here:
-        PopupCategoryProduct obj = new PopupCategoryProduct();
-        GlassPanePopup.showPopup(obj);
-    }//GEN-LAST:event_btnPopupCProductActionPerformed
-
     private void button5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button5ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_button5ActionPerformed
@@ -778,20 +765,27 @@ public class CustomerManagement extends javax.swing.JPanel {
         if (viTri == -1) {
             return;
         }
-        String ma = this.tblKhachHang.getValueAt(viTri, 2).toString();
-        String ten = this.tblKhachHang.getValueAt(viTri, 3).toString();
-        String diaChi = this.tblKhachHang.getValueAt(viTri, 4).toString();
-        String sdt = this.tblKhachHang.getValueAt(viTri, 5).toString();
-        String ngayTao = this.tblKhachHang.getValueAt(viTri, 6).toString();
-        String email = this.tblKhachHang.getValueAt(viTri, 7).toString();
-        String trangThai = this.tblKhachHang.getValueAt(viTri, 8).toString();
-        String gioiTinh = this.tblKhachHang.getValueAt(viTri, 9).toString();
+
+        String ma = "", ten = "", diaChi = "", sdt = "", ngayTao = "", email = "", trangThai = "", gioiTinh = "";
+
+        if (tblKhachHang.getColumnCount() > 9) {
+            ma = (tblKhachHang.getValueAt(viTri, 2) != null) ? tblKhachHang.getValueAt(viTri, 2).toString() : "";
+            ten = (tblKhachHang.getValueAt(viTri, 3) != null) ? tblKhachHang.getValueAt(viTri, 3).toString() : "";
+            diaChi = (tblKhachHang.getValueAt(viTri, 4) != null) ? tblKhachHang.getValueAt(viTri, 4).toString() : "";
+            sdt = (tblKhachHang.getValueAt(viTri, 5) != null) ? tblKhachHang.getValueAt(viTri, 5).toString() : "";
+            ngayTao = (tblKhachHang.getValueAt(viTri, 6) != null) ? tblKhachHang.getValueAt(viTri, 6).toString() : "";
+            email = (tblKhachHang.getValueAt(viTri, 7) != null) ? tblKhachHang.getValueAt(viTri, 7).toString() : "";
+            trangThai = (tblKhachHang.getValueAt(viTri, 8) != null) ? tblKhachHang.getValueAt(viTri, 8).toString() : "";
+            gioiTinh = (tblKhachHang.getValueAt(viTri, 9) != null) ? tblKhachHang.getValueAt(viTri, 9).toString() : "";
+        }
 
         this.txtMaKH.setText(ma);
         this.txtHoten.setText(ten);
         this.txtDiaChi.setText(diaChi);
         this.txtSdt.setText(sdt);
         this.txtEmail.setText(email);
+<<<<<<< HEAD
+=======
         this.txtNgayTao.setText(ngayTao);
         if (trangThai.equals("Đã kích hoạt")) {
             this.rdoActive.setSelected(true);
@@ -803,6 +797,7 @@ public class CustomerManagement extends javax.swing.JPanel {
         } else {
             this.rdoNu.setSelected(true);
         }
+>>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
     }//GEN-LAST:event_tblKhachHangMouseClicked
 
     private void txtHotenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtHotenActionPerformed
@@ -825,7 +820,10 @@ public class CustomerManagement extends javax.swing.JPanel {
         if (confirm != JOptionPane.YES_OPTION) {
             return;
         }
+
         int id = (int) this.tblKhachHang.getValueAt(row, 0);
+        System.out.println("Đang xóa khách hàng có ID: " + id);
+
         this.customerRepo.delete(id);
         JOptionPane.showMessageDialog(this, "Xoá thành công");
         loadTable(customerRepo.getListCustomers());
@@ -930,7 +928,6 @@ public class CustomerManagement extends javax.swing.JPanel {
     private com.petshop.swing.Button btnDeleteHistory5;
     private com.petshop.swing.Button btnDeleteHistory6;
     private com.petshop.swing.Button btnDeleteHistory7;
-    private com.petshop.swing.ButtonBadges btnPopupCProduct;
     private com.petshop.swing.Button btnReload;
     private com.petshop.swing.Button btnReset;
     private com.petshop.swing.Button btnSua;
@@ -944,6 +941,7 @@ public class CustomerManagement extends javax.swing.JPanel {
     private javax.swing.ButtonGroup buttonGroup4;
     private com.petshop.swing.combobox.Combobox cbbSapxepTheoTen;
     private com.petshop.swing.combobox.Combobox cbbTrangThai;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -954,7 +952,6 @@ public class CustomerManagement extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
-    private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblKhachHang;
@@ -995,8 +992,7 @@ public class CustomerManagement extends javax.swing.JPanel {
             stt++;
             tblKhachHang.addRow(row);
         }
-   
-       
+
     }
 
     private void loadTable_deleteHistory() {
@@ -1019,7 +1015,7 @@ public class CustomerManagement extends javax.swing.JPanel {
                 customer.getPhoneNumber(),
                 customer.getCreatedAt(),
                 customer.getEmail(),
-                customer.isStatus()? "Đã kích hoạt" : "Chưa kích hoạt",
+                customer.isStatus() ? "Đã kích hoạt" : "Chưa kích hoạt",
                 customer.isGender() ? "Nam" : "Nữ"
             };
             stt++;
@@ -1095,7 +1091,7 @@ public class CustomerManagement extends javax.swing.JPanel {
                 customer.getPhoneNumber(),
                 customer.getCreatedAt(),
                 customer.getEmail(),
-                customer.isStatus()? "Đã kích hoạt" : "Chưa kích hoạt",
+                customer.isStatus() ? "Đã kích hoạt" : "Chưa kích hoạt",
                 customer.isGender() ? "Nam" : "Nữ"
             };
             stt++;
@@ -1167,4 +1163,6 @@ public class CustomerManagement extends javax.swing.JPanel {
             }
         }
     }
+
+    
 }

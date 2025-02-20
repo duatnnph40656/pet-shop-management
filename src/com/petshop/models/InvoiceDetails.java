@@ -16,6 +16,46 @@ import java.util.Date;
 public class InvoiceDetails {
     private int id;
     private String invoiceDetailCode;
+<<<<<<< HEAD
+    private Invoices invoice; // Đối tượng Invoice chứa invoiceId
+    public ProductDetails productDetail;
+    public Pets pet;
+    public PetServices petService;
+    public int usageOrQuantity;
+    public BigDecimal totalPrice;
+    public Date createdAt;
+    public boolean deleted;
+    public boolean status;
+    private String productOrServiceName;
+    private String productOrServiceCode;
+    public BigDecimal total;
+    public String duration;
+    public BigDecimal price;
+
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
+
+    public String getDuration() {
+        return duration;
+    }
+
+    public void setDuration(String duration) {
+        this.duration = duration;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+=======
     private Invoices invoice; 
     private ProductDetails productDetail;
     private Pets pet;
@@ -26,6 +66,7 @@ public class InvoiceDetails {
     private boolean deleted;
     private boolean status;
     private boolean typeInvoiceDetail;
+>>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
 
     public InvoiceDetails() {
     }
@@ -44,6 +85,22 @@ public class InvoiceDetails {
         this.status = status;
     }
 
+<<<<<<< HEAD
+    public String getProductOrServiceName() {
+        return productOrServiceName;
+    }
+
+    public void setProductOrServiceName(String productOrServiceName) {
+        this.productOrServiceName = productOrServiceName;
+    }
+
+    public String getProductOrServiceCode() {
+        return productOrServiceCode;
+    }
+
+    public void setProductOrServiceCode(String productOrServiceCode) {
+        this.productOrServiceCode = productOrServiceCode;
+=======
     public InvoiceDetails(ProductDetails productDetail, int usageOrQuantity) {
         this.productDetail = productDetail;
         this.usageOrQuantity = usageOrQuantity;
@@ -56,6 +113,7 @@ public class InvoiceDetails {
 
     public void setTypeInvoiceDetail(boolean typeInvoiceDetail) {
         this.typeInvoiceDetail = typeInvoiceDetail;
+>>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
     }
 
     public int getId() {
