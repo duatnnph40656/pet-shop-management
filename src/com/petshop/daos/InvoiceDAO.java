@@ -26,7 +26,7 @@ public class InvoiceDAO {
     }
 
     public List<Invoices> getListInvoice() {
-<<<<<<< HEAD
+
         String sql = "SELECT  i.id, \n"
                 + "                   i.invoice_code,  \n"
                 + "                   i.created_at,  \n"
@@ -40,8 +40,8 @@ public class InvoiceDAO {
                 + "               JOIN customers c ON i.id_customer = c.id \n"
                 + "               JOIN employees e ON i.id_employee = e.id \n"
                 + "               WHERE i.is_status = 1 AND i.is_deleted = 0";
-=======
-        String sql = "SELECT \n"
+
+        String sql1 = "SELECT \n"
                 + "    i.id, \n"
                 + "    i.invoice_code, \n"
                 + "    i.total_price, \n"
@@ -57,10 +57,9 @@ public class InvoiceDAO {
                 + "JOIN customers c ON i.id_customer = c.id\n"
                 + "JOIN employees e ON i.id_employee = e.id\n"
                 + "WHERE i.is_status = 1 AND i.is_deleted = 0;";
->>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
 
         List<Invoices> list = new ArrayList<>();
-        try ( PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapInvoice(rs));
             }
@@ -69,8 +68,6 @@ public class InvoiceDAO {
         }
         return list;
     }
-<<<<<<< HEAD
-=======
 
     public List<Invoices> getListInvoiceAll() {
         String sql = "SELECT \n"
@@ -188,27 +185,25 @@ public class InvoiceDAO {
         }
         return false;
     }
-    
+
     public boolean isValidInvoiceTotal(int invoiceId) {
-    String sql = "SELECT total_price FROM invoices WHERE id = ?";
+        String sql = "SELECT total_price FROM invoices WHERE id = ?";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, invoiceId);
-        try (ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                BigDecimal totalPrice = rs.getBigDecimal("total_price");
-                return totalPrice != null && totalPrice.compareTo(BigDecimal.ZERO) > 0;
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, invoiceId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    BigDecimal totalPrice = rs.getBigDecimal("total_price");
+                    return totalPrice != null && totalPrice.compareTo(BigDecimal.ZERO) > 0;
+                }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
+
+        return false; // Trả về false nếu không tìm thấy hóa đơn hoặc có lỗi xảy ra
     }
-    
-    return false; // Trả về false nếu không tìm thấy hóa đơn hoặc có lỗi xảy ra
-}
 
-
->>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
     public Invoices getInvoiceById(int invoiceId) {
         String sql = "SELECT i.id, i.invoice_code, i.total_price, i.costs_incurred, "
                 + "i.payment_method, i.payment_status, i.note, "
@@ -233,79 +228,6 @@ public class InvoiceDAO {
         return null; // Trả về null nếu không tìm thấy hóa đơn
     }
 
-    public boolean createPendingInvoice(Invoices invoice) {
-        String sql = "INSERT INTO invoices (invoice_code, id_customer, id_employee, is_status, is_deleted) "
-                + "VALUES (?, ?, ?, ?, ?)";
-
-        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, invoice.getInvoiceCode());
-            ps.setInt(2, invoice.getCustomer().getId());
-            ps.setInt(3, invoice.getEmployee().getId());
-            ps.setBoolean(4, invoice.isStatus()); // Trạng thái "Chờ thanh toán"
-            ps.setBoolean(5, false); // Mặc định chưa bị xóa
-
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean updatePaymentStatus(int invoiceId, boolean paymentStatus) {
-        String sql = "UPDATE invoices SET payment_status = ? WHERE id = ?";
-        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setBoolean(1, paymentStatus);
-            ps.setInt(2, invoiceId);
-
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean hasPendingInvoice(int customerId) {
-        String sql = "SELECT COUNT(*) FROM invoices WHERE is_status = 1 AND id_customer = ? AND is_deleted = 0";
-
-        try ( PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, customerId);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1) > 0; // Nếu có ít nhất 1 hóa đơn chờ, trả về true
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean updateStatus(int invoiceId, boolean status) {
-        String sql = "UPDATE invoices SET status = ? WHERE id = ?";
-        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setBoolean(1, status);
-            ps.setInt(2, invoiceId);
-
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean updateDeletedStatus(int invoiceId, boolean isDeleted) {
-        String sql = "UPDATE invoices SET is_deleted = ? WHERE id = ?";
-        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setBoolean(1, isDeleted);
-            ps.setInt(2, invoiceId);
-
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
     public List<Invoices> searchInvoiceByCode(String invoiceCode) {
         String sql = "SELECT i.id, i.invoice_code, i.total_price, i.costs_incurred, "
                 + "i.payment_method, i.payment_status, i.note, "
@@ -317,10 +239,10 @@ public class InvoiceDAO {
 
         List<Invoices> list = new ArrayList<>();
 
-        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, "%" + invoiceCode + "%"); // Tìm kiếm gần đúng
 
-            try ( ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapInvoice(rs));
                 }
@@ -343,10 +265,10 @@ public class InvoiceDAO {
 
         List<Invoices> list = new ArrayList<>();
 
-        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, customerId);
 
-            try ( ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapInvoice(rs));
                 }
@@ -369,10 +291,10 @@ public class InvoiceDAO {
 
         List<Invoices> list = new ArrayList<>();
 
-        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, employeeId);
 
-            try ( ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapInvoice(rs));
                 }
@@ -384,27 +306,6 @@ public class InvoiceDAO {
         return list;
     }
 
-    public Invoices mapInvoice(ResultSet rs) throws SQLException {
-        Invoices i = new Invoices();
-        i.setId(rs.getInt("id"));
-        i.setInvoiceCode(rs.getString("invoice_code"));
-        i.setTotalPrice(rs.getBigDecimal("total_price"));
-        i.setPaymentStatus(rs.getBoolean("payment_status"));
-        i.setNote(rs.getString("note"));
-        i.setCreatedAt(rs.getDate("created_at")); // Chuyển đổi đúng kiểu thời gian
-        i.setCostsIncurred(rs.getBigDecimal("costs_incurred"));
-        // Tạo đối tượng Customers và set tên khách hàng
-        Customers c = new Customers();
-        c.setCustomerName(rs.getString("customer_name"));
-        i.setCustomer(c);
-
-        // Tạo đối tượng Employees và set mã nhân viên
-        Employees e = new Employees();
-        e.setEmployeeCode(rs.getString("employee_code"));
-        i.setEmployee(e);
-
-        return i;
-    }
 
     public ArrayList<Invoices> search(String keyword) {
         String sql = "SELECT  i.id, \n"
@@ -427,7 +328,7 @@ public class InvoiceDAO {
         }
 
         ArrayList<Invoices> list = new ArrayList<>();
-        try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             if (hasKeyword) {
                 ps.setString(1, "%" + keyword.trim() + "%"); // Chỉ set nếu có từ khóa
             }
@@ -440,6 +341,7 @@ public class InvoiceDAO {
         }
         return list;
     }
+
     public boolean updateTotalPrice(int invoiceId) {
         String sumSql = "SELECT COALESCE(SUM(total_price), 0) FROM invoice_details WHERE id_invoice = ? AND is_deleted = 0";
         String updateSql = "UPDATE invoices SET total_price = ? WHERE id = ?";
@@ -466,8 +368,6 @@ public class InvoiceDAO {
         return false;
     }
 
-<<<<<<< HEAD
-=======
     public Invoices mapInvoice(ResultSet rs) throws SQLException {
         Invoices i = new Invoices();
         i.setId(rs.getInt("id"));
@@ -490,6 +390,4 @@ public class InvoiceDAO {
         i.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
         return i;
     }
-
->>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
 }

@@ -784,8 +784,7 @@ public class CustomerManagement extends javax.swing.JPanel {
         this.txtDiaChi.setText(diaChi);
         this.txtSdt.setText(sdt);
         this.txtEmail.setText(email);
-<<<<<<< HEAD
-=======
+
         this.txtNgayTao.setText(ngayTao);
         if (trangThai.equals("Đã kích hoạt")) {
             this.rdoActive.setSelected(true);
@@ -797,7 +796,7 @@ public class CustomerManagement extends javax.swing.JPanel {
         } else {
             this.rdoNu.setSelected(true);
         }
->>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
+
     }//GEN-LAST:event_tblKhachHangMouseClicked
 
     private void txtHotenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtHotenActionPerformed

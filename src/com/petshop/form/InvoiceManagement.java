@@ -6,26 +6,6 @@ package com.petshop.form;
 
 import com.petshop.daos.InvoiceDAO;
 import com.petshop.daos.InvoiceDetailDAO;
-import com.petshop.event.ConfirmListener;
-import com.petshop.event.ConfirmListenerInput;
-import com.petshop.event.EventCallBack;
-import com.petshop.event.EventTextField;
-import com.petshop.models.Customers;
-import com.petshop.models.InvoiceDetails;
-import com.petshop.models.Invoices;
-import com.petshop.swing.message.DialogConfirm;
-import com.petshop.swing.message.DialogInput;
-import com.petshop.swing.message.DialogMessageError;
-import com.petshop.swing.message.DialogMessageFail;
-import com.petshop.swing.message.DialogMessageSuccess;
-import com.petshop.swing.table.EventAction;
-import com.petshop.swing.table.ModelAction;
-import com.petshop.ultils.Ultil;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.table.DefaultTableModel;
-import raven.glasspanepopup.GlassPanePopup;
 
 /**
  *
@@ -33,12 +13,14 @@ import raven.glasspanepopup.GlassPanePopup;
  */
 public class InvoiceManagement extends javax.swing.JPanel {
 
+    /**
+     * Creates new form InvoiceManagement
+     */
     private InvoiceDAO invoiceDAO;
     private InvoiceDetailDAO invoiceDetailDAO;
 
     public InvoiceManagement() {
         initComponents();
-<<<<<<< HEAD
         this.invoicesRepo = new InvoiceDAO();
         this.invoicesDetailRepo = new InvoiceDetailDAO();
         this.loadTable();
@@ -57,228 +39,359 @@ public class InvoiceManagement extends javax.swing.JPanel {
                 } catch (Exception e) {
                     System.err.println(e);
                 }
-=======
-        tbInvoice.fixTable(jScrollPane1);
-        tbInvoiceDetail.fixTable(jScrollPane3);
-        this.invoiceDAO = new InvoiceDAO();
-        this.invoiceDetailDAO = new InvoiceDetailDAO();
+                tbInvoice.fixTable(jScrollPane1);
+                tbInvoiceDetail.fixTable(jScrollPane3);
+                this.invoiceDAO = new InvoiceDAO();
+                this.invoiceDetailDAO = new InvoiceDetailDAO();
 
-        init();
-    }
-
-    private void init() {
-        getListInvoice(invoiceDAO.getListInvoiceAll());
-    }
-
-    //<editor-fold defaultstate="collapsed" desc="{Message...">
-    private void showMessageSuccess(String message) {
-        DialogMessageSuccess success = new DialogMessageSuccess(message);
-        GlassPanePopup.showPopup(success);
-    }
-
-    private void showMessageError(String message) {
-        DialogMessageError error = new DialogMessageError(message);
-        GlassPanePopup.showPopup(error);
-    }
-
-    private void showMessageFail(String message) {
-        DialogMessageFail fail = new DialogMessageFail(message);
-        GlassPanePopup.showPopup(fail);
-    }
-
-    public void showMessageConfirm(String message, Runnable onConfirmAction) {
-        DialogConfirm confirm = new DialogConfirm(message);
-        confirm.setConfirmListener(new ConfirmListener() {
-            @Override
-            public void onConfirm() {
-                if (onConfirmAction != null) {
-                    onConfirmAction.run(); // Thực hiện hành động truyền vào
-                }
-                GlassPanePopup.closePopup("confirm");
->>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
+                init();
             }
 
-            @Override
-            public void onCancel() {
-<<<<<<< HEAD
-                throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            private void init() {
+                getListInvoice(invoiceDAO.getListInvoiceAll());
             }
+            
 
-        });
-=======
-
-            }
-        });
-        GlassPanePopup.showPopup(confirm, "confirm"); // Hiển thị popup
-    }
-
-    public void showInputDialog(int amount) {
-        DialogInput input = new DialogInput(amount);
-        input.setConfirmListener(new ConfirmListenerInput() {
-            @Override
-            public void onCancel() {
-
-            }
-
-            @Override
-            public void onConfirm(int amount) {
-            }
-        });
-        GlassPanePopup.showPopup(input, "input");
-    }
-    //</editor-fold>
-
-    private void getListInvoice(List<Invoices> list) {
-        int stt = 1;
-        tbInvoice.setRowCount(0);
-        for (Invoices i : list) {
-            tbInvoice.addRow(new Object[]{
-                i.getId(),
-                stt,
-                i.getInvoiceCode() != null ? i.getInvoiceCode() : "Chưa có thông tin",
-                i.getCreatedAt() != null ? Ultil.getFormattedCreatedAt(i.getCreatedAt()) : "Chưa có thông tin",
-                i.getTotalPrice() != null ? Ultil.formatCurrency(i.getTotalPrice()) : "Chưa có thông tin",
-                i.getEmployee() != null && i.getEmployee().getEmployeeName() != null ? i.getEmployee().getEmployeeName() : "Chưa có thông tin",
-                i.getCustomer() != null
-                ? (i.getCustomer().getCustomerName() != null ? i.getCustomer().getCustomerName() : i.getCustomer().getPhoneNumber() != null ? i.getCustomer().getPhoneNumber() : "Chưa có thông tin")
-                : "Chưa có thông tin",
-                i.isPaymentStatus() ? "Đã thanh toán" : "Chưa thanh toán",
-                i.isPaymentMethod() ? "Tiền mặt" : "Thanh toán qua banking",
-                i.getCostsIncurred() != null ? Ultil.formatCurrency(i.getCostsIncurred()) : "Không có",
-                i.getNote() != null ? i.getNote() : "Chưa có thông tin"
-            });
-            stt++;
-        }
-    }
-
-    private int getSelectedRowInvoice() {
-        return tbInvoice.getSelectedRow();
-    }
-
-    private Integer getIdInvoice() {
-        return (Integer) tbInvoice.getValueAt(getSelectedRowInvoice(), 0);
-    }
-
-    public void showInvoiceDetailByIdInvoice() {
-        if (getSelectedRowInvoice() == -1) {
-            showMessageFail("Bạn chưa chọn hóa đơn!!");// Kiểm tra xem có hàng nào được chọn không
-            return;
-        }
-
-        int id = getIdInvoice(); // Lấy ID hóa đơn
-
-        List<InvoiceDetails> list = invoiceDetailDAO.getInvoiceDetailsByInvoiceId(id);
-        getListInvoiceDetail(list); // Load dữ liệu lên bảng
-    }
-
-    public void getListInvoiceDetail(List<InvoiceDetails> list) {
-        int stt = 1;
-        tbInvoiceDetail.setRowCount(0);
-        for (InvoiceDetails i : list) {
-            String name = (i.getProductDetail() != null && i.getProductDetail().getProductDetailName() != null)
-                    ? i.getProductDetail().getProductDetailName()
-                    : (i.getPetService() != null ? i.getPetService().getServiceName() : "N/A");
-
-            String code = (i.getProductDetail() != null && i.getProductDetail().getProductDetailCode() != null)
-                    ? i.getProductDetail().getProductDetailCode()
-                    : (i.getPetService() != null ? i.getPetService().getServiceCode() : "N/A");
-            String petName = (i.getPet() != null) ? i.getPet().getPetName() : "N/A";
-
-            BigDecimal price = (i.getProductDetail() != null && i.getProductDetail().getPrice() != null)
-                    ? i.getProductDetail().getPrice()
-                    : (i.getPetService() != null && i.getPetService().getPriceService() != null)
-                    ? i.getPetService().getPriceService()
-                    : BigDecimal.ZERO; // Nếu không có giá thì để là 0
-
-            tbInvoiceDetail.addRow(new Object[]{
-                stt,
-                i.getInvoiceDetailCode(),
-                code,
-                name,
-                i.getUsageOrQuantity(),
-                Ultil.formatCurrency(price),
-                Ultil.formatCurrency(i.getTotalPrice()),
-                petName == null ? "N/A" : petName,
-                i.getFormattedCreatedAt()
-            });
-            stt++;
-        }
->>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
-    }
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-<<<<<<< HEAD
-    private void searchInvoices(String text) {
-        String keyword = this.txtSerch.getText().trim();
-        System.out.println(keyword);
-
-        ArrayList<Invoices> ds = (ArrayList<Invoices>) this.invoicesRepo.search(keyword);
-        DefaultTableModel dtm = (DefaultTableModel) this.tblHoaDon.getModel();
-        int stt = 1;
-        dtm.setRowCount(0);
-
-        for (Invoices invoice : ds) {
-            Object[] row = {
-                invoice.getId(),
-                stt,
-                invoice.getInvoiceCode(),
-                invoice.getCreatedAt(),
-                invoice.getTotalPrice(),
-                invoice.getEmployee() != null ? invoice.getEmployee().getEmployeeCode() : "N/A", // Lấy mã nhân viên
-                invoice.isPaymentStatus() ? "Đã thanh toán" : "Chưa thanh toán",
-                invoice.isPaymentMethod() ? "Chuyển khoản" : "Tiền mặt",
-                invoice.getNote(),
-                invoice.getCostsIncurred()
-            };
-
-            stt++;
-            dtm.addRow(row);
-        }
-
-        // Ẩn cột ID
-        tblHoaDon.getColumnModel().getColumn(0).setMinWidth(0);
-        tblHoaDon.getColumnModel().getColumn(0).setMaxWidth(0);
-        tblHoaDon.getColumnModel().getColumn(0).setWidth(0);
-    }
-
-=======
->>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
-    @SuppressWarnings("unchecked")
+            /**
+             * This method is called from within the constructor to initialize
+             * the form. WARNING: Do NOT modify this code. The content of this
+             * method is always regenerated by the Form Editor.
+             */
+            @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        dateChooser1 = new com.petshop.swing.datechooser.DateChooser();
-        dateChooser2 = new com.petshop.swing.datechooser.DateChooser();
+        jPanel8 = new javax.swing.JPanel();
+        lblKhachHang8 = new javax.swing.JLabel();
+        txtSerch1 = new com.petshop.swing.textfield.TextFieldAnimation();
+        lblKhachHang9 = new javax.swing.JLabel();
+        cbbTrangThai2 = new com.petshop.swing.combobox.ComboboxRounded();
+        lblKhachHang10 = new javax.swing.JLabel();
+        cbbTrangThai3 = new com.petshop.swing.combobox.ComboboxRounded();
+        lblKhachHang11 = new javax.swing.JLabel();
+        txtEmail2 = new com.petshop.swing.textfield.TextFieldRounded();
+        jButton3 = new javax.swing.JButton();
+        lblKhachHang12 = new javax.swing.JLabel();
+        txtEmail3 = new com.petshop.swing.textfield.TextFieldRounded();
+        jButton4 = new javax.swing.JButton();
+        btnDeleteHistory8 = new com.petshop.swing.Button();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tblKhachHang1 = new com.petshop.swing.table.Table();
+        lblKhachHang13 = new javax.swing.JLabel();
+        lblKhachHang14 = new javax.swing.JLabel();
+        btnDeleteHistory9 = new com.petshop.swing.Button();
+        btnDeleteHistory10 = new com.petshop.swing.Button();
+        btnDeleteHistory11 = new com.petshop.swing.Button();
+        btnDeleteHistory12 = new com.petshop.swing.Button();
+        btnDeleteHistory13 = new com.petshop.swing.Button();
+        btnDeleteHistory14 = new com.petshop.swing.Button();
+        btnDeleteHistory15 = new com.petshop.swing.Button();
+        lblKhachHang15 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         lblKhachHang = new javax.swing.JLabel();
         txtSerch = new com.petshop.swing.textfield.TextFieldAnimation();
+        lblKhachHang1 = new javax.swing.JLabel();
+        cbbTrangThai = new com.petshop.swing.combobox.ComboboxRounded();
+        lblKhachHang2 = new javax.swing.JLabel();
+        cbbTrangThai1 = new com.petshop.swing.combobox.ComboboxRounded();
         lblKhachHang3 = new javax.swing.JLabel();
+        txtEmail = new com.petshop.swing.textfield.TextFieldRounded();
+        jButton1 = new javax.swing.JButton();
         lblKhachHang4 = new javax.swing.JLabel();
+        txtEmail1 = new com.petshop.swing.textfield.TextFieldRounded();
+        jButton2 = new javax.swing.JButton();
         btnDeleteHistory = new com.petshop.swing.Button();
         jScrollPane1 = new javax.swing.JScrollPane();
-        tbInvoice = new com.petshop.swing.table.Table();
+        tblKhachHang = new com.petshop.swing.table.Table();
+        lblKhachHang5 = new javax.swing.JLabel();
+        lblKhachHang6 = new javax.swing.JLabel();
         btnDeleteHistory1 = new com.petshop.swing.Button();
+        btnDeleteHistory2 = new com.petshop.swing.Button();
         btnDeleteHistory3 = new com.petshop.swing.Button();
-        txtDateStart = new com.petshop.swing.textfield.TextField1();
-        txtDateEnd = new com.petshop.swing.textfield.TextField1();
-        combobox1 = new com.petshop.swing.combobox.Combobox();
-        combobox2 = new com.petshop.swing.combobox.Combobox();
-        jLabel1 = new javax.swing.JLabel();
+        btnDeleteHistory4 = new com.petshop.swing.Button();
+        btnDeleteHistory5 = new com.petshop.swing.Button();
+        btnDeleteHistory6 = new com.petshop.swing.Button();
+        btnDeleteHistory7 = new com.petshop.swing.Button();
+        lblKhachHang7 = new javax.swing.JLabel();
         jPanel9 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        tbInvoiceDetail = new com.petshop.swing.table.Table();
+        tblKhachHang2 = new com.petshop.swing.table.Table();
         jLabel2 = new javax.swing.JLabel();
 
-        dateChooser1.setTextRefernce(txtDateStart);
+        jPanel8.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel8.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        dateChooser2.setTextRefernce(txtDateEnd);
+        lblKhachHang8.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang8.setText("Tìm kiếm hoá đơn: ");
+
+        txtSerch1.setBackground(new java.awt.Color(250, 250, 250));
+        txtSerch1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSerch1ActionPerformed(evt);
+            }
+        });
+
+        lblKhachHang9.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang9.setText("Trạng thái hoá đơn:");
+
+        cbbTrangThai2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Tất cả", "Đã kích hoạt", "Chưa kích hoạt" }));
+        cbbTrangThai2.setLabeText("Trạng thái");
+        cbbTrangThai2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbbTrangThai2ActionPerformed(evt);
+            }
+        });
+
+        lblKhachHang10.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang10.setText("Hình thức thanh toán:");
+
+        cbbTrangThai3.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Tất cả", "Đã kích hoạt", "Chưa kích hoạt" }));
+        cbbTrangThai3.setLabeText("Hình thức");
+        cbbTrangThai3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbbTrangThai3ActionPerformed(evt);
+            }
+        });
+
+        lblKhachHang11.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang11.setText("Từ:");
+
+        txtEmail2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtEmail2.setLabelText("dd/MM/yyyy");
+
+        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-calendar-24.png"))); // NOI18N
+
+        lblKhachHang12.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang12.setText("Đến:");
+
+        txtEmail3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtEmail3.setLabelText("dd/MM/yyyy");
+
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-calendar-24.png"))); // NOI18N
+
+        btnDeleteHistory8.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory8.setText("Lọc");
+        btnDeleteHistory8.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteHistory8ActionPerformed(evt);
+            }
+        });
+
+        tblKhachHang1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null}
+            },
+            new String [] {
+                "", "STT", "Mã HD", "Ngày Tạo ", "Ngày thạnh toán", "Thành tiền", "Mã NV", "Tên người nhận", "Địa chỉ", "Tên người ship ", "Ngày ship", "Ngày nhận", "Lý do", "Trạng thái"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false, false, false, true, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tblKhachHang1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblKhachHang1MouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(tblKhachHang1);
+        if (tblKhachHang1.getColumnModel().getColumnCount() > 0) {
+            tblKhachHang1.getColumnModel().getColumn(3).setHeaderValue("Ngày Tạo ");
+            tblKhachHang1.getColumnModel().getColumn(4).setHeaderValue("Ngày thạnh toán");
+            tblKhachHang1.getColumnModel().getColumn(5).setHeaderValue("Thành tiền");
+            tblKhachHang1.getColumnModel().getColumn(6).setHeaderValue("Mã NV");
+            tblKhachHang1.getColumnModel().getColumn(7).setHeaderValue("Tên người nhận");
+            tblKhachHang1.getColumnModel().getColumn(8).setHeaderValue("Địa chỉ");
+            tblKhachHang1.getColumnModel().getColumn(9).setHeaderValue("Tên người ship ");
+            tblKhachHang1.getColumnModel().getColumn(10).setHeaderValue("Ngày ship");
+            tblKhachHang1.getColumnModel().getColumn(11).setHeaderValue("Ngày nhận");
+            tblKhachHang1.getColumnModel().getColumn(12).setHeaderValue("Lý do");
+            tblKhachHang1.getColumnModel().getColumn(13).setHeaderValue("Trạng thái");
+        }
+
+        lblKhachHang13.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang13.setText("Số hoá đơn:");
+
+        lblKhachHang14.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang14.setText("...");
+
+        btnDeleteHistory9.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory9.setText("In hoá đơn");
+        btnDeleteHistory9.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteHistory9ActionPerformed(evt);
+            }
+        });
+
+        btnDeleteHistory10.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory10.setText("Xem chi tiết ");
+        btnDeleteHistory10.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteHistory10ActionPerformed(evt);
+            }
+        });
+
+        btnDeleteHistory11.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/export.png"))); // NOI18N
+        btnDeleteHistory11.setText("Xuất danh sách ");
+        btnDeleteHistory11.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteHistory11ActionPerformed(evt);
+            }
+        });
+
+        btnDeleteHistory12.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory12.setText("<<");
+        btnDeleteHistory12.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteHistory12ActionPerformed(evt);
+            }
+        });
+
+        btnDeleteHistory13.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory13.setText("<");
+        btnDeleteHistory13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteHistory13ActionPerformed(evt);
+            }
+        });
+
+        btnDeleteHistory14.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory14.setText(">");
+        btnDeleteHistory14.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteHistory14ActionPerformed(evt);
+            }
+        });
+
+        btnDeleteHistory15.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory15.setText(">>");
+        btnDeleteHistory15.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteHistory15ActionPerformed(evt);
+            }
+        });
+
+        lblKhachHang15.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang15.setText("...");
+
+        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
+        jPanel8.setLayout(jPanel8Layout);
+        jPanel8Layout.setHorizontalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel8Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2)
+                    .addGroup(jPanel8Layout.createSequentialGroup()
+                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel8Layout.createSequentialGroup()
+                                .addComponent(lblKhachHang8)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtSerch1, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel8Layout.createSequentialGroup()
+                                .addComponent(lblKhachHang9)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cbbTrangThai2, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(lblKhachHang10)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cbbTrangThai3, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblKhachHang11)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtEmail2, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(lblKhachHang12)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtEmail3, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(btnDeleteHistory8, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel8Layout.createSequentialGroup()
+                        .addComponent(lblKhachHang13)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblKhachHang14)
+                        .addGap(55, 55, 55)
+                        .addComponent(btnDeleteHistory12, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnDeleteHistory13, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(26, 26, 26)
+                        .addComponent(lblKhachHang15)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
+                        .addComponent(btnDeleteHistory14, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnDeleteHistory15, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(63, 63, 63)
+                        .addComponent(btnDeleteHistory9, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnDeleteHistory10, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnDeleteHistory11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(9, 9, 9)))
+                .addContainerGap())
+        );
+        jPanel8Layout.setVerticalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel8Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel8Layout.createSequentialGroup()
+                        .addComponent(btnDeleteHistory8, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(1, 1, 1))
+                    .addGroup(jPanel8Layout.createSequentialGroup()
+                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(lblKhachHang8)
+                            .addComponent(txtSerch1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jButton3, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jButton4, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(lblKhachHang12)
+                                    .addComponent(txtEmail3, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(cbbTrangThai2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblKhachHang9)
+                                .addComponent(cbbTrangThai3, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblKhachHang10)
+                                .addComponent(lblKhachHang11)
+                                .addComponent(txtEmail2, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblKhachHang13)
+                    .addComponent(lblKhachHang14)
+                    .addComponent(btnDeleteHistory9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDeleteHistory10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDeleteHistory11, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDeleteHistory12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDeleteHistory13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDeleteHistory14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDeleteHistory15, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblKhachHang15))
+                .addContainerGap(29, Short.MAX_VALUE))
+        );
 
         setForeground(new java.awt.Color(204, 255, 255));
-        setPreferredSize(new java.awt.Dimension(1058, 741));
+
+        jLabel1.setBackground(new java.awt.Color(255, 255, 255));
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("Hoá đơn");
 
         jPanel7.setBackground(new java.awt.Color(255, 255, 255));
         jPanel7.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -293,11 +406,43 @@ public class InvoiceManagement extends javax.swing.JPanel {
             }
         });
 
+        lblKhachHang1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang1.setText("Trạng thái hoá đơn:");
+
+        cbbTrangThai.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Tất cả", "Đã kích hoạt", "Chưa kích hoạt" }));
+        cbbTrangThai.setLabeText("Trạng thái");
+        cbbTrangThai.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbbTrangThaiActionPerformed(evt);
+            }
+        });
+
+        lblKhachHang2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang2.setText("Hình thức thanh toán:");
+
+        cbbTrangThai1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Tất cả", "Đã kích hoạt", "Chưa kích hoạt" }));
+        cbbTrangThai1.setLabeText("Hình thức");
+        cbbTrangThai1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbbTrangThai1ActionPerformed(evt);
+            }
+        });
+
         lblKhachHang3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         lblKhachHang3.setText("Từ:");
 
+        txtEmail.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtEmail.setLabelText("dd/MM/yyyy");
+
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-calendar-24.png"))); // NOI18N
+
         lblKhachHang4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         lblKhachHang4.setText("Đến:");
+
+        txtEmail1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtEmail1.setLabelText("dd/MM/yyyy");
+
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-calendar-24.png"))); // NOI18N
 
         btnDeleteHistory.setBackground(new java.awt.Color(204, 204, 255));
         btnDeleteHistory.setText("Lọc");
@@ -307,37 +452,49 @@ public class InvoiceManagement extends javax.swing.JPanel {
             }
         });
 
-        tbInvoice.setModel(new javax.swing.table.DefaultTableModel(
+        tblKhachHang.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "STT", "Mã HD", "Ngày Tạo ", "Thành tiền", "Thông tin NV", "Thông tin KH", "Trạng thái TT", "Hình thức TT", "Phí phát sinh", "Ghi chú"
+                "", "STT", "Mã HD", "Ngày Tạo ", "Ngày thạnh toán", "Thành tiền", "Mã NV", "Tên người nhận", "Địa chỉ", "Tên người ship ", "Ngày ship", "Ngày nhận", "Lý do", "Trạng thái"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, true, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false, true, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
-        tbInvoice.addMouseListener(new java.awt.event.MouseAdapter() {
+        tblKhachHang.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                tbInvoiceMouseClicked(evt);
+                tblKhachHangMouseClicked(evt);
             }
         });
-        jScrollPane1.setViewportView(tbInvoice);
-        if (tbInvoice.getColumnModel().getColumnCount() > 0) {
-            tbInvoice.getColumnModel().getColumn(0).setMinWidth(0);
-            tbInvoice.getColumnModel().getColumn(0).setMaxWidth(0);
-            tbInvoice.getColumnModel().getColumn(1).setMinWidth(35);
-            tbInvoice.getColumnModel().getColumn(1).setMaxWidth(35);
-            tbInvoice.getColumnModel().getColumn(9).setResizable(false);
+        jScrollPane1.setViewportView(tblKhachHang);
+        if (tblKhachHang.getColumnModel().getColumnCount() > 0) {
+            tblKhachHang.getColumnModel().getColumn(3).setHeaderValue("Ngày Tạo ");
+            tblKhachHang.getColumnModel().getColumn(4).setHeaderValue("Ngày thạnh toán");
+            tblKhachHang.getColumnModel().getColumn(5).setHeaderValue("Thành tiền");
+            tblKhachHang.getColumnModel().getColumn(6).setHeaderValue("Mã NV");
+            tblKhachHang.getColumnModel().getColumn(7).setHeaderValue("Tên người nhận");
+            tblKhachHang.getColumnModel().getColumn(8).setHeaderValue("Địa chỉ");
+            tblKhachHang.getColumnModel().getColumn(9).setHeaderValue("Tên người ship ");
+            tblKhachHang.getColumnModel().getColumn(10).setHeaderValue("Ngày ship");
+            tblKhachHang.getColumnModel().getColumn(11).setHeaderValue("Ngày nhận");
+            tblKhachHang.getColumnModel().getColumn(12).setHeaderValue("Lý do");
+            tblKhachHang.getColumnModel().getColumn(13).setHeaderValue("Trạng thái");
         }
+
+        lblKhachHang5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang5.setText("Số hoá đơn:");
+
+        lblKhachHang6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang6.setText("...");
 
         btnDeleteHistory1.setBackground(new java.awt.Color(204, 204, 255));
         btnDeleteHistory1.setText("In hoá đơn");
@@ -347,7 +504,16 @@ public class InvoiceManagement extends javax.swing.JPanel {
             }
         });
 
+        btnDeleteHistory2.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory2.setText("Xem chi tiết ");
+        btnDeleteHistory2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteHistory2ActionPerformed(evt);
+            }
+        });
+
         btnDeleteHistory3.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/export.png"))); // NOI18N
         btnDeleteHistory3.setText("Xuất danh sách ");
         btnDeleteHistory3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -355,14 +521,40 @@ public class InvoiceManagement extends javax.swing.JPanel {
             }
         });
 
-        combobox1.setLabeText("Trạng thái thanh toán");
+        btnDeleteHistory4.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory4.setText("<<");
+        btnDeleteHistory4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteHistory4ActionPerformed(evt);
+            }
+        });
 
-        combobox2.setLabeText("Lọc theo thời gian");
+        btnDeleteHistory5.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory5.setText("<");
+        btnDeleteHistory5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteHistory5ActionPerformed(evt);
+            }
+        });
 
-        jLabel1.setBackground(new java.awt.Color(255, 255, 255));
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Hoá đơn");
+        btnDeleteHistory6.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory6.setText(">");
+        btnDeleteHistory6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteHistory6ActionPerformed(evt);
+            }
+        });
+
+        btnDeleteHistory7.setBackground(new java.awt.Color(204, 204, 255));
+        btnDeleteHistory7.setText(">>");
+        btnDeleteHistory7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteHistory7ActionPerformed(evt);
+            }
+        });
+
+        lblKhachHang7.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang7.setText("...");
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
@@ -373,13 +565,11 @@ public class InvoiceManagement extends javax.swing.JPanel {
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1)
                     .addGroup(jPanel7Layout.createSequentialGroup()
-<<<<<<< HEAD
                         .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel7Layout.createSequentialGroup()
                                 .addComponent(lblKhachHang)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtSerch, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(471, 471, 471))
+                                .addComponent(txtSerch, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel7Layout.createSequentialGroup()
                                 .addComponent(lblKhachHang1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -390,10 +580,19 @@ public class InvoiceManagement extends javax.swing.JPanel {
                                 .addComponent(cbbTrangThai1, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lblKhachHang3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
                                 .addComponent(lblKhachHang4)
-                                .addGap(153, 153, 153)))
-                        .addComponent(btnDeleteHistory, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtEmail1, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(btnDeleteHistory, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanel7Layout.createSequentialGroup()
                         .addComponent(lblKhachHang5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -404,44 +603,23 @@ public class InvoiceManagement extends javax.swing.JPanel {
                         .addComponent(btnDeleteHistory5, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(26, 26, 26)
                         .addComponent(lblKhachHang7)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 76, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnDeleteHistory6, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnDeleteHistory7, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(63, 63, 63)
-=======
-                        .addComponent(combobox1, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(12, 12, 12)
-                        .addComponent(combobox2, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 164, Short.MAX_VALUE)
-                        .addComponent(lblKhachHang3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtDateStart, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblKhachHang4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtDateEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(27, 27, 27)
-                        .addComponent(btnDeleteHistory, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(lblKhachHang)
-                        .addGap(5, 5, 5)
-                        .addComponent(txtSerch, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
->>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
                         .addComponent(btnDeleteHistory1, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnDeleteHistory3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnDeleteHistory2, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnDeleteHistory3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(9, 9, 9)))
                 .addContainerGap())
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
-<<<<<<< HEAD
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel7Layout.createSequentialGroup()
                         .addComponent(btnDeleteHistory, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -451,110 +629,88 @@ public class InvoiceManagement extends javax.swing.JPanel {
                             .addComponent(lblKhachHang)
                             .addComponent(txtSerch, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
-                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(cbbTrangThai, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblKhachHang1)
-                            .addComponent(cbbTrangThai1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblKhachHang2)
-                            .addComponent(lblKhachHang3)
-                            .addComponent(lblKhachHang4))))
+                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jButton2, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(lblKhachHang4)
+                                    .addComponent(txtEmail1, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(cbbTrangThai, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblKhachHang1)
+                                .addComponent(cbbTrangThai1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblKhachHang2)
+                                .addComponent(lblKhachHang3)
+                                .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-=======
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(txtSerch, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
-                    .addComponent(lblKhachHang, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(5, 5, 5)
->>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(combobox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(combobox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(txtDateEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnDeleteHistory, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(lblKhachHang4, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(txtDateStart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(lblKhachHang3, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnDeleteHistory1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnDeleteHistory3, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btnDeleteHistory6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnDeleteHistory7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(lblKhachHang5)
+                        .addComponent(lblKhachHang6)
+                        .addComponent(btnDeleteHistory1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnDeleteHistory2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnDeleteHistory3, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnDeleteHistory4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnDeleteHistory5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(lblKhachHang7)))
+                .addContainerGap(51, Short.MAX_VALUE))
         );
 
         jPanel9.setBackground(new java.awt.Color(255, 255, 255));
         jPanel9.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        tbInvoiceDetail.setModel(new javax.swing.table.DefaultTableModel(
+        tblKhachHang2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "STT", "Mã HDCT", "Mã SP/DV", "Tên SP/DV", "SL", "Giá bán/giá DV", "Tổng tiền", "Thông tin khác", "Ngày tạo"
+                "", "Mã chi tiết sản phẩm", "Tên sản phẩm/Dịch vụ ", "Mã SP/ Dịch vụ ", "Mã thú cưng", "Số lượng", "Đơn giá", "Thành tiền", "Thời gian sử dụng", "Ngày tạo"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, true, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
-        tbInvoiceDetail.addMouseListener(new java.awt.event.MouseAdapter() {
+        tblKhachHang2.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                tbInvoiceDetailMouseClicked(evt);
+                tblKhachHang2MouseClicked(evt);
             }
         });
-        jScrollPane3.setViewportView(tbInvoiceDetail);
-        if (tbInvoiceDetail.getColumnModel().getColumnCount() > 0) {
-            tbInvoiceDetail.getColumnModel().getColumn(0).setMinWidth(40);
-            tbInvoiceDetail.getColumnModel().getColumn(0).setMaxWidth(40);
-            tbInvoiceDetail.getColumnModel().getColumn(3).setMinWidth(230);
-            tbInvoiceDetail.getColumnModel().getColumn(3).setMaxWidth(230);
-            tbInvoiceDetail.getColumnModel().getColumn(4).setMinWidth(40);
-            tbInvoiceDetail.getColumnModel().getColumn(4).setMaxWidth(40);
-        }
-
-        jLabel2.setBackground(new java.awt.Color(255, 255, 255));
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("Hoá đơn chi tiết ");
+        jScrollPane3.setViewportView(tblKhachHang2);
 
         javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
         jPanel9Layout.setHorizontalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel9Layout.createSequentialGroup()
-<<<<<<< HEAD
                 .addContainerGap()
-                .addComponent(jScrollPane3)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1028, Short.MAX_VALUE)
                 .addContainerGap())
-=======
-                .addGap(0, 0, 0)
-                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1042, Short.MAX_VALUE)
-                    .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addGap(0, 0, 0))
->>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel9Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                .addGap(0, 0, 0))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jLabel2.setBackground(new java.awt.Color(255, 255, 255));
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setText("Hoá đơn chi tiết ");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -564,131 +720,187 @@ public class InvoiceManagement extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(11, 11, 11)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void tbInvoiceDetailMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbInvoiceDetailMouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tbInvoiceDetailMouseClicked
-
-    private void btnDeleteHistory3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory3ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnDeleteHistory3ActionPerformed
-
-    private void btnDeleteHistory1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnDeleteHistory1ActionPerformed
-
-    private void tbInvoiceMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbInvoiceMouseClicked
-        showInvoiceDetailByIdInvoice();
-    }//GEN-LAST:event_tbInvoiceMouseClicked
-
-    private void btnDeleteHistoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistoryActionPerformed
-
-    }//GEN-LAST:event_btnDeleteHistoryActionPerformed
 
     private void txtSerchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSerchActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtSerchActionPerformed
 
+    private void cbbTrangThaiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbbTrangThaiActionPerformed
+
+    }//GEN-LAST:event_cbbTrangThaiActionPerformed
+
+    private void cbbTrangThai1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbbTrangThai1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cbbTrangThai1ActionPerformed
+
+    private void btnDeleteHistoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistoryActionPerformed
+
+    }//GEN-LAST:event_btnDeleteHistoryActionPerformed
+
+    private void tblKhachHangMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblKhachHangMouseClicked
+
+    }//GEN-LAST:event_tblKhachHangMouseClicked
+
+    private void btnDeleteHistory1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory1ActionPerformed
+
+    private void btnDeleteHistory2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory2ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory2ActionPerformed
+
+    private void btnDeleteHistory3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory3ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory3ActionPerformed
+
+    private void btnDeleteHistory4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory4ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory4ActionPerformed
+
+    private void btnDeleteHistory5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory5ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory5ActionPerformed
+
+    private void btnDeleteHistory6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory6ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory6ActionPerformed
+
+    private void btnDeleteHistory7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory7ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory7ActionPerformed
+
+    private void txtSerch1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSerch1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSerch1ActionPerformed
+
+    private void cbbTrangThai2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbbTrangThai2ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cbbTrangThai2ActionPerformed
+
+    private void cbbTrangThai3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbbTrangThai3ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cbbTrangThai3ActionPerformed
+
+    private void btnDeleteHistory8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory8ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory8ActionPerformed
+
+    private void tblKhachHang1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblKhachHang1MouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tblKhachHang1MouseClicked
+
+    private void btnDeleteHistory9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory9ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory9ActionPerformed
+
+    private void btnDeleteHistory10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory10ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory10ActionPerformed
+
+    private void btnDeleteHistory11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory11ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory11ActionPerformed
+
+    private void btnDeleteHistory12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory12ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory12ActionPerformed
+
+    private void btnDeleteHistory13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory13ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory13ActionPerformed
+
+    private void btnDeleteHistory14ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory14ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory14ActionPerformed
+
+    private void btnDeleteHistory15ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory15ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteHistory15ActionPerformed
+
+    private void tblKhachHang2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblKhachHang2MouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tblKhachHang2MouseClicked
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.Button btnDeleteHistory;
     private com.petshop.swing.Button btnDeleteHistory1;
+    private com.petshop.swing.Button btnDeleteHistory10;
+    private com.petshop.swing.Button btnDeleteHistory11;
+    private com.petshop.swing.Button btnDeleteHistory12;
+    private com.petshop.swing.Button btnDeleteHistory13;
+    private com.petshop.swing.Button btnDeleteHistory14;
+    private com.petshop.swing.Button btnDeleteHistory15;
+    private com.petshop.swing.Button btnDeleteHistory2;
     private com.petshop.swing.Button btnDeleteHistory3;
-    private com.petshop.swing.combobox.Combobox combobox1;
-    private com.petshop.swing.combobox.Combobox combobox2;
-    private com.petshop.swing.datechooser.DateChooser dateChooser1;
-    private com.petshop.swing.datechooser.DateChooser dateChooser2;
+    private com.petshop.swing.Button btnDeleteHistory4;
+    private com.petshop.swing.Button btnDeleteHistory5;
+    private com.petshop.swing.Button btnDeleteHistory6;
+    private com.petshop.swing.Button btnDeleteHistory7;
+    private com.petshop.swing.Button btnDeleteHistory8;
+    private com.petshop.swing.Button btnDeleteHistory9;
+    private com.petshop.swing.combobox.ComboboxRounded cbbTrangThai;
+    private com.petshop.swing.combobox.ComboboxRounded cbbTrangThai1;
+    private com.petshop.swing.combobox.ComboboxRounded cbbTrangThai2;
+    private com.petshop.swing.combobox.ComboboxRounded cbbTrangThai3;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JLabel lblKhachHang;
+    private javax.swing.JLabel lblKhachHang1;
+    private javax.swing.JLabel lblKhachHang10;
+    private javax.swing.JLabel lblKhachHang11;
+    private javax.swing.JLabel lblKhachHang12;
+    private javax.swing.JLabel lblKhachHang13;
+    private javax.swing.JLabel lblKhachHang14;
+    private javax.swing.JLabel lblKhachHang15;
+    private javax.swing.JLabel lblKhachHang2;
     private javax.swing.JLabel lblKhachHang3;
     private javax.swing.JLabel lblKhachHang4;
-    private com.petshop.swing.table.Table tbInvoice;
-    private com.petshop.swing.table.Table tbInvoiceDetail;
-    private com.petshop.swing.textfield.TextField1 txtDateEnd;
-    private com.petshop.swing.textfield.TextField1 txtDateStart;
+    private javax.swing.JLabel lblKhachHang5;
+    private javax.swing.JLabel lblKhachHang6;
+    private javax.swing.JLabel lblKhachHang7;
+    private javax.swing.JLabel lblKhachHang8;
+    private javax.swing.JLabel lblKhachHang9;
+    private com.petshop.swing.table.Table tblKhachHang;
+    private com.petshop.swing.table.Table tblKhachHang1;
+    private com.petshop.swing.table.Table tblKhachHang2;
+    private com.petshop.swing.textfield.TextFieldRounded txtEmail;
+    private com.petshop.swing.textfield.TextFieldRounded txtEmail1;
+    private com.petshop.swing.textfield.TextFieldRounded txtEmail2;
+    private com.petshop.swing.textfield.TextFieldRounded txtEmail3;
     private com.petshop.swing.textfield.TextFieldAnimation txtSerch;
+    private com.petshop.swing.textfield.TextFieldAnimation txtSerch1;
     // End of variables declaration//GEN-END:variables
-
-<<<<<<< HEAD
-    private void loadTable() {
-        int stt = 1;
-        ArrayList<Invoices> ds = (ArrayList<Invoices>) this.invoicesRepo.getListInvoice();
-        DefaultTableModel dtm = (DefaultTableModel) this.tblHoaDon.getModel();
-        dtm.setRowCount(0);
-
-        for (Invoices invoice : ds) {
-            Object[] row = {
-                invoice.getId(),
-                stt,
-                invoice.getInvoiceCode(),
-                invoice.getCreatedAt(),
-                invoice.getTotalPrice(),
-                invoice.getEmployee() != null ? invoice.getEmployee().getEmployeeCode() : "N/A", // Lấy mã nhân viên
-                invoice.isPaymentStatus() ? "Đã thanh toán" : "Chưa thanh toán",
-                invoice.isPaymentMethod() ? "Chuyển khoản" : "Tiền mặt",
-                invoice.getNote(),
-                invoice.getCostsIncurred()
-            };
-
-            stt++;
-            dtm.addRow(row);
-        }
-
-        // Ẩn cột ID
-        tblHoaDon.getColumnModel().getColumn(0).setMinWidth(0);
-        tblHoaDon.getColumnModel().getColumn(0).setMaxWidth(0);
-        tblHoaDon.getColumnModel().getColumn(0).setWidth(0);
-    }
-
-    private void loadTable_InvoiceDetail() {
-        int stt = 1;
-        ArrayList<InvoiceDetails> ds = (ArrayList<InvoiceDetails>) this.invoicesDetailRepo.getListInvoiceDetailProduct();
-        DefaultTableModel dtm = (DefaultTableModel) this.tblHoaDonChiTiet.getModel();
-        dtm.setRowCount(0);
-
-        for (InvoiceDetails invoiceDetails : ds) {
-            Object[] row = {
-                invoiceDetails.getId(),
-                stt,
-                invoiceDetails.getInvoiceDetailCode(),
-                invoiceDetails.getProductOrServiceCode(),
-                invoiceDetails.getProductOrServiceName(),
-                invoiceDetails.getPet() != null ? invoiceDetails.getPet().getPetCode() : "N/A",
-                invoiceDetails.getUsageOrQuantity(),
-                invoiceDetails.getPrice(),
-                invoiceDetails.getTotal(),
-                invoiceDetails.getDuration(),
-                invoiceDetails.getCreatedAt()
-            };
-
-            stt++;
-            dtm.addRow(row);
-        }
-
-        // Ẩn cột ID
-        tblHoaDon.getColumnModel().getColumn(0).setMinWidth(0);
-        tblHoaDon.getColumnModel().getColumn(0).setMaxWidth(0);
-        tblHoaDon.getColumnModel().getColumn(0).setWidth(0);
-    }
-
-=======
->>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
 }
