@@ -14,9 +14,10 @@ import java.util.Date;
  * @author dut
  */
 public class InvoiceDetails {
+
     private int id;
     private String invoiceDetailCode;
-<<<<<<< HEAD
+
     private Invoices invoice; // Đối tượng Invoice chứa invoiceId
     public ProductDetails productDetail;
     public Pets pet;
@@ -31,6 +32,7 @@ public class InvoiceDetails {
     public BigDecimal total;
     public String duration;
     public BigDecimal price;
+    private boolean typeInvoiceDetail;
 
     public BigDecimal getTotal() {
         return total;
@@ -55,23 +57,11 @@ public class InvoiceDetails {
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
-=======
-    private Invoices invoice; 
-    private ProductDetails productDetail;
-    private Pets pet;
-    private PetServices petService;
-    private int usageOrQuantity;
-    private BigDecimal totalPrice;
-    private Date createdAt;
-    private boolean deleted;
-    private boolean status;
-    private boolean typeInvoiceDetail;
->>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
 
     public InvoiceDetails() {
     }
 
-    public InvoiceDetails(int id, String invoiceDetailCode,Invoices invoice, ProductDetails productDetail, Pets pet, PetServices petService, int usageOrQuantity, BigDecimal totalPrice, Date createdAt, boolean deleted, boolean status) {
+    public InvoiceDetails(int id, String invoiceDetailCode, Invoices invoice, ProductDetails productDetail, Pets pet, PetServices petService, int usageOrQuantity, BigDecimal totalPrice, Date createdAt, boolean deleted, boolean status) {
         this.id = id;
         this.invoiceDetailCode = invoiceDetailCode;
         this.invoice = invoice;
@@ -85,7 +75,6 @@ public class InvoiceDetails {
         this.status = status;
     }
 
-<<<<<<< HEAD
     public String getProductOrServiceName() {
         return productOrServiceName;
     }
@@ -100,20 +89,20 @@ public class InvoiceDetails {
 
     public void setProductOrServiceCode(String productOrServiceCode) {
         this.productOrServiceCode = productOrServiceCode;
-=======
+    }
+
     public InvoiceDetails(ProductDetails productDetail, int usageOrQuantity) {
         this.productDetail = productDetail;
         this.usageOrQuantity = usageOrQuantity;
     }
 
-    
     public boolean isTypeInvoiceDetail() {
         return typeInvoiceDetail;
     }
 
     public void setTypeInvoiceDetail(boolean typeInvoiceDetail) {
         this.typeInvoiceDetail = typeInvoiceDetail;
->>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
+
     }
 
     public int getId() {
@@ -211,8 +200,7 @@ public class InvoiceDetails {
     public void setStatus(boolean status) {
         this.status = status;
     }
-    
-    
+
     // Getter tùy chỉnh: Định dạng ngày
     public String getFormattedCreatedAt() {
         if (createdAt == null) {
@@ -221,5 +209,5 @@ public class InvoiceDetails {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         return dateFormat.format(createdAt);
     }
-    
+
 }
