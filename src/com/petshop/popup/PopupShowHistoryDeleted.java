@@ -4,12 +4,18 @@
  */
 package com.petshop.popup;
 
+import com.petshop.event.ConfirmListener;
+import com.petshop.main.Main;
 import com.petshop.swing.popup.GlassPanePopup;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.RoundRectangle2D;
 import java.util.List;
+import javax.swing.JLabel;
+import javax.swing.event.EventListenerList;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -20,18 +26,41 @@ public class PopupShowHistoryDeleted extends javax.swing.JPanel {
     /**
      * Creates new form PopupShowHistoryDeleted
      */
+    private ConfirmListener listener;
+
+    // Đăng ký ConfirmListener
+    public void setConfirmListener(ConfirmListener listener) {
+        this.listener = listener;
+    }
+
+    public void setLbText(String text) {
+        lbText.setText(text);
+    }
+
     public PopupShowHistoryDeleted() {
         initComponents();
+        setOpaque(false);
+        button1.addActionListener(evt -> {
+            if (listener != null) {
+                listener.onCancel();
+            }
+            raven.glasspanepopup.GlassPanePopup.closePopupLast();
+        });
         tableMore21.fixTable(jScrollPane1);
     }
 
-    public void fillTable(List<Object[]> data) {
-        tableMore21.setRowCount(0); // Xóa dữ liệu cũ
+    public void fillTable(List<Object[]> data, String[] columnNames) {
+        DefaultTableModel model = (DefaultTableModel) tableMore21.getModel();
+        model.setColumnIdentifiers(columnNames); // Cập nhật lại tên cột
+        model.setRowCount(0); // Xóa dữ liệu cũ
         for (Object[] row : data) {
-            tableMore21.addRow(row);
+            model.addRow(row);
+        }
+        if (tableMore21.getColumnModel().getColumnCount() > 0) {
+            tableMore21.getColumnModel().getColumn(0).setPreferredWidth(50);
         }
     }
-    
+
     @Override
     protected void paintComponent(Graphics grphcs) {
         Graphics2D g2 = (Graphics2D) grphcs.create();
@@ -41,7 +70,7 @@ public class PopupShowHistoryDeleted extends javax.swing.JPanel {
         g2.dispose();
         super.paintComponent(grphcs);
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -53,8 +82,10 @@ public class PopupShowHistoryDeleted extends javax.swing.JPanel {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         tableMore21 = new com.petshop.swing.tableMore.TableMore2();
-        jLabel1 = new javax.swing.JLabel();
+        lbText = new javax.swing.JLabel();
         button1 = new com.petshop.swing.Button();
+
+        setBackground(new java.awt.Color(255, 255, 255));
 
         tableMore21.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -68,9 +99,13 @@ public class PopupShowHistoryDeleted extends javax.swing.JPanel {
             }
         ));
         jScrollPane1.setViewportView(tableMore21);
+        if (tableMore21.getColumnModel().getColumnCount() > 0) {
+            tableMore21.getColumnModel().getColumn(0).setMinWidth(40);
+            tableMore21.getColumnModel().getColumn(0).setMaxWidth(40);
+        }
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel1.setText("DANH SACH");
+        lbText.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        lbText.setText("DANH SACH");
 
         button1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-close-15.png"))); // NOI18N
         button1.addActionListener(new java.awt.event.ActionListener() {
@@ -86,9 +121,9 @@ public class PopupShowHistoryDeleted extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 920, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                        .addComponent(lbText)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -98,24 +133,23 @@ public class PopupShowHistoryDeleted extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
+                    .addComponent(lbText)
                     .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(13, 13, 13)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 366, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(5, 5, 5)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void button1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button1ActionPerformed
         // TODO add your handling code here:
-        GlassPanePopup.closePopupLast();
     }//GEN-LAST:event_button1ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.Button button1;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lbText;
     private com.petshop.swing.tableMore.TableMore2 tableMore21;
     // End of variables declaration//GEN-END:variables
 }

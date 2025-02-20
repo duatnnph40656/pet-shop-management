@@ -21,7 +21,7 @@ public class PetServices {
     private BigDecimal priceService;
     private String describeService;
     private int duration;
-    private String time_unit;
+    private String timeUnit;
     private Date createdAt;
     private boolean deleted;
     private boolean status;
@@ -37,7 +37,7 @@ public class PetServices {
         this.priceService = priceService;
         this.describeService = describe_service;
         this.duration = duration;
-        this.time_unit = time_unit;
+        this.timeUnit = time_unit;
         this.createdAt = createdAt;
         this.deleted = deleted;
         this.status = status;
@@ -88,6 +88,15 @@ public class PetServices {
     public BigDecimal getPriceService() {
         return priceService;
     }
+    
+    
+    public String getFormattedPriceBase() {
+        if (priceService == null) {
+            return "N/A"; // Nếu giá là null, trả về chuỗi mặc định
+        }
+        DecimalFormat decimalFormat = new DecimalFormat("#,###"); // Định dạng giá thành 1,000
+        return decimalFormat.format(priceService) + " VND"; // Thêm đơn vị "VND"
+    }
 
     public void setPriceService(BigDecimal priceService) {
         this.priceService = priceService;
@@ -109,12 +118,12 @@ public class PetServices {
         this.duration = duration;
     }
 
-    public String getTime_unit() {
-        return time_unit;
+    public String getTimeUnit() {
+        return timeUnit;
     }
 
-    public void setTime_unit(String time_unit) {
-        this.time_unit = time_unit;
+    public void setTimeUnit(String time_unit) {
+        this.timeUnit = time_unit;
     }
 
     public Date getCreatedAt() {

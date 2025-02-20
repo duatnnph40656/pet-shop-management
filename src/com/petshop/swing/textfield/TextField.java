@@ -157,6 +157,13 @@ public class TextField extends JTextField {
     }
 
     @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        setDisabledTextColor(Color.BLACK); // Giữ màu chữ không đổi
+        setBackground(Color.WHITE); // Giữ màu nền không đổi
+    }
+
+    @Override
     public void setText(String string) {
         if (!getText().equals(string)) {
             showing(string.equals(""));

@@ -49,7 +49,7 @@ public class PopupCategoryPet extends javax.swing.JPanel {
         tDao = new TypePetDAO();
         model = new DefaultTableModel();
 
-        this.getListTypePet(tDao.getList());
+        this.getListTypePet(tDao.getListTypePet());
 
         txtCode.setText("TP" + Ultil.generateRandomCode());
         
@@ -186,7 +186,7 @@ public class PopupCategoryPet extends javax.swing.JPanel {
         TypePets t = new TypePets(tCode, tName, false, true);
         if (tDao.insertTypePet(t)) {
             showMessageSuccess("Thêm thành công");
-            this.getListTypePet(tDao.getList());
+            this.getListTypePet(tDao.getListTypePet());
             this.resetForm();
         } else {
             this.showMessageFail("Thêm thất bại");
@@ -200,7 +200,7 @@ public class PopupCategoryPet extends javax.swing.JPanel {
             int id = (int) tbTypePet.getValueAt(selectedRow, 0);
             tDao.deleteTypePet(id);
             showMessageSuccess("Xóa thành công");
-            this.getListTypePet(tDao.getList());
+            this.getListTypePet(tDao.getListTypePet());
         } else {
             showMessageFail("Chưa chọn thông tin để xóa!!");
         }
@@ -252,6 +252,8 @@ public class PopupCategoryPet extends javax.swing.JPanel {
                 btnThemActionPerformed(evt);
             }
         });
+
+        txtCode.setEnabled(false);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);

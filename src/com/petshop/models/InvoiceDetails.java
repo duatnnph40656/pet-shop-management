@@ -16,6 +16,7 @@ import java.util.Date;
 public class InvoiceDetails {
     private int id;
     private String invoiceDetailCode;
+<<<<<<< HEAD
     private Invoices invoice; // Đối tượng Invoice chứa invoiceId
     public ProductDetails productDetail;
     public Pets pet;
@@ -54,6 +55,18 @@ public class InvoiceDetails {
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
+=======
+    private Invoices invoice; 
+    private ProductDetails productDetail;
+    private Pets pet;
+    private PetServices petService;
+    private int usageOrQuantity;
+    private BigDecimal totalPrice;
+    private Date createdAt;
+    private boolean deleted;
+    private boolean status;
+    private boolean typeInvoiceDetail;
+>>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
 
     public InvoiceDetails() {
     }
@@ -72,6 +85,7 @@ public class InvoiceDetails {
         this.status = status;
     }
 
+<<<<<<< HEAD
     public String getProductOrServiceName() {
         return productOrServiceName;
     }
@@ -86,6 +100,20 @@ public class InvoiceDetails {
 
     public void setProductOrServiceCode(String productOrServiceCode) {
         this.productOrServiceCode = productOrServiceCode;
+=======
+    public InvoiceDetails(ProductDetails productDetail, int usageOrQuantity) {
+        this.productDetail = productDetail;
+        this.usageOrQuantity = usageOrQuantity;
+    }
+
+    
+    public boolean isTypeInvoiceDetail() {
+        return typeInvoiceDetail;
+    }
+
+    public void setTypeInvoiceDetail(boolean typeInvoiceDetail) {
+        this.typeInvoiceDetail = typeInvoiceDetail;
+>>>>>>> 2f3c1b27bbce710f97e5cd1a260b797aef437f51
     }
 
     public int getId() {

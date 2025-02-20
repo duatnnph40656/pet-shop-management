@@ -17,17 +17,15 @@ import java.util.List;
  */
 public class CategoryProductDAO {
 
-    private Connection conn = null;
-    private PreparedStatement ps = null;
-    private ResultSet rs = null;
-    private String sql = "";
+    private Connection conn;
+   
 
     public CategoryProductDAO() {
         conn = DBConnect.getConnection();
     }
 
     public List<CategoryProducts> getListCategoryProduct() {
-        sql = "	SELECT \n"
+        String sql = "	SELECT \n"
                 + "    c.id,\n"
                 + "    c.category_code,\n"
                 + "    c.category_name,\n"
@@ -58,7 +56,7 @@ public class CategoryProductDAO {
     }
 
     public boolean addCategoryProduct(CategoryProducts c) {
-        sql = "INSERT INTO category_products(category_code, category_name, is_deleted, is_status) VALUES (?,?,?,?)";
+        String sql = "INSERT INTO category_products(category_code, category_name, is_deleted, is_status) VALUES (?,?,?,?)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, c.getCategoryProductCode());
             ps.setString(2, c.getCategoryProductName());
@@ -70,13 +68,12 @@ public class CategoryProductDAO {
         }
         return false;
     }
-
     
     public boolean isCategoryNameExists(String categoryName) {
-    sql = "SELECT COUNT(*) FROM category_products WHERE category_name = ? AND is_deleted = 0";
+    String sql = "SELECT COUNT(*) FROM category_products WHERE category_name = ? AND is_deleted = 0";
     try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setString(1, categoryName);
-        rs = ps.executeQuery();
+        ResultSet rs = ps.executeQuery();
         if (rs.next()) {
             return rs.getInt(1) > 0; // Nếu số lượng > 0, tức là tên đã tồn tại
         }
@@ -85,7 +82,15 @@ public class CategoryProductDAO {
     }
     return false;
 }
-
     
-    
+    public boolean deleteCategoryProduct(int id){
+        String sql = "UPDATE category_products SET is_deleted = 1 WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

@@ -11,7 +11,9 @@ import com.petshop.event.ConfirmListenerInput;
 import com.petshop.event.EventCallBack;
 import com.petshop.event.EventTextField;
 import com.petshop.models.PetServices;
+import com.petshop.models.Products;
 import com.petshop.models.TypeServices;
+import com.petshop.popup.PopupShowHistoryDeleted;
 import com.petshop.popup.PopupTypeService;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogInput;
@@ -21,7 +23,10 @@ import com.petshop.swing.message.DialogMessageSuccess;
 import com.petshop.swing.table.EventAction;
 import com.petshop.swing.table.ModelAction;
 import com.petshop.ultils.Ultil;
+import java.awt.event.ActionListener;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import raven.glasspanepopup.GlassPanePopup;
 
@@ -39,9 +44,6 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
     public ServiceManagerment() {
         initComponents();
-//        table1.fixTable(jScrollPane1);
-//        table2.fixTable(jScrollPane2);
-//        table3.fixTable(jScrollPane3);
         tbService.fixTable(jScrollPane4);
         petServiceDAO = new PetServiceDAO();
         typeServiceDAO = new TypeServiceDAO();
@@ -50,12 +52,12 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
     public void init() {
         txtServiceCode.setText("SV" + Ultil.generateRandomCode());
-        getListService(petServiceDAO.getList());
+        getListService(petServiceDAO.getListService());
         loadCBBTypeService(typeServiceDAO.getListTypeS());
-        loadCbbFilterTypeService(typeServiceDAO.getListTypeS());
+        loadComboBoxes(typeServiceDAO.getListTypeS());
         loadCBBTimeUnit();
-        loadCbbFilterStatus();
         searchEvent();
+        txtServiceCode.setEditable(false);
     }
 
     private void searchEvent() {
@@ -82,6 +84,106 @@ public class ServiceManagerment extends javax.swing.JPanel {
         });
     }
 
+     public void showPopUpHistoryDeletedProducts() {
+        int stt = 1;
+        PopupShowHistoryDeleted popup = new PopupShowHistoryDeleted();
+        List<PetServices> petServiceses = petServiceDAO.getListServiceDeleted();
+        // Chuyển đổi danh sách sản phẩm thành List<Object[]>
+        List<Object[]> data = new ArrayList<>();
+        for (PetServices p : petServiceses) {
+            data.add(new Object[]{
+                stt,
+                p.getServiceCode(),
+                p.getServiceName(),
+                p.getTypeService().getTypeServiceName(),
+                p.getDuration(),
+                p.getTimeUnit(),
+                Ultil.formatCurrency(p.getPriceService()),
+                p.getFormattedCreatedAt(),
+                new ModelAction<>(p, new EventAction<PetServices>() {
+                    @Override
+                    public void delete(PetServices p) {
+                        showMessageConfirm("Xác nhận khôi phục sản phẩm này", () -> {
+                            restoreService(p);
+                            reloadTableProduct(popup);
+                        });
+                    }
+
+                    @Override
+                    public void update(PetServices p) {
+                    }
+
+                    @Override
+                    public void add(PetServices p) {
+                    }
+                })
+            });
+            stt++;
+        }
+
+        // Định nghĩa tiêu đề cột
+        String[] columnNames = {"STT", "Mã DV", "Tên DV", "Loại DV", "T.gian", "Đơn vị TG", "Giá DV", "Ngày tạo", "Thao tác"};
+
+        // Hiển thị popup
+        popup.setLbText("Danh sách dịch vụ đã xóa");
+        popup.fillTable(data, columnNames); // Đảm bảo bảng có dữ liệu trước khi hiển thị
+
+        popup.setConfirmListener(new ConfirmListener() {
+            @Override
+            public void onConfirm() {
+
+            }
+
+            @Override
+            public void onCancel() {
+                getListService(petServiceDAO.getListService());
+            }
+        });
+        GlassPanePopup.showPopup(popup);
+    }
+
+    private void reloadTableProduct(PopupShowHistoryDeleted popup) {
+        int stt = 1;
+        List<PetServices> petServiceses = petServiceDAO.getListServiceDeleted();
+        // Chuyển đổi danh sách sản phẩm thành List<Object[]>
+        List<Object[]> data = new ArrayList<>();
+        for (PetServices p : petServiceses) {
+            data.add(new Object[]{
+                stt,
+                p.getServiceCode(),
+                p.getServiceName(),
+                p.getTypeService().getTypeServiceName(),
+                p.getDuration(),
+                p.getTimeUnit(),
+                Ultil.formatCurrency(p.getPriceService()),
+                p.getFormattedCreatedAt(),
+                new ModelAction<>(p, new EventAction<PetServices>() {
+                    @Override
+                    public void delete(PetServices p) {
+                        showMessageConfirm("Xác nhận khôi phục sản phẩm này", () -> {
+                            restoreService(p);
+                            reloadTableProduct(popup);
+                        });
+                    }
+
+                    @Override
+                    public void update(PetServices p) {
+                    }
+
+                    @Override
+                    public void add(PetServices p) {
+                    }
+                })
+            });
+            stt++;
+        }
+
+        // Cập nhật lại bảng
+        popup.fillTable(data, new String[]{"STT", "Mã DV", "Tên DV", "Loại DV", "T.gian", "Đơn vị TG", "Giá DV", "Ngày tạo","Thao tác"});
+    }
+    
+    
+    
     //<editor-fold defaultstate="collapsed" desc="{Message...">
     private void showMessageSuccess(String message) {
         DialogMessageSuccess success = new DialogMessageSuccess(message);
@@ -140,12 +242,12 @@ public class ServiceManagerment extends javax.swing.JPanel {
         tPopup.setConfirmListener(new ConfirmListener() {
             @Override
             public void onConfirm() {
-
+                loadCBBTypeService(typeServiceDAO.getListTypeS());
             }
 
             @Override
             public void onCancel() {
-
+                loadCBBTypeService(typeServiceDAO.getListTypeS());
             }
         });
         GlassPanePopup.showPopup(tPopup, "tPopup");
@@ -161,38 +263,54 @@ public class ServiceManagerment extends javax.swing.JPanel {
         cbbTypeService.setSelectedIndex(-1);
     }
 
-    public void loadCbbFilterTypeService(List<TypeServices> list) {
+    public void loadComboBoxes(List<TypeServices> typeServicesList) {
+        // Load combobox loại dịch vụ
         cbbFilterTypeService.removeAllItems();
-        for (TypeServices p : list) {
-            cbbFilterTypeService.addItem(p);
+        for (TypeServices type : typeServicesList) {
+            cbbFilterTypeService.addItem(type);
         }
         cbbFilterTypeService.setSelectedIndex(-1);
 
-        cbbFilterTypeService.addActionListener(e -> getListServiceByFilter());
-
-    }
-
-    public void loadCbbFilterStatus() {
+        // Load combobox trạng thái
         cbbFilterStatus.removeAllItems();
         cbbFilterStatus.addItem("Hoạt động");
-        cbbFilterStatus.addItem("Ngưng hoạt động");
-        cbbFilterStatus.setSelectedIndex(0);
+        cbbFilterStatus.addItem("Tạm ngưng");
+        cbbFilterStatus.setSelectedIndex(-1);
 
-        cbbFilterStatus.addActionListener(e -> getListServiceByFilter());
+        // Load combobox sắp xếp
+        cbbSort.removeAllItems();
+        cbbSort.addItem("Theo giá tăng dần");
+        cbbSort.addItem("Giá giảm dần");
+        cbbSort.setSelectedIndex(-1);
+
+        // Thêm sự kiện lắng nghe cho cả ba combobox
+        ActionListener filterListener = e -> getListServiceByFilter();
+        cbbFilterTypeService.addActionListener(filterListener);
+        cbbFilterStatus.addActionListener(filterListener);
+        cbbSort.addActionListener(filterListener);
     }
 
     public void getListServiceByFilter() {
-        TypeServices t = (TypeServices) cbbFilterTypeService.getSelectedItem();
-        boolean status = cbbFilterStatus.getSelectedItem().equals("Hoạt động");
+        TypeServices selectedType = (TypeServices) cbbFilterTypeService.getSelectedItem();
+        boolean status = "Hoạt động".equals(cbbFilterStatus.getSelectedItem());
 
-        System.out.println(status);
-        Integer typeServiceId = (t != null) ? t.getId() : null;
+        Integer typeServiceId = (selectedType != null) ? selectedType.getId() : null;
 
         List<PetServices> filteredList;
-        if (typeServiceId == null || status == true) {
-            filteredList = petServiceDAO.getList();
+        if (typeServiceId == null) {
+            filteredList = petServiceDAO.getListService();
         } else {
             filteredList = petServiceDAO.filterServiceByIdTypeService(typeServiceId, status);
+        }
+
+        // Áp dụng sắp xếp
+        String sortBy = (String) cbbSort.getSelectedItem();
+        if (sortBy != null) {
+            if (sortBy.equals("Theo giá tăng dần")) {
+                filteredList.sort(Comparator.comparing(PetServices::getPriceService));
+            } else if (sortBy.equals("Giá giảm dần")) {
+                filteredList.sort(Comparator.comparing(PetServices::getPriceService).reversed());
+            }
         }
 
         getListService(filteredList);
@@ -221,8 +339,8 @@ public class ServiceManagerment extends javax.swing.JPanel {
                 p.getServiceName(),
                 p.getTypeService().getTypeServiceName(),
                 p.getDuration(),
-                p.getTime_unit(),
-                p.getFormattedPriceService(),
+                p.getTimeUnit(),
+                Ultil.formatCurrency(p.getPriceService()),
                 p.getDescribeService(),
                 p.getFormattedCreatedAt(),
                 p.isStatus() ? "Hoạt động" : "Tạm ngưng",
@@ -261,7 +379,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         p.setTypeService(t);
 
         String timeDuration = cbbTimeUnit.getSelectedItem().toString();
-        p.setTime_unit(timeDuration);
+        p.setTimeUnit(timeDuration);
 
         p.setDeleted(false);
         p.setStatus(true);
@@ -281,7 +399,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         p.setTypeService(t);
 
         String timeDuration = cbbTimeUnit.getSelectedItem().toString();
-        p.setTime_unit(timeDuration);
+        p.setTimeUnit(timeDuration);
         return p;
     }
 
@@ -294,6 +412,9 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
         cbbTypeService.setSelectedIndex(-1);
         cbbTimeUnit.setSelectedIndex(-1);
+        cbbFilterStatus.setSelectedIndex(-1);
+        cbbFilterTypeService.setSelectedIndex(-1);
+        cbbSort.setSelectedIndex(-1);
         tbService.clearSelection();
 
     }
@@ -312,7 +433,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         int duration = Integer.parseInt(tbService.getValueAt(selectedRow, 5).toString());
         String timeUnit = tbService.getValueAt(selectedRow, 6).toString();
 
-        String priceStr = tbService.getValueAt(selectedRow, 7).toString().trim(); // Chỉnh lại cột nếu cần
+        String priceStr = tbService.getValueAt(selectedRow, 7).toString().replace("₫", "").replace(".", "").replace("\u00A0", "").replaceAll("\\s+", "").trim(); // Chỉnh lại cột nếu cần
 
         priceStr = priceStr.replaceAll("[^0-9]", "");
 
@@ -375,6 +496,10 @@ public class ServiceManagerment extends javax.swing.JPanel {
         }
         if (txtDuration.getText().trim().isEmpty()) {
             showMessageFail("Thời gian dịch vụ không được để trống!");
+            return false;
+        }
+        if(txtDescribeService.getText().isEmpty()){
+            showMessageFail("Mô tả dịch vụ không được để trống!");
             return false;
         }
         try {
@@ -467,7 +592,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         }
         if (petServiceDAO.insertPetService(readForm())) {
             showMessageSuccess("Thêm thành công!!");
-            getListService(petServiceDAO.getList());
+            getListService(petServiceDAO.getListService());
             resetFormService();
         } else {
             showMessageFail("Thêm thất bại!!");
@@ -480,7 +605,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
             int id = p.getId();
             petServiceDAO.deletePetService(id);
             showMessageSuccess("Xóa thành công!");
-            getListService(petServiceDAO.getList());
+            getListService(petServiceDAO.getListService());
         } else {
             showMessageFail("Xóa thất bại!");
         }
@@ -494,7 +619,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         int id = (int) tbService.getValueAt(selectedRow, 0);
         if (petServiceDAO.updatePetService(id, readFormUpdate())) {
             showMessageSuccess("Cập nhập thành công!");
-            getListService(petServiceDAO.getList());
+            getListService(petServiceDAO.getListService());
         } else {
             showMessageFail("Cập nhập thất bại!!!");
         }
@@ -506,7 +631,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         int id = (int) tbService.getValueAt(selectRow, 0);
         boolean status = tbService.getValueAt(selectRow, 10).equals("Tạm ngưng");
         petServiceDAO.updateStatusService(id, status);
-        getListService(petServiceDAO.getList());
+        getListService(petServiceDAO.getListService());
     }
 
     public void searchServiceByName(String keyword) {
@@ -516,6 +641,11 @@ public class ServiceManagerment extends javax.swing.JPanel {
         } else {
             getListService(list);
         }
+    }
+    
+    private void restoreService(PetServices p){
+        petServiceDAO.restoreService(p.getId());
+        getListService(petServiceDAO.getListService());
     }
     //</editor-fold>
 
@@ -552,7 +682,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         jScrollPane4 = new javax.swing.JScrollPane();
         tbService = new com.petshop.swing.table.Table();
         jLabel10 = new javax.swing.JLabel();
-        comboboxRounded6 = new com.petshop.swing.combobox.ComboboxRounded();
+        cbbSort = new com.petshop.swing.combobox.ComboboxRounded();
         txtSearchService = new com.petshop.swing.textfield.TextFieldAnimation();
         cbbFilterStatus = new com.petshop.swing.combobox.Combobox();
         cbbFilterTypeService = new com.petshop.swing.combobox.Combobox();
@@ -610,21 +740,22 @@ public class ServiceManagerment extends javax.swing.JPanel {
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel8Layout.createSequentialGroup()
                         .addComponent(txtServiceCode, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(txtServiceName, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
+                        .addComponent(txtServiceName, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
+                        .addComponent(cbbTypeService, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(button2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel8Layout.createSequentialGroup()
                         .addComponent(txtDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(7, 7, 7)
                         .addComponent(cbbTimeUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel8Layout.createSequentialGroup()
-                        .addComponent(cbbTypeService, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(button2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(30, 30, 30)
-                        .addComponent(txtPriceService, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(txtPriceService, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addComponent(textAreaScroll1, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
                 .addContainerGap())
@@ -641,12 +772,15 @@ public class ServiceManagerment extends javax.swing.JPanel {
                                 .addComponent(txtServiceCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(txtServiceName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(txtDuration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(txtPriceService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(button2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(cbbTypeService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel8Layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtPriceService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(button2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanel8Layout.createSequentialGroup()
+                                .addGap(22, 22, 22)
+                                .addComponent(cbbTypeService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(textAreaScroll1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -679,6 +813,11 @@ public class ServiceManagerment extends javax.swing.JPanel {
         });
 
         button7.setText("Lịch sử đã xóa");
+        button7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                button7ActionPerformed(evt);
+            }
+        });
 
         btnEditStatus.setBackground(new java.awt.Color(255, 102, 102));
         btnEditStatus.setText("        ");
@@ -776,7 +915,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         jLabel10.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
         jLabel10.setText("Danh sách dịch vụ");
 
-        comboboxRounded6.setLabeText("Sắp xếp theo");
+        cbbSort.setLabeText("Sắp xếp theo");
 
         txtSearchService.setBackground(new java.awt.Color(250, 250, 250));
 
@@ -795,11 +934,11 @@ public class ServiceManagerment extends javax.swing.JPanel {
                     .addGroup(jPanel7Layout.createSequentialGroup()
                         .addComponent(jLabel10)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(cbbFilterTypeService, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbbFilterTypeService, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(cbbFilterStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comboboxRounded6, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbbSort, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(txtSearchService, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -811,13 +950,13 @@ public class ServiceManagerment extends javax.swing.JPanel {
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel10)
                     .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(comboboxRounded6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbbSort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(cbbFilterStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(cbbFilterTypeService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(txtSearchService, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 2, Short.MAX_VALUE)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 357, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(20, 20, 20))
         );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -838,7 +977,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(30, Short.MAX_VALUE))
+                .addContainerGap(41, Short.MAX_VALUE))
         );
 
         materialTabbed1.addTab("Quản lý dịch vụ", jPanel2);
@@ -891,6 +1030,11 @@ public class ServiceManagerment extends javax.swing.JPanel {
         updateService();
     }//GEN-LAST:event_btnEditActionPerformed
 
+    private void button7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button7ActionPerformed
+        // TODO add your handling code here:
+        showPopUpHistoryDeletedProducts();
+    }//GEN-LAST:event_button7ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.Button btnAdd;
@@ -901,9 +1045,9 @@ public class ServiceManagerment extends javax.swing.JPanel {
     private com.petshop.swing.Button button7;
     private com.petshop.swing.combobox.Combobox cbbFilterStatus;
     private com.petshop.swing.combobox.Combobox cbbFilterTypeService;
+    private com.petshop.swing.combobox.ComboboxRounded cbbSort;
     private com.petshop.swing.combobox.Combobox cbbTimeUnit;
     private com.petshop.swing.combobox.Combobox cbbTypeService;
-    private com.petshop.swing.combobox.ComboboxRounded comboboxRounded6;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel2;

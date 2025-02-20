@@ -22,7 +22,7 @@ public class TypePetDAO {
         conn = DBConnect.getConnection();
     }
 
-    public List<TypePets> getList() {
+    public List<TypePets> getListTypePet() {
         String sql = "SELECT id, type_pet_code, type_pet_name, created_at, is_deleted, is_status FROM type_pets WHERE is_deleted = 0 AND is_status = 1";
 
         List<TypePets> list = new ArrayList<>();

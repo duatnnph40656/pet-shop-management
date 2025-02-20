@@ -137,6 +137,9 @@
               </Events>
             </Component>
             <Component class="com.petshop.swing.textfield.TextField1" name="txtCode">
+              <Properties>
+                <Property name="enabled" type="boolean" value="false"/>
+              </Properties>
             </Component>
             <Component class="com.petshop.swing.textfield.TextField1" name="txtName">
             </Component>
