@@ -117,11 +117,15 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jScrollPane4" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane4" pref="1053" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" pref="437" max="-2" attributes="0"/>
-                                      <Component id="textFieldAnimation1" pref="427" max="32767" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                      <Component id="comboboxRounded2" min="-2" pref="167" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="comboboxRounded1" min="-2" pref="171" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="textFieldAnimation1" min="-2" pref="222" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -130,13 +134,21 @@
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                                  <Component id="textFieldAnimation1" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="3" attributes="0">
+                                              <Component id="comboboxRounded1" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="comboboxRounded2" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Component id="textFieldAnimation1" alignment="0" min="-2" pref="42" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
                               </Group>
-                              <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
-                              <Component id="jScrollPane4" pref="609" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jScrollPane4" pref="594" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -259,6 +271,16 @@
                         </Component>
                       </SubComponents>
                     </Container>
+                    <Component class="com.petshop.swing.combobox.ComboboxRounded" name="comboboxRounded1">
+                      <Properties>
+                        <Property name="labeText" type="java.lang.String" value="T&#xec;m ki&#x1ebf;m theo ng&#xe0;y"/>
+                      </Properties>
+                    </Component>
+                    <Component class="com.petshop.swing.combobox.ComboboxRounded" name="comboboxRounded2">
+                      <Properties>
+                        <Property name="labeText" type="java.lang.String" value="Tr&#x1ea1;ng th&#xe1;i"/>
+                      </Properties>
+                    </Component>
                   </SubComponents>
                 </Container>
               </SubComponents>
@@ -362,9 +384,9 @@
                                                   <Component id="txtTenThuCung" min="-2" pref="181" max="-2" attributes="0"/>
                                               </Group>
                                               <EmptySpace type="separate" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="txtOwner" min="-2" pref="181" max="-2" attributes="0"/>
-                                                  <Component id="cboKhachHang" min="-2" pref="181" max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                                  <Component id="cboKhachHang" pref="181" max="32767" attributes="0"/>
+                                                  <Component id="txtOwner" max="32767" attributes="0"/>
                                               </Group>
                                           </Group>
                                           <Component id="cbDaTiem" min="-2" max="-2" attributes="0"/>
@@ -562,7 +584,7 @@
                                   <Component id="jScrollPane3" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Component id="jLabel43" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
+                                      <EmptySpace pref="241" max="32767" attributes="0"/>
                                       <Component id="cboLocLoaiThuCung" min="-2" pref="152" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
                                       <Component id="cboLocGiongThuCung" min="-2" pref="148" max="-2" attributes="0"/>

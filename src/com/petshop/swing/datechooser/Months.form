@@ -26,156 +26,132 @@
   <SubComponents>
     <Component class="com.petshop.swing.datechooser.Button" name="cmd1">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="4b" green="4b" red="4b" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="January"/>
+        <Property name="text" type="java.lang.String" value="Th&#xe1;ng 1"/>
         <Property name="name" type="java.lang.String" value="1" noResource="true"/>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmd2">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="4b" green="4b" red="4b" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="February"/>
+        <Property name="text" type="java.lang.String" value="Th&#xe1;ng 2"/>
         <Property name="name" type="java.lang.String" value="2" noResource="true"/>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmd3">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="4b" green="4b" red="4b" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="March"/>
+        <Property name="text" type="java.lang.String" value="Th&#xe1;ng 3"/>
         <Property name="name" type="java.lang.String" value="3" noResource="true"/>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmd3ActionPerformed"/>
+      </Events>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmd4">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="4b" green="4b" red="4b" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="April"/>
+        <Property name="text" type="java.lang.String" value="Th&#xe1;ng 4"/>
         <Property name="name" type="java.lang.String" value="4" noResource="true"/>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmd5">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="4b" green="4b" red="4b" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="May"/>
+        <Property name="text" type="java.lang.String" value="Th&#xe1;ng 5"/>
         <Property name="name" type="java.lang.String" value="5" noResource="true"/>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmd6">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="4b" green="4b" red="4b" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="June"/>
+        <Property name="text" type="java.lang.String" value="Th&#xe1;ng 6"/>
         <Property name="name" type="java.lang.String" value="6" noResource="true"/>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmd6ActionPerformed"/>
+      </Events>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmd7">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="4b" green="4b" red="4b" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="July"/>
+        <Property name="text" type="java.lang.String" value="Th&#xe1;ng 7"/>
         <Property name="name" type="java.lang.String" value="7" noResource="true"/>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmd7ActionPerformed"/>
+      </Events>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmd8">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="4b" green="4b" red="4b" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="August"/>
+        <Property name="text" type="java.lang.String" value="Th&#xe1;ng 8"/>
         <Property name="name" type="java.lang.String" value="8" noResource="true"/>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmd9">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="4b" green="4b" red="4b" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="September"/>
+        <Property name="text" type="java.lang.String" value="Th&#xe1;ng 9"/>
         <Property name="name" type="java.lang.String" value="9" noResource="true"/>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmd10">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="4b" green="4b" red="4b" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="October"/>
+        <Property name="text" type="java.lang.String" value="Th&#xe1;ng 10"/>
         <Property name="name" type="java.lang.String" value="10" noResource="true"/>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmd11">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="4b" green="4b" red="4b" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="November"/>
+        <Property name="text" type="java.lang.String" value="Th&#xe1;ng 11"/>
         <Property name="name" type="java.lang.String" value="11" noResource="true"/>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmd11ActionPerformed"/>
+      </Events>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmd12">
       <Properties>
-        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="ff" green="ff" red="ff" type="rgb"/>
-        </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="4b" green="4b" red="4b" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="December"/>
+        <Property name="text" type="java.lang.String" value="Th&#xe1;ng 12"/>
         <Property name="name" type="java.lang.String" value="12" noResource="true"/>
         <Property name="opaque" type="boolean" value="true"/>
       </Properties>

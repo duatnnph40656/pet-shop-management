@@ -5,6 +5,7 @@
 package com.petshop.models;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -14,9 +15,9 @@ public class PetCareServices {
     private int id;
     private PetServices petS;
     private Pets pet;
-    private Date dateStart;
-    private Date dateEnd;
-    private Date actualEnd;
+    private LocalDateTime dateStart;
+    private LocalDateTime dateEnd;
+    private LocalDateTime actualEnd;
     private String note;
     private Date createdAt;
     private boolean deleted;
@@ -25,7 +26,7 @@ public class PetCareServices {
     public PetCareServices() {
     }
 
-    public PetCareServices(int id, PetServices petS, Pets pet, Date dateStart, Date dateEnd, Date actualEnd, String note, Date createdAt, boolean deleted, boolean status) {
+    public PetCareServices(int id, PetServices petS, Pets pet, LocalDateTime dateStart, LocalDateTime dateEnd, LocalDateTime actualEnd, String note, Date createdAt, boolean deleted, boolean status) {
         this.id = id;
         this.petS = petS;
         this.pet = pet;
@@ -62,27 +63,27 @@ public class PetCareServices {
         this.pet = pet;
     }
 
-    public Date getDateStart() {
+    public LocalDateTime getDateStart() {
         return dateStart;
     }
 
-    public void setDateStart(Date dateStart) {
+    public void setDateStart(LocalDateTime dateStart) {
         this.dateStart = dateStart;
     }
 
-    public Date getDateEnd() {
+    public LocalDateTime getDateEnd() {
         return dateEnd;
     }
 
-    public void setDateEnd(Date dateEnd) {
+    public void setDateEnd(LocalDateTime dateEnd) {
         this.dateEnd = dateEnd;
     }
 
-    public Date getActualEnd() {
+    public LocalDateTime getActualEnd() {
         return actualEnd;
     }
 
-    public void setActualEnd(Date actualEnd) {
+    public void setActualEnd(LocalDateTime actualEnd) {
         this.actualEnd = actualEnd;
     }
 
@@ -117,6 +118,7 @@ public class PetCareServices {
     public void setStatus(boolean status) {
         this.status = status;
     }
+
     
     
     

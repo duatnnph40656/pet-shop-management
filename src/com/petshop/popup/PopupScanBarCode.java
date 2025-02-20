@@ -12,7 +12,7 @@ import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 import com.petshop.swing.popup.GlassPanePopup;
-import com.petshop.ultils.BarcodeListener;
+import com.petshop.event.BarcodeListener;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -21,6 +21,9 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.Handler;
 
 /**
  *
@@ -44,8 +47,28 @@ public class PopupScanBarCode extends javax.swing.JPanel {
         this.barcodeListener = listener;
     }
 
+    private void disableWebcamLogging() {
+        // Tắt log cho webcam-capture
+        Logger logger = Logger.getLogger("com.github.sarxos.webcam");
+        logger.setLevel(Level.OFF);
+
+        // Lấy root logger và tắt tất cả các handler (như ConsoleHandler)
+        Logger rootLogger = Logger.getLogger("");
+        for (Handler handler : rootLogger.getHandlers()) {
+            handler.setLevel(Level.OFF);
+        }
+    }
+
     private void startWebcam() {
         new Thread(() -> {
+             disableWebcamLogging();
+            // Tắt hoàn toàn log của webcam-capture
+            Logger logger = Logger.getLogger("com.github.sarxos.webcam");
+            logger.setLevel(Level.OFF);
+            for (Handler handler : Logger.getLogger("").getHandlers()) {
+                handler.setLevel(Level.OFF);
+            }
+
             webcam = Webcam.getDefault();
             if (webcam == null) {
                 JOptionPane.showMessageDialog(this, "Không tìm thấy webcam!", "Lỗi", JOptionPane.ERROR_MESSAGE);

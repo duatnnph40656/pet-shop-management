@@ -5,6 +5,7 @@
 package com.petshop.daos;
 
 import com.petshop.connect.DBConnect;
+import com.petshop.models.MostUsedService;
 import com.petshop.models.PetServices;
 import com.petshop.models.TypeServices;
 import java.security.Provider;
@@ -203,7 +204,7 @@ public class PetServiceDAO {
         }
         return false;
     }
-    
+
     public boolean restoreService(int id) {
         String sql = "UPDATE service_details SET is_deleted = 0 WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -278,6 +279,33 @@ public class PetServiceDAO {
         p.setDeleted(rs.getBoolean("is_deleted"));
         p.setStatus(rs.getBoolean("is_status"));
         return p;
+    }
+
+    public List<MostUsedService> getMostUsedServices(Date startDate, Date endDate, int limit) {
+        List<MostUsedService> list = new ArrayList<>();
+        String sql = "{CALL GetMostUsedServices(?, ?, ?)}"; // Gọi stored procedure
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, startDate);
+            ps.setDate(2, endDate);
+            ps.setInt(3, limit);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    MostUsedService service = new MostUsedService(
+                            rs.getInt("service_id"),
+                            rs.getString("service_code"),
+                            rs.getString("service_name"),
+                            rs.getInt("total_used")
+                    );
+                    list.add(service);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 
 }

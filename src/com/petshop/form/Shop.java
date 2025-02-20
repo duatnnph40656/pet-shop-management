@@ -27,6 +27,7 @@ import com.petshop.models.ProductDetails;
 import com.petshop.models.Products;
 import com.petshop.models.TypePets;
 import com.petshop.popup.PopupCustomer;
+import com.petshop.popup.PopupScanBarCode;
 import com.petshop.popup.PopupService;
 import com.petshop.services.RememberMeService;
 import com.petshop.swing.message.DialogConfirm;
@@ -171,6 +172,24 @@ public class Shop extends javax.swing.JPanel {
             }
         });
         GlassPanePopup.showPopup(poup, "pPet");
+    }
+    
+    public void showPopupWebcam() {
+        PopupScanBarCode pWebCam = new PopupScanBarCode();
+
+        pWebCam.setBarcodeListener((String barcode) -> {
+            ProductDetails p = productDetailDAO.searchByBarCodeResultModel(barcode);
+            if (p != null) {
+                insertPToInvoiceD(p,1); // Hiển thị thông tin sản phẩm lên giao diện
+                showMessageSuccess("Đã thêm sản phẩm");
+                GlassPanePopup.closePopup("pWebCam");
+            } else {
+                showMessageFail("Không tìm thấy sản phẩm có mã vạch: " + barcode);
+                GlassPanePopup.closePopup("pWebCam");
+            }
+        });
+
+        GlassPanePopup.showPopup(pWebCam, "pWebCam");
     }
     //</editor-fold>
 
@@ -336,6 +355,11 @@ public class Shop extends javax.swing.JPanel {
             return null; // Không có dòng nào được chọn
         }
         return (Integer) tbInvoiceDetail.getValueAt(selectedRow, 1);
+    }
+    
+    private void searchByBarcode(String barcode){
+        ProductDetails p = productDetailDAO.searchByBarCodeResultModel(barcode);
+        insertPToInvoiceD(p,1);
     }
     //</editor-fold>
 
@@ -1287,6 +1311,11 @@ public class Shop extends javax.swing.JPanel {
         cbbFilterProduct.setLabeText("Sản phẩm");
 
         btnScanBarcode.setText("Quét barcode");
+        btnScanBarcode.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnScanBarcodeActionPerformed(evt);
+            }
+        });
 
         tbProductDetail.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -1521,6 +1550,11 @@ public class Shop extends javax.swing.JPanel {
         // TODO add your handling code here:
         updateInvoice();
     }//GEN-LAST:event_btnConfirmInvoiceActionPerformed
+
+    private void btnScanBarcodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnScanBarcodeActionPerformed
+        // TODO add your handling code here:
+        showPopupWebcam();
+    }//GEN-LAST:event_btnScanBarcodeActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

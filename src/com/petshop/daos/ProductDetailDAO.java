@@ -5,11 +5,13 @@
 package com.petshop.daos;
 
 import com.petshop.connect.DBConnect;
+import com.petshop.models.BestSellingProduct;
 import com.petshop.models.InvoiceDetails;
 import com.petshop.models.Products;
 import com.petshop.models.ProductDetails;
 import com.petshop.models.TypePets;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -423,6 +425,29 @@ public class ProductDetailDAO {
         return list;
     }
 
+    public ProductDetails searchByBarCodeResultModel(String barCode) {
+        String sql = "SELECT pd.id, p.product_name, pd.product_detail_code, pd.product_detail_name, "
+                + "t.type_pet_name, pd.expirydate, pd.weight, pd.quantity_in_stock, pd.flavor, "
+                + "pd.describe, pd.price, pd.image_path, pd.created_at, pd.is_deleted, pd.is_status, "
+                + "pd.id_product, pd.bar_code, pd.production_date "
+                + "FROM product_details pd "
+                + "JOIN products p ON pd.id_product = p.id "
+                + "JOIN type_pets t ON pd.id_type_pet = t.id "
+                + "WHERE pd.bar_code = ? AND pd.is_deleted = 0 AND pd.is_status = 1";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, barCode);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToProductDetail(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; // Trả về null nếu không tìm thấy
+    }
+
     public List<ProductDetails> searchByProductId(int productId) {
         String sql = "SELECT pd.id, p.product_name, pd.product_detail_code, pd.product_detail_name, "
                 + "t.type_pet_name, pd.expirydate, pd.weight, pd.quantity_in_stock, pd.flavor, "
@@ -574,6 +599,32 @@ public class ProductDetailDAO {
         proD.setStatus(rs.getBoolean("is_status"));
 
         return proD;
+    }
+
+    public List<BestSellingProduct> getBestSellingProducts(LocalDateTime startDate, LocalDateTime endDate, int limit) {
+        List<BestSellingProduct> list = new ArrayList<>();
+        String sql = "{CALL GetBestSellingProducts(?, ?, ?)}";
+
+        try (CallableStatement cs = conn.prepareCall(sql)) {
+            cs.setTimestamp(1, Timestamp.valueOf(startDate));
+            cs.setTimestamp(2, Timestamp.valueOf(endDate));
+            cs.setInt(3, limit);
+
+            try (ResultSet rs = cs.executeQuery()) {
+                while (rs.next()) {
+                    BestSellingProduct product = new BestSellingProduct();
+                    product.setId(rs.getInt("id"));
+                    product.setProductCode(rs.getString("product_detail_code"));
+                    product.setProductName(rs.getString("product_detail_name"));
+                    product.setTotalSold(rs.getInt("total_sold"));
+                    product.setSaleCount(rs.getInt("sale_count"));
+                    list.add(product);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
 }

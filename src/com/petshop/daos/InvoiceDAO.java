@@ -10,6 +10,10 @@ import com.petshop.models.Employees;
 import com.petshop.models.Invoices;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,7 +71,7 @@ public class InvoiceDAO {
                 + "FROM invoices i\n"
                 + "JOIN customers c ON i.id_customer = c.id\n"
                 + "JOIN employees e ON i.id_employee = e.id\n"
-                + "WHERE i.is_deleted = 0;";
+                + "WHERE i.is_deleted = 0 AND i.is_status = 0;";
 
         List<Invoices> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
@@ -128,11 +132,10 @@ public class InvoiceDAO {
     }
 
     public boolean updateStatus(int invoiceId, boolean status) {
-        String sql = "UPDATE invoices SET status = ? WHERE id = ?";
+        String sql = "UPDATE invoices SET is_status = ? WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setBoolean(1, status);
             ps.setInt(2, invoiceId);
-
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -289,39 +292,114 @@ public class InvoiceDAO {
     }
 
 
-    public ArrayList<Invoices> search(String keyword) {
-        String sql = "SELECT  i.id, \n"
-                + "                   i.invoice_code,  \n"
-                + "                   i.created_at,  \n"
-                + "                    i.total_price,  \n"
-                + "                    i.payment_status,  \n"
-                + "                    i.note,  \n"
-                + "       i.costs_incurred,  \n"
-                + "                    c.customer_name,  \n"
-                + "                    e.employee_code \n"
-                + "               FROM invoices i \n"
-                + "               JOIN customers c ON i.id_customer = c.id \n"
-                + "               JOIN employees e ON i.id_employee = e.id \n"
-                + "               WHERE i.is_status = 1 AND i.is_deleted = 0";
+    public List<Invoices> searchInvoiceByDateRange(String startDateStr, String endDateStr) {
+        List<Invoices> list = new ArrayList<>();
+        String sql = "SELECT \n"
+                + "    i.id, \n"
+                + "    i.invoice_code, \n"
+                + "    i.total_price, \n"
+                + "    i.costs_incurred, \n"
+                + "    i.payment_method, \n"
+                + "    i.payment_status, \n"
+                + "    i.note, \n"
+                + "    i.created_at, \n"
+                + "    c.customer_code, \n"
+                + "    c.customer_name, \n"
+                + "    e.employee_name \n"
+                + "FROM invoices i\n"
+                + "JOIN customers c ON i.id_customer = c.id\n"
+                + "JOIN employees e ON i.id_employee = e.id\n"
+                + "WHERE i.is_deleted = 0 \n"
+                + "AND i.is_status = 0 \n"
+                + "AND i.created_at BETWEEN ? AND ?";
 
-        boolean hasKeyword = (keyword != null && !keyword.trim().isEmpty());
-        if (hasKeyword) {
-            sql += " AND i.invoice_code LIKE ?";
-        }
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        try {
+            // Chuyển đổi chuỗi ngày nhập vào thành java.util.Date
+            java.util.Date startDateUtil = sdf.parse(startDateStr);
+            java.util.Date endDateUtil = sdf.parse(endDateStr);
 
-        ArrayList<Invoices> list = new ArrayList<>();
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            if (hasKeyword) {
-                ps.setString(1, "%" + keyword.trim() + "%"); // Chỉ set nếu có từ khóa
+            // Chuyển đổi sang java.sql.Date
+            java.sql.Date startDate = new java.sql.Date(startDateUtil.getTime());
+            java.sql.Date endDate = new java.sql.Date(endDateUtil.getTime());
+
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setDate(1, startDate);
+                ps.setDate(2, endDate);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        list.add(mapInvoice(rs));
+                    }
+                }
             }
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(mapInvoice(rs));
-            }
-        } catch (Exception e) {
+        } catch (ParseException e) {
+            System.out.println("Lỗi chuyển đổi định dạng ngày: " + e.getMessage());
+        } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return list;
+    }
+
+    public List<Invoices> searchInvoicesByPeriod(String period) {
+        List<Invoices> invoices = new ArrayList<>();
+        String sql = "SELECT "
+                + "    i.id, "
+                + "    i.invoice_code, "
+                + "    i.total_price, "
+                + "    i.costs_incurred, "
+                + "    i.payment_method, "
+                + "    i.payment_status, "
+                + "    i.note, "
+                + "    i.created_at, "
+                + "    c.customer_code, "
+                + "    c.customer_name, "
+                + "    e.employee_name "
+                + "FROM invoices i "
+                + "JOIN customers c ON i.id_customer = c.id "
+                + "JOIN employees e ON i.id_employee = e.id "
+                + "WHERE i.is_deleted = 0 AND i.is_status = 0 "
+                + "AND i.created_at BETWEEN ? AND ?";
+
+        // Xác định khoảng thời gian
+        LocalDate startDate;
+        LocalDate endDate = LocalDate.now(); // Mặc định là ngày hiện tại
+
+        switch (period.toLowerCase()) {
+            case "yesterday": // Hôm qua
+                startDate = LocalDate.now().minusDays(1);
+                endDate = startDate;
+                break;
+            case "last_week": // Tuần trước
+                startDate = LocalDate.now().minusWeeks(1);
+                endDate = LocalDate.now();
+                break;
+            case "last_month": // Tháng trước
+                startDate = LocalDate.now().minusMonths(1);
+                endDate = LocalDate.now();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid period! Use: 'yesterday', 'last_week', 'last_month'");
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String formattedStartDate = startDate.format(formatter);
+        String formattedEndDate = endDate.format(formatter);
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, formattedStartDate);
+            ps.setString(2, formattedEndDate);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                invoices.add(mapInvoice(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return invoices;
     }
 
     public boolean updateTotalPrice(int invoiceId) {
