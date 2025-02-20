@@ -27,32 +27,61 @@ public class InvoiceDetailDAO {
         conn = DBConnect.getConnection();
     }
 
+//    public List<InvoiceDetails> getListInvoiceDetailProduct() {
+//        String sql = "SELECT \n"
+//                + "       id.id, \n"
+//                + "       id.invoice_detail_code, \n"
+//                + "       COALESCE(pd.product_detail_name, sd.service_name) AS product_or_service_name, \n"
+//                + "       COALESCE(pd.product_detail_code, sd.service_code) AS product_or_service_code, \n"
+//                + "       id.id_pet, \n"
+//                + "       id.usage_or_quantity, \n"
+//                + "       id.price, \n"
+//                + "       (id.usage_or_quantity * id.price) AS total_price, \n"
+//                + "       id.duration, \n"
+//                + "       id.created_at, \n"
+//                + "       iv.invoice_code \n"
+//                + "FROM invoice_details id \n"
+//                + "LEFT JOIN invoices iv ON id.id_invoice = iv.id \n"
+//                + "LEFT JOIN product_details pd ON id.id_product_detail = pd.id \n"
+//                + "LEFT JOIN service_details sd ON id.id_service_detail = sd.id \n"
+//                + "LEFT JOIN pets p ON id.id_pet = p.id \n"
+//                + "WHERE id.is_status = 1;";
+//
+//        List<InvoiceDetails> list = new ArrayList<>();
+//        try (PreparedStatement ps = conn.prepareStatement(sql);
+//                ResultSet rs = ps.executeQuery()) {
+//
+//            while (rs.next()) {
+//                list.add(mapInvoiceDetail(rs)); // Ánh xạ dữ liệu vào danh sách hóa đơn chi tiết
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return list;
+//    }
     public List<InvoiceDetails> getListInvoiceDetailProduct() {
         String sql = "SELECT \n"
-                + "       id.id, \n"
-                + "       id.invoice_detail_code, \n"
-                + "       COALESCE(pd.product_detail_name, sd.service_name) AS product_or_service_name, \n"
-                + "       COALESCE(pd.product_detail_code, sd.service_code) AS product_or_service_code, \n"
-                + "       id.id_pet, \n"
-                + "       id.usage_or_quantity, \n"
-                + "       id.price, \n"
-                + "       (id.usage_or_quantity * id.price) AS total_price, \n"
-                + "       id.duration, \n"
-                + "       id.created_at, \n"
-                + "       iv.invoice_code \n"
-                + "FROM invoice_details id \n"
-                + "LEFT JOIN invoices iv ON id.id_invoice = iv.id \n"
-                + "LEFT JOIN product_details pd ON id.id_product_detail = pd.id \n"
-                + "LEFT JOIN service_details sd ON id.id_service_detail = sd.id \n"
-                + "LEFT JOIN pets p ON id.id_pet = p.id \n"
-                + "WHERE id.is_status = 1;";
+                + "    id.id, \n"
+                + "    id.invoice_detail_code, \n"
+                + "    id.usage_or_quantity, \n"
+                + "    id.total_price, \n"
+                + "    id.created_at, \n"
+                + "    id.is_status,\n"
+                + "    iv.invoice_code, \n"
+                + "    pd.product_detail_name, \n"
+                + "    sd.service_name, \n"
+                + "    p.pet_name\n"
+                + "FROM invoice_details id\n"
+                + "LEFT JOIN invoices iv ON id.id = iv.id\n"
+                + "LEFT JOIN product_details pd ON id.id = pd.id\n"
+                + "LEFT JOIN service_details sd ON id.id = sd.id\n"
+                + "LEFT JOIN pets p ON id.id = p.id;";
 
         List<InvoiceDetails> list = new ArrayList<>();
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
 
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(mapInvoiceDetail(rs)); // Ánh xạ dữ liệu vào danh sách hóa đơn chi tiết
+                list.add(mapInvoiceDetail(rs));
             }
         } catch (Exception e) {
             e.printStackTrace();

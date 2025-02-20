@@ -26,7 +26,6 @@ public class InvoiceDAO {
     }
 
     public List<Invoices> getListInvoice() {
-
         String sql = "SELECT  i.id, \n"
                 + "                   i.invoice_code,  \n"
                 + "                   i.created_at,  \n"
@@ -41,25 +40,8 @@ public class InvoiceDAO {
                 + "               JOIN employees e ON i.id_employee = e.id \n"
                 + "               WHERE i.is_status = 1 AND i.is_deleted = 0";
 
-        String sql1 = "SELECT \n"
-                + "    i.id, \n"
-                + "    i.invoice_code, \n"
-                + "    i.total_price, \n"
-                + "    i.costs_incurred, \n"
-                + "    i.payment_method, \n"
-                + "    i.payment_status, \n"
-                + "    i.note, \n"
-                + "    i.created_at, \n"
-                + "    c.customer_code, \n"
-                + "    c.customer_name, \n"
-                + "    e.employee_name \n"
-                + "FROM invoices i\n"
-                + "JOIN customers c ON i.id_customer = c.id\n"
-                + "JOIN employees e ON i.id_employee = e.id\n"
-                + "WHERE i.is_status = 1 AND i.is_deleted = 0;";
-
         List<Invoices> list = new ArrayList<>();
-        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try ( PreparedStatement ps = conn.prepareStatement(sql);  ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapInvoice(rs));
             }
