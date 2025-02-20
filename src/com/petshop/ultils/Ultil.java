@@ -47,6 +47,14 @@ import raven.glasspanepopup.GlassPanePopup;
  */
 public class Ultil {
 
+    public static String getFormatted(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return "N/A"; 
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        return localDateTime.format(formatter);
+    }
+    
     public static String getFormattedCreatedAt(LocalDateTime localDateTime) {
         if (localDateTime == null) {
             return "N/A"; 

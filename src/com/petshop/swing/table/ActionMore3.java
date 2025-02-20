@@ -25,7 +25,7 @@ public class ActionMore3<T> extends javax.swing.JPanel {
     
     public ActionMore3(ModelAction<T> data) {
         initComponents();
-        cmdRestore.addActionListener(new ActionListener() {
+        cmdRestore1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 data.getEvent().delete(data.getModel());
@@ -43,19 +43,11 @@ public class ActionMore3<T> extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        cmdRestore = new com.petshop.swing.Button();
         cmdRestore1 = new com.petshop.swing.Button();
 
         setPreferredSize(new java.awt.Dimension(70, 40));
 
-        cmdRestore.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-delete-20.png"))); // NOI18N
-        cmdRestore.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmdRestoreActionPerformed(evt);
-            }
-        });
-
-        cmdRestore1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-eye-20.png"))); // NOI18N
+        cmdRestore1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-update-20.png"))); // NOI18N
         cmdRestore1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmdRestore1ActionPerformed(evt);
@@ -66,27 +58,19 @@ public class ActionMore3<T> extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(36, Short.MAX_VALUE)
                 .addComponent(cmdRestore1, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(cmdRestore, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cmdRestore1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cmdRestore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(cmdRestore1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void cmdRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdRestoreActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cmdRestoreActionPerformed
 
     private void cmdRestore1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdRestore1ActionPerformed
         // TODO add your handling code here:
@@ -94,7 +78,6 @@ public class ActionMore3<T> extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private com.petshop.swing.Button cmdRestore;
     private com.petshop.swing.Button cmdRestore1;
     // End of variables declaration//GEN-END:variables
 }

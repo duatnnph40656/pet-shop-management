@@ -27,7 +27,11 @@ public final class DateChooser extends javax.swing.JPanel {
     }
 
     private JTextField textRefernce;
-    private final String MONTH_ENGLISH[] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+    private final String MONTH_VIETNAMESE[] = {
+        "Tháng Một", "Tháng Hai", "Tháng Ba", "Tháng Tư", "Tháng Năm", "Tháng Sáu",
+        "Tháng Bảy", "Tháng Tám", "Tháng Chín", "Tháng Mười", "Tháng Mười Một", "Tháng Mười Hai"
+    };
+
     private String dateFormat = "dd/MM/yyyy";
     private int MONTH = 1;
     private int YEAR = 2021;
@@ -118,7 +122,7 @@ public final class DateChooser extends javax.swing.JPanel {
             d.setEvent(getEventDay(d));
             d.showDate(MONTH, YEAR, selectedDate);
             if (slide.slideToDown(d)) {
-                cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+                cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
                 cmdYear.setText(YEAR + "");
                 STATUS = 1;
             }
@@ -135,7 +139,7 @@ public final class DateChooser extends javax.swing.JPanel {
             Months d = new Months();
             d.setEvent(getEventMonth());
             if (slide.slideToDown(d)) {
-                cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+                cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
                 cmdYear.setText(YEAR + "");
                 STATUS = 2;
             }
@@ -157,7 +161,7 @@ public final class DateChooser extends javax.swing.JPanel {
         selectedDate.setYear(YEAR);
         dates.showDate(MONTH, YEAR, selectedDate);
         slide.slideNon(dates);
-        cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+        cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
         cmdYear.setText(YEAR + "");
         setText(runEvent, 0);
     }
@@ -172,7 +176,7 @@ public final class DateChooser extends javax.swing.JPanel {
         dates.setEvent(getEventDay(dates));
         dates.showDate(MONTH, YEAR, selectedDate);
         if (slide.slideToLeft(dates)) {
-            cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+            cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
             cmdYear.setText(YEAR + "");
         }
     }
@@ -183,7 +187,7 @@ public final class DateChooser extends javax.swing.JPanel {
         dates.setEvent(getEventDay(dates));
         dates.showDate(MONTH, YEAR, selectedDate);
         if (slide.slideToRight(dates)) {
-            cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+            cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
             cmdYear.setText(YEAR + "");
         }
     }
@@ -211,7 +215,6 @@ public final class DateChooser extends javax.swing.JPanel {
     public void showPopup() {
         popup.show(textRefernce, 0, textRefernce.getHeight());
     }
-
 
     public void hidePopup() {
         popup.setVisible(false);
@@ -478,7 +481,7 @@ public final class DateChooser extends javax.swing.JPanel {
         dates.setSelected(DAY);
         dates.showDate(MONTH, YEAR, selectedDate);
         slide.slideNon(dates);
-        cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+        cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
         cmdYear.setText(YEAR + "");
         setText(true, 0);
         STATUS = 1;
@@ -511,7 +514,7 @@ public final class DateChooser extends javax.swing.JPanel {
         dates.setSelected(DAY);
         dates.showDate(MONTH, YEAR, selectedDate);
         slide.slideNon(dates);
-        cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+        cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
         cmdYear.setText(YEAR + "");
         setText(true, 0);
         STATUS = 1;

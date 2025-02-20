@@ -85,7 +85,7 @@
                       <Group type="102" attributes="0">
                           <Component id="combobox1" min="-2" pref="140" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                          <Component id="combobox2" min="-2" pref="193" max="-2" attributes="0"/>
+                          <Component id="cbbFilter" min="-2" pref="193" max="-2" attributes="0"/>
                           <EmptySpace pref="164" max="32767" attributes="0"/>
                           <Component id="lblKhachHang3" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -106,9 +106,9 @@
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          <Component id="btnDeleteHistory1" min="-2" pref="107" max="-2" attributes="0"/>
+                          <Component id="button1" min="-2" pref="93" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="btnDeleteHistory3" min="-2" max="-2" attributes="0"/>
+                          <Component id="btnDeleteHistory1" min="-2" pref="107" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -128,7 +128,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="103" alignment="1" groupAlignment="3" attributes="0">
                           <Component id="combobox1" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="combobox2" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbbFilter" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="103" alignment="1" groupAlignment="3" attributes="0">
                           <Component id="txtDateEnd" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -139,11 +139,11 @@
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" pref="293" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" pref="294" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="btnDeleteHistory1" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="btnDeleteHistory3" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
+                      <Component id="button1" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -300,17 +300,6 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDeleteHistory1ActionPerformed"/>
           </Events>
         </Component>
-        <Component class="com.petshop.swing.Button" name="btnDeleteHistory3">
-          <Properties>
-            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="ff" green="cc" red="cc" type="rgb"/>
-            </Property>
-            <Property name="text" type="java.lang.String" value="Xu&#x1ea5;t danh s&#xe1;ch "/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDeleteHistory3ActionPerformed"/>
-          </Events>
-        </Component>
         <Component class="com.petshop.swing.textfield.TextField1" name="txtDateStart">
         </Component>
         <Component class="com.petshop.swing.textfield.TextField1" name="txtDateEnd">
@@ -320,7 +309,7 @@
             <Property name="labeText" type="java.lang.String" value="Tr&#x1ea1;ng th&#xe1;i thanh to&#xe1;n"/>
           </Properties>
         </Component>
-        <Component class="com.petshop.swing.combobox.Combobox" name="combobox2">
+        <Component class="com.petshop.swing.combobox.Combobox" name="cbbFilter">
           <Properties>
             <Property name="labeText" type="java.lang.String" value="L&#x1ecd;c theo th&#x1edd;i gian"/>
           </Properties>
@@ -336,6 +325,17 @@
             <Property name="horizontalAlignment" type="int" value="0"/>
             <Property name="text" type="java.lang.String" value="Ho&#xe1; &#x111;&#x1a1;n"/>
           </Properties>
+        </Component>
+        <Component class="com.petshop.swing.Button" name="button1">
+          <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="cc" green="cc" red="cc" type="rgb"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="L&#xe0;m m&#x1edb;i"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="button1ActionPerformed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

@@ -34,6 +34,8 @@ import java.awt.geom.RoundRectangle2D;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
@@ -79,6 +81,7 @@ public class PopupService extends javax.swing.JPanel {
                 listener.onConfirm();
             }
         });
+        txtServiceStart.setEditable(false);
         this.init();
     }
 
@@ -320,36 +323,21 @@ public class PopupService extends javax.swing.JPanel {
 
     private PetCareServices readFormPetC() {
         PetCareServices c = new PetCareServices();
-        java.sql.Date sqlDateStart = null;
-        java.sql.Date sqlDateEnd = null;
 
-        try {
-            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+        // Ngày bắt đầu: Luôn lấy thời gian hiện tại
+        LocalDateTime dateStart = LocalDateTime.now();
 
-            // Xử lý ngày bắt đầu
-            String dateStartStr = txtServiceStart.getText().trim();
-            if (!dateStartStr.isEmpty()) {
-                java.util.Date utilDate = df.parse(dateStartStr);
-                sqlDateStart = new java.sql.Date(utilDate.getTime());
-            } else {
-                sqlDateStart = new java.sql.Date(System.currentTimeMillis());
-            }
+        // Ngày kết thúc: Nếu không nhập thì lấy cuối ngày hôm nay
+        LocalDateTime dateEnd = LocalDateTime.of(dateStart.toLocalDate(), LocalDateTime.MAX.toLocalTime());
 
-            // Xử lý ngày kết thúc
-            String dateEndStr = txtServiceEnd.getText().trim();
-            if (!dateEndStr.isEmpty()) {
-                java.util.Date utilDate = df.parse(dateEndStr);
-                sqlDateEnd = new java.sql.Date(utilDate.getTime());
-            } else {
-                sqlDateEnd = new java.sql.Date(System.currentTimeMillis());
-            }
-
-        } catch (ParseException e) {
-            e.printStackTrace();
+        // Kiểm tra nếu có nhập ngày kết thúc thì lấy thời gian hiện tại, chỉ đổi ngày
+        String dateEndStr = txtServiceEnd.getText().trim();
+        if (!dateEndStr.isEmpty()) {
+            dateEnd = LocalDateTime.now().withDayOfMonth(dateStart.getDayOfMonth());
         }
 
-        c.setDateStart(sqlDateStart);
-        c.setDateEnd(sqlDateEnd);
+        c.setDateStart(dateStart);
+        c.setDateEnd(dateEnd);
         c.setNote(txtNote.getText());
 
         // Lấy thông tin dịch vụ
@@ -474,8 +462,8 @@ public class PopupService extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jPanel2.setBackground(new java.awt.Color(204, 255, 204));
@@ -734,8 +722,8 @@ public class PopupService extends javax.swing.JPanel {
                 .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
