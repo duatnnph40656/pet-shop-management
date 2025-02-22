@@ -140,13 +140,14 @@ public class EmployeeManagement extends javax.swing.JPanel {
     tblnhanvien.setRowCount(0);
     // Lấy danh sách nhân viên từ DB
     for (Employees emp : list) {
+        
         tblnhanvien.addRow(new Object[]{
             emp.getId(),
             stt, // 0 - ID
             emp.getEmployeeCode() == null ? "Chua co thong tin" : emp.getEmployeeCode(), // 1 - Mã nhân viên
             emp.getEmployeeName() == null ? "Chua co thong tin" : emp.getEmployeeName(), // 2 - Tên nhân viên
             emp.getEmail() == null ? "Chua co thong tin" : emp.getEmail(), // 4 - Email
-            emp.isGender() ? "Nam" : "Nữ", // 7 - Giới tính (Nam/Nữ)
+            emp.isGender() ? "Nam" : "Nu", // 7 - Giới tính (Nam/Nữ)
             emp.getPhoneNumber() == null ? "Chua co thong tin" : emp.getPhoneNumber(), // 3 - Số điện thoại
             emp.getRole().getId() == 2 ? "Nhan Vien" : "Quan Ly", // 8 - Chức vụ (Nhân viên/Quản lý)
             emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(), // 6 - Ngày tạo
@@ -216,7 +217,14 @@ public class EmployeeManagement extends javax.swing.JPanel {
 
         employee.setAddress(txtDiaChi.getText());
 
-        employee.setGender(rdNam.isSelected());
+       if (rdNam.isSelected()) {
+    employee.setGender(true);
+} else if (rdNu.isSelected()) {
+    employee.setGender(false);
+} else {
+    // Trường hợp không chọn gì cả (nếu cần)
+    System.out.println("Không có giới tính nào được chọn!");
+}
 
         return employee;
     }
@@ -505,6 +513,11 @@ public class EmployeeManagement extends javax.swing.JPanel {
 
         combobox4.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Nam", "Nu" }));
         combobox4.setLabeText("Lọc theo giới tính");
+        combobox4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                combobox4ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -571,7 +584,7 @@ public class EmployeeManagement extends javax.swing.JPanel {
         rdNam.setText("Nam");
 
         buttonGroup1.add(rdNu);
-        rdNu.setText("Nữ");
+        rdNu.setText("Nu");
 
         javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
         jPanel10.setLayout(jPanel10Layout);
@@ -594,7 +607,7 @@ public class EmployeeManagement extends javax.swing.JPanel {
                         .addComponent(rdNu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(rdNam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 44, Short.MAX_VALUE))
+                        .addGap(0, 45, Short.MAX_VALUE))
                     .addComponent(txtNgayTao, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addComponent(txt, javax.swing.GroupLayout.PREFERRED_SIZE, 362, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -744,7 +757,20 @@ public class EmployeeManagement extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
+String keyword = txtSearch.getText().trim(); // Lấy dữ liệu từ ô tìm kiếm
 
+    if (!keyword.isEmpty()) {
+        EmployeeDAO employeeDAO = new EmployeeDAO();
+        List<Employees> employeesList = employeeDAO.searchEmployee(keyword); // Tìm kiếm theo tên hoặc mã
+
+        if (employeesList.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy nhân viên!");
+        } else {
+            fillTable(employeesList); // Hiển thị danh sách nhân viên tìm được lên bảng
+        }
+    } else {
+        JOptionPane.showMessageDialog(this, "Vui lòng nhập từ khóa tìm kiếm!");
+    }
     }//GEN-LAST:event_txtSearchActionPerformed
 
     private void btnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetActionPerformed
@@ -777,8 +803,65 @@ showDataEmployee();
 
     private void combobox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_combobox3ActionPerformed
         // TODO add your handling code here:
-        
+         EmployeeDAO employeeDAO = new EmployeeDAO();
+    List<Employees> sortedEmployees = employeeDAO.getSortedEmployeesByName(true); // Sắp xếp từ bé đến lớn
+int stt=1;
+    // Cập nhật dữ liệu lên bảng (ví dụ JTable)
+    DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
+    model.setRowCount(0); // Xóa dữ liệu cũ
+ for (Employees emp : sortedEmployees) {
+       model.addRow(new Object[]{
+           emp.getId(),
+            stt, // 0 - ID
+            emp.getEmployeeCode() == null ? "Chua co thong tin" : emp.getEmployeeCode(), // 1 - Mã nhân viên
+            emp.getEmployeeName() == null ? "Chua co thong tin" : emp.getEmployeeName(), // 2 - Tên nhân viên
+            emp.getEmail() == null ? "Chua co thong tin" : emp.getEmail(), // 4 - Email
+            emp.isGender() ? "Nam" : "Nu", // 7 - Giới tính (Nam/Nữ)
+            emp.getPhoneNumber() == null ? "Chua co thong tin" : emp.getPhoneNumber(), // 3 - Số điện thoại
+            emp.getRole().getId() == 2 ? "Nhan Vien" : "Quan Ly", // 8 - Chức vụ (Nhân viên/Quản lý)
+            emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(), // 6 - Ngày tạo
+            emp.getAddress() == null ? "Chua co thong tin" : emp.getAddress(), // 5 - Địa chỉ         
+            emp.isStatus() ? "Hoat dong" : "Ngung hoat dong",
+        });
+    }
+    stt++;
     }//GEN-LAST:event_combobox3ActionPerformed
+
+    private void combobox4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_combobox4ActionPerformed
+        // TODO add your handling code here:
+        EmployeeDAO employeeDAO = new EmployeeDAO();
+    String selectedGender = combobox4.getSelectedItem().toString(); // Lấy giá trị đã chọn
+    Boolean gender = null; // Mặc định null để lấy tất cả nhân viên
+
+    if (selectedGender.equals("Nam")) {
+        gender = true;
+    } else if (selectedGender.equals("Nu")) {
+        gender = false;
+    }
+
+    List<Employees> filteredEmployees = employeeDAO.getEmployeesByGender(gender);
+int stt = 1;
+    // Cập nhật dữ liệu lên bảng (JTable)
+    DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
+    model.setRowCount(0); // Xóa dữ liệu c
+
+    for (Employees emp : filteredEmployees) {
+        model.addRow(new Object[]{
+           emp.getId(),
+            stt, // 0 - ID
+            emp.getEmployeeCode() == null ? "Chua co thong tin" : emp.getEmployeeCode(), // 1 - Mã nhân viên
+            emp.getEmployeeName() == null ? "Chua co thong tin" : emp.getEmployeeName(), // 2 - Tên nhân viên
+            emp.getEmail() == null ? "Chua co thong tin" : emp.getEmail(), // 4 - Email
+            emp.isGender() ? "Nam" : "Nu", // 7 - Giới tính (Nam/Nữ)
+            emp.getPhoneNumber() == null ? "Chua co thong tin" : emp.getPhoneNumber(), // 3 - Số điện thoại
+            emp.getRole().getId() == 2 ? "Nhan Vien" : "Quan Ly", // 8 - Chức vụ (Nhân viên/Quản lý)
+            emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(), // 6 - Ngày tạo
+            emp.getAddress() == null ? "Chua co thong tin" : emp.getAddress(), // 5 - Địa chỉ         
+            emp.isStatus() ? "Hoat dong" : "Ngung hoat dong",
+        });
+    }
+    stt++;
+    }//GEN-LAST:event_combobox4ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

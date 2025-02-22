@@ -74,7 +74,7 @@ public class EmployeeDAO {
     public Employees findEmployeeByName(String keyword) {
         String sql = "  SELECT id, employee_code, employee_name, phone_number, email, id_role, address, created_at, is_deleted, is_status, gender \n"
                 + "              FROM employees \n"
-                + "               WHERE employee_name = ?"; // Giả sử chỉ lấy nhân viên chưa bị xóa
+                + "               WHERE employee_name LIKE ?"; // Giả sử chỉ lấy nhân viên chưa bị xóa
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, "%" + keyword + "%"); // Tìm kiếm theo tên chứa từ khóa
@@ -255,4 +255,26 @@ public class EmployeeDAO {
         );
     }
 
+    public List<Employees> getEmployeesByGender(Boolean gender) {
+    List<Employees> employeesList = new ArrayList<>();
+    String sql = "SELECT id, employee_code, employee_name, phone_number, email, id_role, address, created_at, is_deleted, is_status, gender FROM employees WHERE is_deleted = 0";
+
+    if (gender != null) {
+        sql += " AND gender = ?"; // Chỉ lọc khi có giá trị giới tính
+    }
+
+    try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        if (gender != null) {
+            stmt.setBoolean(1, gender);
+        }
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                employeesList.add(mapEmployee(rs));
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return employeesList;
+}
 }
