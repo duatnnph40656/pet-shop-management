@@ -40,6 +40,34 @@ public class PetServiceDAO {
                 + "    sd.time_unit\n"
                 + "FROM service_details sd\n"
                 + "JOIN type_services ts ON sd.id_service_type = ts.id\n"
+                + "WHERE sd.is_deleted = 0 AND sd.is_status = 1;";
+        List<PetServices> list = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapPetService(rs));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+    
+    public List<PetServices> getListServiceAll() {
+        String sql = "SELECT\n"
+                + "    sd.id,\n"
+                + "    sd.service_code,\n"
+                + "    sd.service_name,\n"
+                + "    ts.type_service_name,\n"
+                + "    sd.price_service,\n"
+                + "    sd.describe_service,\n"
+                + "    sd.created_at,\n"
+                + "    sd.is_deleted,\n"
+                + "    sd.is_status,\n"
+                + "    sd.duration,\n"
+                + "    sd.time_unit\n"
+                + "FROM service_details sd\n"
+                + "JOIN type_services ts ON sd.id_service_type = ts.id\n"
                 + "WHERE sd.is_deleted = 0;";
         List<PetServices> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {

@@ -21,16 +21,17 @@ import com.petshop.swing.message.DialogMessageSuccess;
 import com.petshop.swing.table.EventAction;
 import com.petshop.swing.table.ModelAction;
 import com.petshop.ultils.Ultil;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.DefaultTableModel;
+
 import raven.glasspanepopup.GlassPanePopup;
 
 /**
- *
  * @author dut
  */
 public class InvoiceManagement extends javax.swing.JPanel {
@@ -49,7 +50,32 @@ public class InvoiceManagement extends javax.swing.JPanel {
 
     private void init() {
         getListInvoice(invoiceDAO.getListInvoiceAll());
-        loadCbbFilterInvoicesByPeriod();
+        loadFilters();
+        searchEvent();
+    }
+
+    private void searchEvent() {
+        txtSearch.addEvent(new EventTextField() { // là tên của cái search
+            @Override
+            public void onPressed(EventCallBack call) {
+                //  Test
+                try {
+                    for (int i = 1; i <= 100; i++) {
+                        Thread.sleep(5); // time sleep
+                    }
+                    searchInvoiceByCode(txtSearch.getText());
+                    txtSearch.setText("");
+                    call.done();
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
     }
 
     //<editor-fold defaultstate="collapsed" desc="{Message...">
@@ -114,13 +140,17 @@ public class InvoiceManagement extends javax.swing.JPanel {
                 i.getCreatedAt() != null ? Ultil.getFormattedCreatedAt(i.getCreatedAt()) : "Chưa có thông tin",
                 i.getTotalPrice() != null ? Ultil.formatCurrency(i.getTotalPrice()) : "Chưa có thông tin",
                 i.getEmployee() != null && i.getEmployee().getEmployeeName() != null ? i.getEmployee().getEmployeeName() : "Chưa có thông tin",
-                i.getCustomer() != null
-                ? (i.getCustomer().getCustomerName() != null ? i.getCustomer().getCustomerName() : i.getCustomer().getPhoneNumber() != null ? i.getCustomer().getPhoneNumber() : "Chưa có thông tin")
+                (i.getCustomer() != null)
+                ? (i.getCustomer().getCustomerName() != null && !i.getCustomer().getCustomerName().trim().isEmpty()
+                ? i.getCustomer().getCustomerName()
+                : (i.getCustomer().getPhoneNumber() != null && !i.getCustomer().getPhoneNumber().trim().isEmpty()
+                ? i.getCustomer().getPhoneNumber()
+                : "Chưa có thông tin"))
                 : "Chưa có thông tin",
                 i.isPaymentStatus() ? "Đã thanh toán" : "Chưa thanh toán",
                 i.isPaymentMethod() ? "Tiền mặt" : "Thanh toán qua banking",
                 i.getCostsIncurred() != null ? Ultil.formatCurrency(i.getCostsIncurred()) : "Không có",
-                i.getNote() != null ? i.getNote() : "Chưa có thông tin"
+                i.getNote() != null && !i.getNote().isEmpty() ? i.getNote() : "Chưa có thông tin"
             });
             stt++;
         }
@@ -133,8 +163,8 @@ public class InvoiceManagement extends javax.swing.JPanel {
     private Integer getIdInvoice() {
         return (Integer) tbInvoice.getValueAt(getSelectedRowInvoice(), 0);
     }
-    
-    private void resetForm(){
+
+    private void resetForm() {
         cbbFilter.setSelectedIndex(-1);
         getListInvoice(invoiceDAO.getListInvoiceAll());
         tbInvoice.clearSelection();
@@ -188,46 +218,78 @@ public class InvoiceManagement extends javax.swing.JPanel {
     }
 
     private void searchInvoiceByDateRange() {
-        List<Invoices> list = invoiceDAO.searchInvoiceByDateRange(txtDateStart.getText(), txtDateEnd.getText());
+        String startDate = txtDateStart.getText();
+        String endDate = txtDateEnd.getText();
+
+        // Lấy trạng thái thanh toán từ ComboBox
+        Boolean paymentStatus = null; // null nghĩa là không lọc
+        String selectedStatus = (String) cbbFilterPaymentStatus.getSelectedItem();
+
+        if ("Đã thanh toán".equals(selectedStatus)) {
+            paymentStatus = true;  // Giả sử `false` là Tiền mặt
+        } else if ("Chưa thanh toán".equals(selectedStatus)) {
+            paymentStatus = false;   // Giả sử `true` là Banking
+        }
+
+        // Gọi DAO để lấy danh sách hóa đơn
+        List<Invoices> list = invoiceDAO.searchInvoiceByDateRange(startDate, endDate, paymentStatus);
         getListInvoice(list);
     }
 
-    private void loadCbbFilterInvoicesByPeriod() {
+    private void loadFilters() {
+        cbbFilterPaymentStatus.removeAllItems();
         cbbFilter.removeAllItems();
-        cbbFilter.addItem("Hôm qua");
-        cbbFilter.addItem("Tuần qua");
-        cbbFilter.addItem("Tháng qua");
 
-        cbbFilter.setSelectedIndex(-1);
-        // Thêm sự kiện khi chọn một mục trong ComboBox
-        cbbFilter.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                filterInvoicesByPeriod();
-            }
-        });
+        cbbFilter.addItem("Tất cả");
+        cbbFilter.addItem("1 ngày trước");
+        cbbFilter.addItem("7 ngày trước");
+        cbbFilter.addItem("30 ngày trước");
+
+        cbbFilterPaymentStatus.addItem("Tất cả");
+        cbbFilterPaymentStatus.addItem("Đã thanh toán");
+        cbbFilterPaymentStatus.addItem("Chưa thanh toán");
+
+        cbbFilter.setSelectedIndex(0);
+        cbbFilterPaymentStatus.setSelectedIndex(0);
+
+        ActionListener filterAction = e -> filterInvoices();
+        cbbFilter.addActionListener(filterAction);
+        cbbFilterPaymentStatus.addActionListener(e -> searchInvoiceByDateRange());
+        cbbFilterPaymentStatus.addActionListener(filterAction);
     }
 
-    private void filterInvoicesByPeriod() {
+    private void filterInvoices() {
         String selectedPeriod = (String) cbbFilter.getSelectedItem();
-        String period = "";
-        
-        if(selectedPeriod == null){
-            return;
+        String selectedPaymentStatus = (String) cbbFilterPaymentStatus.getSelectedItem();
+        String period = null;
+        Boolean paymentStatus = null;
+
+        // Nếu chọn khoảng thời gian, gán giá trị phù hợp
+        if ("1 ngày trước".equals(selectedPeriod)) {
+            period = "last_1_day";
+        } else if ("7 ngày trước".equals(selectedPeriod)) {
+            period = "last_7_days";
+        } else if ("30 ngày trước".equals(selectedPeriod)) {
+            period = "last_30_days";
         }
 
-        if (selectedPeriod.equals("Hôm qua")) {
-            period = "yesterday";
-        } else if (selectedPeriod.equals("Tuần qua")) {
-            period = "last_week";
-        } else if (selectedPeriod.equals("Tháng qua")) {
-            period = "last_month";
+        // Nếu chọn trạng thái thanh toán, gán giá trị phù hợp
+        if ("Đã thanh toán".equals(selectedPaymentStatus)) {
+            paymentStatus = true;
+        } else if ("Chưa thanh toán".equals(selectedPaymentStatus)) {
+            paymentStatus = false;
         }
 
-        // Gọi phương thức DAO để lấy danh sách hóa đơn
-        List<Invoices> invoices = invoiceDAO.searchInvoicesByPeriod(period);
+        // Gọi phương thức DAO để lấy danh sách hóa đơn theo bộ lọc
+        List<Invoices> invoices = invoiceDAO.searchInvoicesByFilters(period, paymentStatus);
+
         // Hiển thị danh sách hóa đơn lên bảng
         getListInvoice(invoices);
+    }
+
+    private void searchInvoiceByCode(String keyword) {
+        List<Invoices> list = invoiceDAO.searchInvoiceByCode(keyword);
+        getListInvoice(list);
     }
 
     /**
@@ -243,7 +305,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
         dateChooser2 = new com.petshop.swing.datechooser.DateChooser();
         jPanel7 = new javax.swing.JPanel();
         lblKhachHang = new javax.swing.JLabel();
-        txtSerch = new com.petshop.swing.textfield.TextFieldAnimation();
+        txtSearch = new com.petshop.swing.textfield.TextFieldAnimation();
         lblKhachHang3 = new javax.swing.JLabel();
         lblKhachHang4 = new javax.swing.JLabel();
         btnDeleteHistory = new com.petshop.swing.Button();
@@ -252,7 +314,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
         btnDeleteHistory1 = new com.petshop.swing.Button();
         txtDateStart = new com.petshop.swing.textfield.TextField1();
         txtDateEnd = new com.petshop.swing.textfield.TextField1();
-        combobox1 = new com.petshop.swing.combobox.Combobox();
+        cbbFilterPaymentStatus = new com.petshop.swing.combobox.Combobox();
         cbbFilter = new com.petshop.swing.combobox.Combobox();
         jLabel1 = new javax.swing.JLabel();
         button1 = new com.petshop.swing.Button();
@@ -265,6 +327,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
 
         dateChooser2.setTextRefernce(txtDateEnd);
 
+        setBackground(new java.awt.Color(255, 255, 255));
         setForeground(new java.awt.Color(204, 255, 255));
         setPreferredSize(new java.awt.Dimension(1058, 741));
 
@@ -274,10 +337,10 @@ public class InvoiceManagement extends javax.swing.JPanel {
         lblKhachHang.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         lblKhachHang.setText("Tìm kiếm hoá đơn: ");
 
-        txtSerch.setBackground(new java.awt.Color(250, 250, 250));
-        txtSerch.addActionListener(new java.awt.event.ActionListener() {
+        txtSearch.setBackground(new java.awt.Color(250, 250, 250));
+        txtSearch.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtSerchActionPerformed(evt);
+                txtSearchActionPerformed(evt);
             }
         });
 
@@ -335,7 +398,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
             }
         });
 
-        combobox1.setLabeText("Trạng thái thanh toán");
+        cbbFilterPaymentStatus.setLabeText("Trạng thái thanh toán");
 
         cbbFilter.setLabeText("Lọc theo thời gian");
 
@@ -361,10 +424,10 @@ public class InvoiceManagement extends javax.swing.JPanel {
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1)
                     .addGroup(jPanel7Layout.createSequentialGroup()
-                        .addComponent(combobox1, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(12, 12, 12)
                         .addComponent(cbbFilter, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 164, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbbFilterPaymentStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 138, Short.MAX_VALUE)
                         .addComponent(lblKhachHang3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtDateStart, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -379,7 +442,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(lblKhachHang)
                         .addGap(5, 5, 5)
-                        .addComponent(txtSerch, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -392,13 +455,13 @@ public class InvoiceManagement extends javax.swing.JPanel {
             .addGroup(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(txtSerch, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
+                    .addComponent(txtSearch, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
                     .addComponent(lblKhachHang, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(5, 5, 5)
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(combobox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbbFilterPaymentStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(cbbFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(txtDateEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -463,7 +526,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
             .addGroup(jPanel9Layout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1042, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3)
                     .addGroup(jPanel9Layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -517,9 +580,9 @@ public class InvoiceManagement extends javax.swing.JPanel {
         searchInvoiceByDateRange();
     }//GEN-LAST:event_btnDeleteHistoryActionPerformed
 
-    private void txtSerchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSerchActionPerformed
+    private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_txtSerchActionPerformed
+    }//GEN-LAST:event_txtSearchActionPerformed
 
     private void button1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button1ActionPerformed
         // TODO add your handling code here:
@@ -532,7 +595,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
     private com.petshop.swing.Button btnDeleteHistory1;
     private com.petshop.swing.Button button1;
     private com.petshop.swing.combobox.Combobox cbbFilter;
-    private com.petshop.swing.combobox.Combobox combobox1;
+    private com.petshop.swing.combobox.Combobox cbbFilterPaymentStatus;
     private com.petshop.swing.datechooser.DateChooser dateChooser1;
     private com.petshop.swing.datechooser.DateChooser dateChooser2;
     private javax.swing.JLabel jLabel1;
@@ -548,7 +611,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
     private com.petshop.swing.table.Table tbInvoiceDetail;
     private com.petshop.swing.textfield.TextField1 txtDateEnd;
     private com.petshop.swing.textfield.TextField1 txtDateStart;
-    private com.petshop.swing.textfield.TextFieldAnimation txtSerch;
+    private com.petshop.swing.textfield.TextFieldAnimation txtSearch;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -52,7 +52,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
     public void init() {
         txtServiceCode.setText("SV" + Ultil.generateRandomCode());
-        getListService(petServiceDAO.getListService());
+//        getListService(petServiceDAO.getListServiceAll());
         loadCBBTypeService(typeServiceDAO.getListTypeS());
         loadComboBoxes(typeServiceDAO.getListTypeS());
         loadCBBTimeUnit();
@@ -84,7 +84,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         });
     }
 
-     public void showPopUpHistoryDeletedProducts() {
+     public void showPopUpHistoryDeleted() {
         int stt = 1;
         PopupShowHistoryDeleted popup = new PopupShowHistoryDeleted();
         List<PetServices> petServiceses = petServiceDAO.getListServiceDeleted();
@@ -105,7 +105,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
                     public void delete(PetServices p) {
                         showMessageConfirm("Xác nhận khôi phục sản phẩm này", () -> {
                             restoreService(p);
-                            reloadTableProduct(popup);
+                            reloadTable(popup);
                         });
                     }
 
@@ -142,7 +142,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         GlassPanePopup.showPopup(popup);
     }
 
-    private void reloadTableProduct(PopupShowHistoryDeleted popup) {
+    private void reloadTable(PopupShowHistoryDeleted popup) {
         int stt = 1;
         List<PetServices> petServiceses = petServiceDAO.getListServiceDeleted();
         // Chuyển đổi danh sách sản phẩm thành List<Object[]>
@@ -162,7 +162,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
                     public void delete(PetServices p) {
                         showMessageConfirm("Xác nhận khôi phục sản phẩm này", () -> {
                             restoreService(p);
-                            reloadTableProduct(popup);
+                            reloadTable(popup);
                         });
                     }
 
@@ -181,7 +181,6 @@ public class ServiceManagerment extends javax.swing.JPanel {
         // Cập nhật lại bảng
         popup.fillTable(data, new String[]{"STT", "Mã DV", "Tên DV", "Loại DV", "T.gian", "Đơn vị TG", "Giá DV", "Ngày tạo","Thao tác"});
     }
-    
     
     
     //<editor-fold defaultstate="collapsed" desc="{Message...">
@@ -298,7 +297,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
         List<PetServices> filteredList;
         if (typeServiceId == null) {
-            filteredList = petServiceDAO.getListService();
+            filteredList = petServiceDAO.getListServiceAll();
         } else {
             filteredList = petServiceDAO.filterServiceByIdTypeService(typeServiceId, status);
         }
@@ -628,6 +627,10 @@ public class ServiceManagerment extends javax.swing.JPanel {
     public void updateStatusService() {
         // TODO add your handling code here:
         int selectRow = tbService.getSelectedRow();
+        if(selectRow == -1){
+            showMessageFail("Vui lòng chọn thông tin dịch vụ!!");
+            return;
+        }
         int id = (int) tbService.getValueAt(selectRow, 0);
         boolean status = tbService.getValueAt(selectRow, 10).equals("Tạm ngưng");
         petServiceDAO.updateStatusService(id, status);
@@ -687,10 +690,14 @@ public class ServiceManagerment extends javax.swing.JPanel {
         cbbFilterStatus = new com.petshop.swing.combobox.Combobox();
         cbbFilterTypeService = new com.petshop.swing.combobox.Combobox();
 
+        setBackground(new java.awt.Color(255, 255, 255));
         setMaximumSize(new java.awt.Dimension(1058, 741));
         setPreferredSize(new java.awt.Dimension(1058, 741));
 
+        materialTabbed1.setBackground(new java.awt.Color(255, 255, 255));
         materialTabbed1.setPreferredSize(new java.awt.Dimension(1058, 741));
+
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 
         jPanel6.setBackground(new java.awt.Color(255, 255, 255));
         jPanel6.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -1032,7 +1039,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
     private void button7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button7ActionPerformed
         // TODO add your handling code here:
-        showPopUpHistoryDeletedProducts();
+        showPopUpHistoryDeleted();
     }//GEN-LAST:event_button7ActionPerformed
 
 

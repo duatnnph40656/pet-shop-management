@@ -16,6 +16,8 @@ import com.petshop.daos.ProductDetailDAO;
 import com.petshop.daos.TypePetDAO;
 import com.petshop.event.ConfirmListener;
 import com.petshop.event.ConfirmListenerInput;
+import com.petshop.event.EventCallBack;
+import com.petshop.event.EventTextField;
 import com.petshop.main.Main;
 import com.petshop.models.Customers;
 import com.petshop.models.Employees;
@@ -27,7 +29,8 @@ import com.petshop.models.ProductDetails;
 import com.petshop.models.Products;
 import com.petshop.models.TypePets;
 import com.petshop.popup.PopupCustomer;
-import com.petshop.popup.PopupScanBarCode;
+import com.petshop.popup.PopupInvoice;
+import com.petshop.popup.PopupScan;
 import com.petshop.popup.PopupService;
 import com.petshop.services.RememberMeService;
 import com.petshop.swing.message.DialogConfirm;
@@ -95,6 +98,31 @@ public class Shop extends javax.swing.JPanel {
         loadCbbFilterTypePet(typePetDAO.getListTypePet());
         loadCbbFilterProduct(productDAO.getListProduct());
         resetForm();
+        searchEvent();
+    }
+
+    private void searchEvent() {
+        txtSearchProductDetail.addEvent(new EventTextField() { // là tên của cái search
+            @Override
+            public void onPressed(EventCallBack call) {
+                //  Test
+                try {
+                    for (int i = 1; i <= 100; i++) {
+                        Thread.sleep(5); // time sleep
+                    }
+                    searchProductD(txtSearchProductDetail.getText());
+                    txtSearchProductDetail.setText("");
+                    call.done();
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
     }
 
     //<editor-fold defaultstate="collapsed" desc="{Message...">
@@ -158,8 +186,13 @@ public class Shop extends javax.swing.JPanel {
             showMessageFail("Vui lòng chọn hóa đơn!!");
             return;
         }
+
+        Customers c = customerDAO.searchCustomerByCustomerCode(lbCustomerCode.getText());
+
         PopupService poup = new PopupService();
         poup.setServiceCode(p.getServiceCode());
+        poup.setCustomerCode(c.getCustomerCode());
+        poup.setPhoneNumber(c.getPhoneNumber());
         poup.setConfirmListener(new ConfirmListener() {
             @Override
             public void onConfirm() {
@@ -174,10 +207,20 @@ public class Shop extends javax.swing.JPanel {
         GlassPanePopup.showPopup(poup, "pPet");
     }
 
-    public void showPopupWebcam() {
-        PopupScanBarCode pWebCam = new PopupScanBarCode();
+    private void showPopupInvoice(String code) {
+        PopupInvoice pop = new PopupInvoice();
+        pop.setInvoiceCode(code);
 
-        pWebCam.setBarcodeListener((String barcode) -> {
+        GlassPanePopup.showPopup(pop, "pInvoice");
+    }
+
+    public void showPopupWebcam() {
+        if (getSelectedRowInvoice() == -1) {
+            showMessageFail("Vui lòng chọn hóa đơn trước!!");
+            return;
+        }
+        PopupScan pWebCam = new PopupScan();
+        pWebCam.setCodeListener((String barcode) -> {
             ProductDetails p = productDetailDAO.searchByBarCodeResultModel(barcode);
             if (p != null) {
                 insertPToInvoiceD(p, 1); // Hiển thị thông tin sản phẩm lên giao diện
@@ -185,6 +228,22 @@ public class Shop extends javax.swing.JPanel {
                 GlassPanePopup.closePopup("pWebCam");
             } else {
                 showMessageFail("Không tìm thấy sản phẩm có mã vạch: " + barcode);
+                GlassPanePopup.closePopup("pWebCam");
+            }
+        });
+
+        GlassPanePopup.showPopup(pWebCam, "pWebCam");
+    }
+
+    public void showPopupWebcam2() {
+        PopupScan pWebCam = new PopupScan();
+        pWebCam.setCodeListener((String code) -> {
+            Invoices i = invoiceDAO.searchInvoiceByCodeResultModel(code);
+            if (i != null) {
+                showPopupInvoice(i.getInvoiceCode());
+                GlassPanePopup.closePopup("pWebCam");
+            } else {
+                showMessageFail("Không tìm thấy hóa đơn: " + code);
                 GlassPanePopup.closePopup("pWebCam");
             }
         });
@@ -278,25 +337,8 @@ public class Shop extends javax.swing.JPanel {
         // Hiển thị danh sách đã lọc và sắp xếp
         getListProductDetail(filteredList);
     }
-
-//    private void filterProductDetails() {
-//        TypePets selectedTypePet = (TypePets) cbbFilterTypePet.getSelectedItem();
-//        Products selectedProduct = (Products) cbbFilterProduct.getSelectedItem();
-//
-//        Integer typePetId = (selectedTypePet != null) ? selectedTypePet.getId() : null;
-//        Integer productId = (selectedProduct != null) ? selectedProduct.getId() : null;
-//
-//        // Nếu cả hai đều null, lấy toàn bộ danh sách
-//        List<ProductDetails> filteredList;
-//        if (typePetId == null && productId == null) {
-//            filteredList = productDetailDAO.getListProductDetail();
-//        } else {
-//            filteredList = productDetailDAO.searchProductDetails(productId, typePetId);
-//        }
-//
-//        getListProductDetail(filteredList); // Cập nhật giao diện với danh sách lọc
-//    }
     //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="{ProductDetail...">
     public void getListProductDetail(List<ProductDetails> list) {
         int stt = 1;
@@ -355,6 +397,15 @@ public class Shop extends javax.swing.JPanel {
         return (Integer) tbInvoiceDetail.getValueAt(selectedRow, 1);
     }
 
+    public void searchProductD(String keyword) {
+        List<ProductDetails> productsByNameOrFlavor = productDetailDAO.searchByNameOrFlavor(keyword);
+        if (productsByNameOrFlavor.isEmpty()) {
+            showMessageFail("Không tìm thấy sản phẩm nào!");
+        } else {
+            getListProductDetail(productsByNameOrFlavor); // Gọi hàm cập nhật bảng
+        }
+    }
+
     private void searchByBarcode(String barcode) {
         ProductDetails p = productDetailDAO.searchByBarCodeResultModel(barcode);
         insertPToInvoiceD(p, 1);
@@ -371,7 +422,13 @@ public class Shop extends javax.swing.JPanel {
                 i.getCustomer().getCustomerCode(),
                 stt,
                 i.getInvoiceCode(),
-                i.getCustomer().getCustomerName(),
+                (i.getCustomer() != null) 
+                ? (i.getCustomer().getCustomerName() != null && !i.getCustomer().getCustomerName().trim().isEmpty()
+                    ? i.getCustomer().getCustomerName()
+                    : (i.getCustomer().getPhoneNumber() != null && !i.getCustomer().getPhoneNumber().trim().isEmpty()
+                        ? i.getCustomer().getPhoneNumber()
+                        : "Chưa có thông tin"))
+                : "Chưa có thông tin",
                 i.getEmployee().getEmployeeName(),
                 Ultil.formatCurrency(i.getTotalPrice()),
                 i.isPaymentStatus() ? "Đã thanh toán" : "Chưa thanh toán",});
@@ -404,8 +461,9 @@ public class Shop extends javax.swing.JPanel {
         lbCustomerName.setText(c.getCustomerName());
         lbCustomerCode.setText(c.getCustomerCode());
 
-        lbTotalPrice.setText("₫");
-        lbTotalPrice1.setText("₫");
+        lbInvoiceCode.setText("N/A");
+        lbTotalPrice.setText("0 ₫");
+        lbTotalPrice1.setText("0 ₫");
         checkBoxPaymStatus.setSelected(false);
         cbbPayment.setSelectedIndex(0);
 
@@ -556,6 +614,7 @@ public class Shop extends javax.swing.JPanel {
             return;
         }
         if (invoiceDAO.updateInvoice(getIdSelectedInvoice(), readFormUpdate())) {
+            Ultil.generateQRCodeImage(lbInvoiceCode.getText());
             List<InvoiceDetails> list = invoiceDetailDAO.getInvoiceDetails(getIdSelectedInvoice());
             updateRemoveQuantityInProductDetail(list);
             showMessageSuccess("Thành công");
@@ -592,8 +651,8 @@ public class Shop extends javax.swing.JPanel {
 
         Ultil.generateInvoice(invoiceId, employeeName, customerName, employeeName, items, totalAmount);
     }
-
     //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="{InvoiceDetail...">
     public void getListInvoiceDetail(List<InvoiceDetails> list) {
         int stt = 1;
@@ -625,6 +684,7 @@ public class Shop extends javax.swing.JPanel {
                 Ultil.formatCurrency(price),
                 Ultil.formatCurrency(i.getTotalPrice()),
                 petName == null ? "N/A" : petName,
+                i.isTypeInvoiceDetail(),
                 new ModelAction<>(i, new EventAction<InvoiceDetails>() {
                     @Override
                     public void delete(InvoiceDetails i) {
@@ -669,7 +729,7 @@ public class Shop extends javax.swing.JPanel {
             return;
         }
 
-        if (!productDetailDAO.isEnoughStock(getIdProductD(), amount)) {
+        if (!productDetailDAO.isEnoughStock(getIdProductD(), amount) && !(boolean) tbInvoiceDetail.getValueAt(getSelectedInvoiceD(), 10)) {
             showMessageFail("Số lượng nhập lớn hơn số lượng SP!!");
             return;
         }
@@ -792,18 +852,19 @@ public class Shop extends javax.swing.JPanel {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="{Customers...">
-    public Customers readFormCustomer() {
-
-        return new Customers();
-    }
-
-    public void insertCustomer() {
-
-    }
-
     public void showPopupInsertCustomer() {
         PopupCustomer pC = new PopupCustomer();
+        pC.setConfirmListener(new ConfirmListener() {
+            @Override
+            public void onConfirm() {
+                GlassPanePopup.closePopup("pCustomer");
+            }
 
+            @Override
+            public void onCancel() {
+
+            }
+        });
         GlassPanePopup.showPopup(pC, "pCustomer");
     }
 
@@ -969,6 +1030,7 @@ public class Shop extends javax.swing.JPanel {
         jScrollPane4 = new javax.swing.JScrollPane();
         tbService = new com.petshop.swing.tableMore.TableMore();
 
+        setBackground(new java.awt.Color(255, 255, 255));
         setMaximumSize(new java.awt.Dimension(1058, 741));
         setPreferredSize(new java.awt.Dimension(1058, 741));
 
@@ -986,7 +1048,7 @@ public class Shop extends javax.swing.JPanel {
                 {null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "", "STT", "Mã HD", "Tên khách hàng", "Tên nhân viên", "Tổng giá", "Trạng thái thanh toán"
+                "", "", "STT", "Mã HD", "T.T Khách hàng", "T.T Nhân viên", "Tổng giá", "Trạng thái thanh toán"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -1013,6 +1075,11 @@ public class Shop extends javax.swing.JPanel {
         }
 
         button12.setText("Quét hóa đơn");
+        button12.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                button12ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -1084,15 +1151,20 @@ public class Shop extends javax.swing.JPanel {
             }
         });
 
+        jLabel34.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel34.setText("HD:");
 
+        jLabel35.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel35.setText("Tên KH:");
 
         lbInvoiceCode.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
+        lbInvoiceCode.setForeground(new java.awt.Color(255, 51, 0));
         lbInvoiceCode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lbInvoiceCode.setText("HD");
 
+        lbCustomerName.setBackground(new java.awt.Color(255, 255, 255));
         lbCustomerName.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
+        lbCustomerName.setForeground(new java.awt.Color(255, 51, 51));
         lbCustomerName.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lbCustomerName.setText("Chưa có thông tin");
 
@@ -1120,6 +1192,7 @@ public class Shop extends javax.swing.JPanel {
             }
         });
 
+        jLabel38.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel38.setText("Tổng tiền :");
 
         lbTotalPrice.setBackground(new java.awt.Color(255, 255, 255));
@@ -1128,7 +1201,7 @@ public class Shop extends javax.swing.JPanel {
         lbTotalPrice.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lbTotalPrice.setText("VND");
 
-        jLabel40.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel40.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel40.setText("Thành tiền:");
 
         lbTotalPrice1.setFont(new java.awt.Font("SansSerif", 1, 14)); // NOI18N
@@ -1147,9 +1220,11 @@ public class Shop extends javax.swing.JPanel {
         });
 
         lbCustomerCode.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        lbCustomerCode.setForeground(new java.awt.Color(255, 51, 51));
         lbCustomerCode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lbCustomerCode.setText("KH");
 
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel3.setText("KH:");
 
         javax.swing.GroupLayout jPanel13Layout = new javax.swing.GroupLayout(jPanel13);
@@ -1253,17 +1328,17 @@ public class Shop extends javax.swing.JPanel {
 
         tbInvoiceDetail.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "", "STT", "Mã HDCT", "Mã SP or SV", "Tên SP or SV", "SL", "Giá bán or Giá SV", "Tổng giá", "Thông tin khác", "Thao tác"
+                "", "", "STT", "Mã HDCT", "Mã SP or SV", "Tên SP or SV", "SL", "Giá bán or Giá SV", "Tổng giá", "Thông tin khác", "", "Thao tác"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, true
+                false, false, false, false, false, false, false, false, false, false, false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1286,6 +1361,8 @@ public class Shop extends javax.swing.JPanel {
             tbInvoiceDetail.getColumnModel().getColumn(5).setMaxWidth(200);
             tbInvoiceDetail.getColumnModel().getColumn(6).setMinWidth(40);
             tbInvoiceDetail.getColumnModel().getColumn(6).setMaxWidth(40);
+            tbInvoiceDetail.getColumnModel().getColumn(10).setMinWidth(0);
+            tbInvoiceDetail.getColumnModel().getColumn(10).setMaxWidth(0);
         }
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
@@ -1574,6 +1651,11 @@ public class Shop extends javax.swing.JPanel {
         // TODO add your handling code here:
         showPopupWebcam();
     }//GEN-LAST:event_btnScanBarcodeActionPerformed
+
+    private void button12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button12ActionPerformed
+        // TODO add your handling code here:
+        showPopupWebcam2();
+    }//GEN-LAST:event_button12ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

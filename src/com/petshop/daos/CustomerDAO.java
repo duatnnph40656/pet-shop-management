@@ -61,6 +61,47 @@ public class CustomerDAO {
         }
     }
 
+    public boolean insertCustomerNew(Customers customer) {
+        String sql = """
+        INSERT INTO customers (customer_code, customer_name, phone_number, is_deleted, is_status, gender)
+        VALUES (?, ?, ?, 0, 1, ?)
+    """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, customer.getCustomerCode());
+
+            // Nếu tên khách hàng trống, đặt giá trị NULL vào SQL
+            if (customer.getCustomerName().trim().isEmpty()) {
+                ps.setNull(2, Types.VARCHAR);
+            } else {
+                ps.setString(2, customer.getCustomerName());
+            }
+
+            ps.setString(3, customer.getPhoneNumber());
+            ps.setBoolean(4, customer.isGender());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean isPhoneNumberExists(String phoneNumber) {
+        String sql = "SELECT COUNT(*) FROM customers WHERE phone_number = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, phoneNumber);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0; // Trả về true nếu số lượng > 0 (tồn tại)
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false; // Mặc định trả về false nếu có lỗi
+    }
+
     // 3. Tìm khách hàng theo số điện thoại
     public Customers searchCustomerByPhoneNumber(String phoneNumber) {
         String sql = """
@@ -124,7 +165,7 @@ public class CustomerDAO {
         }
         return null;
     }
-    
+
     public Customers searchCustomerByCustomerName(String name) {
         String sql = """
             SELECT id, customer_code, customer_name, phone_number, email, address, 
@@ -303,4 +344,44 @@ public class CustomerDAO {
 
         return list;
     }
+
+    // Lấy số lượng khách hàng mới trong ngày (SQL Server)
+    public int getTodayNewCustomers() {
+        String sql = "SELECT COUNT(*) FROM customers WHERE CONVERT(DATE, created_at) = CONVERT(DATE, GETDATE())";
+        try (PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    // Lấy số lượng khách hàng mới trong tháng hiện tại (SQL Server)
+    public int getCurrentMonthNewCustomers() {
+        String sql = "SELECT COUNT(*) FROM customers WHERE MONTH(created_at) = MONTH(GETDATE()) AND YEAR(created_at) = YEAR(GETDATE())";
+        try (PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    // Lấy số lượng khách hàng mới trong tháng trước (SQL Server)
+    public int getLastMonthNewCustomers() {
+        String sql = "SELECT COUNT(*) FROM customers WHERE MONTH(created_at) = MONTH(DATEADD(MONTH, -1, GETDATE())) AND YEAR(created_at) = YEAR(GETDATE())";
+        try (PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
 }

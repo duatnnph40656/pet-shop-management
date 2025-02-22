@@ -49,15 +49,15 @@ public class Ultil {
 
     public static String getFormatted(LocalDateTime localDateTime) {
         if (localDateTime == null) {
-            return "N/A"; 
+            return "N/A";
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         return localDateTime.format(formatter);
     }
-    
+
     public static String getFormattedCreatedAt(LocalDateTime localDateTime) {
         if (localDateTime == null) {
-            return "N/A"; 
+            return "N/A";
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         return localDateTime.format(formatter);
@@ -69,6 +69,14 @@ public class Ultil {
         }
         NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
         return formatter.format(amount);
+    }
+
+    public static String formatCurrencyDouble(double amount) {
+        if (amount <= 0) { // Nếu số tiền là 0 hoặc âm, trả về "0 VND"
+            return "0 VND";
+        }
+        NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+        return formatter.format(amount).replace("₫", "VND"); // Thay "₫" thành "VND"
     }
 
     public static String generateRandomCode() {

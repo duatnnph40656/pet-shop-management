@@ -74,8 +74,8 @@ public class PetDAO {
 
     public boolean insertPet(Pets p) {
         String sql = """
-        INSERT INTO pets (pet_code, pet_name, breed, color,gender, owner, id_type_pet,vaccinated, is_deleted,is_status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 1)
+        INSERT INTO pets (pet_code, pet_name, breed, color,gender, id_customer,owner, id_type_pet,vaccinated, is_deleted,is_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?,?, 0, 1)
     """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -84,9 +84,10 @@ public class PetDAO {
             ps.setString(3, p.getBreed());
             ps.setString(4, p.getColor());
             ps.setBoolean(5, p.isGender());
-            ps.setString(6, p.getOwner());
-            ps.setInt(7, p.getTypePet().getId());
-            ps.setBoolean(8, p.isVaccinated());
+            ps.setInt(6, p.getCustomer().getId());
+            ps.setString(7, p.getOwner());
+            ps.setInt(8, p.getTypePet().getId());
+            ps.setBoolean(9, p.isVaccinated());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace(); // Hoặc log lỗi

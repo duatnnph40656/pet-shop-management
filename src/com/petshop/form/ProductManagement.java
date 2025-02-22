@@ -18,7 +18,7 @@ import com.petshop.models.ProductDetails;
 import com.petshop.models.TypePets;
 import com.petshop.popup.PopupCategoryPet;
 import com.petshop.popup.PopupCategoryProduct;
-import com.petshop.popup.PopupScanBarCode;
+import com.petshop.popup.PopupScan;
 import com.petshop.popup.PopupShowHistoryDeleted;
 import com.petshop.swing.datechooser.EventDateChooser;
 import com.petshop.swing.datechooser.SelectedAction;
@@ -135,7 +135,8 @@ public class ProductManagement extends javax.swing.JPanel {
                     for (int i = 1; i <= 100; i++) {
                         Thread.sleep(5); // time sleep
                     }
-                    searchProductD(txtSearchProductDetail.getText()); // tìm kiếm sau khi ấn, lấy text của thanh search
+                    searchProductD(txtSearchProductDetail.getText());
+                    txtSearchProductDetail.setText("");// tìm kiếm sau khi ấn, lấy text của thanh search
                     call.done();
                 } catch (Exception e) {
                     System.err.println(e);
@@ -265,9 +266,9 @@ public class ProductManagement extends javax.swing.JPanel {
     }
 
     public void showPopupWebcam() {
-        PopupScanBarCode pWebCam = new PopupScanBarCode();
+        PopupScan pWebCam = new PopupScan();
 
-        pWebCam.setBarcodeListener((String barcode) -> {
+        pWebCam.setCodeListener((String barcode) -> {
             List<ProductDetails> product = productDetailDao.searchByBarCode(barcode);
             if (product != null) {
                 getListProductDetail(product); // Hiển thị thông tin sản phẩm lên giao diện
@@ -750,6 +751,8 @@ public class ProductManagement extends javax.swing.JPanel {
         txtSearchProduct.setText("");
         cbbCategoryProduct.setSelectedIndex(-1);
         tbProduct.clearSelection();
+        btnUpdateStatusP.setText("");
+        btnUpdateStatusProductDetail.setText("");
 //        init();
     }
 
@@ -834,6 +837,10 @@ public class ProductManagement extends javax.swing.JPanel {
     }
 
     public void updateStatusProduct() {
+        if(getSelectedRowProduct() == -1){
+            showMessageFail("Vui lòng chọn thông tin sản phẩm!!");
+            return;
+        }
         boolean status = tbProduct.getValueAt(getSelectedRowProduct(), 7).equals("Ngưng hoạt động");
         productDao.updateStatusProduct(getIdSelectedProduct(), status);
         getListProduct(productDao.getListProduct());
@@ -952,6 +959,10 @@ public class ProductManagement extends javax.swing.JPanel {
         cbbTypePet.setSelectedIndex(-1);
         cbbFilterProduct.setSelectedIndex(-1);
 
+        btnUpdateStatusP.setText("");
+        btnUpdateStatusProductDetail.setText("");
+        
+        
         tbProductDetail.clearSelection();
 //        init();
     }
@@ -1324,7 +1335,6 @@ public class ProductManagement extends javax.swing.JPanel {
         } else {
             showMessageFail("Vui lòng chọn sản phẩm");
         }
-
     }
 
     public void searchProductD(String keyword) {
@@ -1407,6 +1417,7 @@ public class ProductManagement extends javax.swing.JPanel {
 
         dateChooser.setTextRefernce(txtProductDate);
 
+        setBackground(new java.awt.Color(255, 255, 255));
         setMaximumSize(new java.awt.Dimension(1058, 741));
         setPreferredSize(new java.awt.Dimension(1058, 741));
 
@@ -1414,6 +1425,7 @@ public class ProductManagement extends javax.swing.JPanel {
         materialTabbed1.setMaximumSize(new java.awt.Dimension(1060, 700));
         materialTabbed1.setPreferredSize(new java.awt.Dimension(1060, 700));
 
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setMaximumSize(new java.awt.Dimension(1054, 700));
         jPanel1.setPreferredSize(new java.awt.Dimension(1054, 600));
 
@@ -1704,6 +1716,7 @@ public class ProductManagement extends javax.swing.JPanel {
 
         materialTabbed1.addTab("Sản phẩm", jPanel1);
 
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setMaximumSize(new java.awt.Dimension(1055, 700));
         jPanel2.setPreferredSize(new java.awt.Dimension(1055, 600));
 

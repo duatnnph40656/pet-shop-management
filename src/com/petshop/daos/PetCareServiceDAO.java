@@ -1,6 +1,5 @@
 package com.petshop.daos;
 
-
 import com.petshop.connect.DBConnect;
 import com.petshop.models.PetCareServices;
 import com.petshop.models.PetServices;
@@ -88,4 +87,37 @@ public class PetCareServiceDAO {
         Timestamp timestamp = rs.getTimestamp(columnName);
         return timestamp != null ? timestamp.toLocalDateTime() : null;
     }
+
+    public int getServicesUsedToday() {
+        String sql = "SELECT COUNT(*) FROM pet_care_services WHERE CONVERT(DATE, created_at) = CONVERT(DATE, GETDATE())";
+        return getServiceCount(sql);
+    }
+
+    public int getServicesUsedYesterday() {
+        String sql = "SELECT COUNT(*) FROM pet_care_services WHERE CONVERT(DATE, created_at) = CONVERT(DATE, DATEADD(DAY, -1, GETDATE()))";
+        return getServiceCount(sql);
+    }
+
+    public int getServicesUsedThisMonth() {
+        String sql = "SELECT COUNT(*) FROM pet_care_services WHERE MONTH(created_at) = MONTH(GETDATE()) AND YEAR(created_at) = YEAR(GETDATE())";
+        return getServiceCount(sql);
+    }
+
+    public int getServicesUsedLastMonth() {
+        String sql = "SELECT COUNT(*) FROM pet_care_services WHERE MONTH(created_at) = MONTH(DATEADD(MONTH, -1, GETDATE())) AND YEAR(created_at) = YEAR(DATEADD(MONTH, -1, GETDATE()))";
+        return getServiceCount(sql);
+    }
+
+    // Hàm hỗ trợ lấy số lượng dịch vụ
+    private int getServiceCount(String sql) {
+        try (PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
 }

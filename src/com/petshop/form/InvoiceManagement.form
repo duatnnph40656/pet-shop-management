@@ -18,6 +18,9 @@
     </Component>
   </NonVisualComponents>
   <Properties>
+    <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+      <Color blue="ff" green="ff" red="ff" type="rgb"/>
+    </Property>
     <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
       <Color blue="ff" green="ff" red="cc" type="rgb"/>
     </Property>
@@ -82,11 +85,11 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
-                      <Group type="102" attributes="0">
-                          <Component id="combobox1" min="-2" pref="140" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                      <Group type="102" alignment="0" attributes="0">
                           <Component id="cbbFilter" min="-2" pref="193" max="-2" attributes="0"/>
-                          <EmptySpace pref="164" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="cbbFilterPaymentStatus" min="-2" pref="172" max="-2" attributes="0"/>
+                          <EmptySpace pref="138" max="32767" attributes="0"/>
                           <Component id="lblKhachHang3" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="txtDateStart" min="-2" pref="168" max="-2" attributes="0"/>
@@ -102,7 +105,7 @@
                           <EmptySpace max="32767" attributes="0"/>
                           <Component id="lblKhachHang" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                          <Component id="txtSerch" min="-2" pref="230" max="-2" attributes="0"/>
+                          <Component id="txtSearch" min="-2" pref="230" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -120,15 +123,15 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="txtSerch" pref="42" max="32767" attributes="0"/>
+                      <Component id="txtSearch" pref="42" max="32767" attributes="0"/>
                       <Component id="lblKhachHang" max="32767" attributes="0"/>
                       <Component id="jLabel1" min="-2" pref="31" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                          <Component id="combobox1" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="cbbFilter" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbbFilterPaymentStatus" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbbFilter" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="103" alignment="1" groupAlignment="3" attributes="0">
                           <Component id="txtDateEnd" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -159,14 +162,14 @@
             <Property name="text" type="java.lang.String" value="T&#xec;m ki&#x1ebf;m ho&#xe1; &#x111;&#x1a1;n: "/>
           </Properties>
         </Component>
-        <Component class="com.petshop.swing.textfield.TextFieldAnimation" name="txtSerch">
+        <Component class="com.petshop.swing.textfield.TextFieldAnimation" name="txtSearch">
           <Properties>
             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="fa" green="fa" red="fa" type="rgb"/>
             </Property>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtSerchActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtSearchActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="lblKhachHang3">
@@ -304,7 +307,7 @@
         </Component>
         <Component class="com.petshop.swing.textfield.TextField1" name="txtDateEnd">
         </Component>
-        <Component class="com.petshop.swing.combobox.Combobox" name="combobox1">
+        <Component class="com.petshop.swing.combobox.Combobox" name="cbbFilterPaymentStatus">
           <Properties>
             <Property name="labeText" type="java.lang.String" value="Tr&#x1ea1;ng th&#xe1;i thanh to&#xe1;n"/>
           </Properties>
@@ -357,7 +360,7 @@
               <Group type="102" attributes="0">
                   <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jScrollPane3" pref="1042" max="32767" attributes="0"/>
+                      <Component id="jScrollPane3" max="32767" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>

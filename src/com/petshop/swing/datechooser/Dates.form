@@ -34,7 +34,7 @@
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="76" green="76" red="76" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Mo"/>
+        <Property name="text" type="java.lang.String" value="T2"/>
       </Properties>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmdTu">
@@ -47,7 +47,7 @@
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="76" green="76" red="76" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Tu"/>
+        <Property name="text" type="java.lang.String" value="T3"/>
       </Properties>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmdWe">
@@ -60,7 +60,7 @@
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="76" green="76" red="76" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="We"/>
+        <Property name="text" type="java.lang.String" value="T4"/>
       </Properties>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmdTh">
@@ -73,7 +73,7 @@
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="76" green="76" red="76" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Th"/>
+        <Property name="text" type="java.lang.String" value="T5"/>
       </Properties>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmdFr">
@@ -86,8 +86,11 @@
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="76" green="76" red="76" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Fr"/>
+        <Property name="text" type="java.lang.String" value="T6"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmdFrActionPerformed"/>
+      </Events>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmdSa">
       <Properties>
@@ -99,7 +102,7 @@
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="76" green="76" red="76" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Sa"/>
+        <Property name="text" type="java.lang.String" value="T7"/>
       </Properties>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmdSu">
@@ -112,7 +115,7 @@
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="1" green="1" red="ff" type="rgb"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Su"/>
+        <Property name="text" type="java.lang.String" value="CN"/>
       </Properties>
     </Component>
     <Component class="com.petshop.swing.datechooser.Button" name="cmd1">

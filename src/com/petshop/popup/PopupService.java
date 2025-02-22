@@ -4,12 +4,14 @@
  */
 package com.petshop.popup;
 
+import com.petshop.daos.CustomerDAO;
 import com.petshop.daos.PetCareServiceDAO;
 import com.petshop.daos.PetDAO;
 import com.petshop.daos.PetServiceDAO;
 import com.petshop.daos.TypePetDAO;
 import com.petshop.event.ConfirmListener;
 import com.petshop.event.ConfirmListenerInput;
+import com.petshop.models.Customers;
 import com.petshop.models.PetCareServices;
 import com.petshop.models.PetServices;
 import com.petshop.models.Pets;
@@ -34,9 +36,12 @@ import java.awt.geom.RoundRectangle2D;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -54,6 +59,7 @@ public class PopupService extends javax.swing.JPanel {
     private final TypePetDAO typePetDAO;
     private final PetServiceDAO petServiceDAO;
     private final PetCareServiceDAO careServices;
+    private final CustomerDAO customerDAO;
     private ConfirmListener listener;
 
     // Đăng ký ConfirmListener
@@ -70,6 +76,7 @@ public class PopupService extends javax.swing.JPanel {
         typePetDAO = new TypePetDAO();
         petServiceDAO = new PetServiceDAO();
         careServices = new PetCareServiceDAO();
+        customerDAO = new CustomerDAO();
         btnCancel.addActionListener(evt -> {
             if (listener != null) {
                 listener.onCancel();
@@ -116,10 +123,18 @@ public class PopupService extends javax.swing.JPanel {
         txtServiceCode.setText(serviceCode);
     }
 
+    public void setCustomerCode(String customers){
+        txtCustomerCode.setText(customers);
+    }
+    
     public String getPetCode() {
         return txtPetCode.getText();
     }
 
+    public void setPhoneNumber(String phoneNumber){
+        txtOwner.setText(phoneNumber);
+    }
+    
     public int getPetId() {
         return (int) tbPet.getValueAt(getSeletedRowTable(), 0);
     }
@@ -279,6 +294,10 @@ public class PopupService extends javax.swing.JPanel {
         p.setTypePet(t);
         p.setVaccinated(cbVaccina.isSelected());
         p.setGender(rdMale.isSelected());
+        
+        Customers c = customerDAO.searchCustomerByCustomerCode(txtCustomerCode.getText());
+        p.setCustomer(c);
+        
         return p;
     }
 
@@ -313,7 +332,7 @@ public class PopupService extends javax.swing.JPanel {
         }
         if (petDAO.insertPet(readForm())) {
             showMessageSuccess("Thêm thành công");
-            getListPet(petDAO.getListPet());
+            getListPet(petDAO.getListPetSortId());
             resetForm();
             selectFirstRow();
         } else {
@@ -327,13 +346,23 @@ public class PopupService extends javax.swing.JPanel {
         // Ngày bắt đầu: Luôn lấy thời gian hiện tại
         LocalDateTime dateStart = LocalDateTime.now();
 
-        // Ngày kết thúc: Nếu không nhập thì lấy cuối ngày hôm nay
-        LocalDateTime dateEnd = LocalDateTime.of(dateStart.toLocalDate(), LocalDateTime.MAX.toLocalTime());
+        // Ngày kết thúc mặc định: Cuối ngày hôm nay
+        LocalDateTime dateEnd = dateStart.withHour(23).withMinute(59).withSecond(59);
 
-        // Kiểm tra nếu có nhập ngày kết thúc thì lấy thời gian hiện tại, chỉ đổi ngày
+        // Kiểm tra nếu người dùng có nhập ngày kết thúc
         String dateEndStr = txtServiceEnd.getText().trim();
         if (!dateEndStr.isEmpty()) {
-            dateEnd = LocalDateTime.now().withDayOfMonth(dateStart.getDayOfMonth());
+            try {
+                // Chuyển đổi từ chuỗi "dd/MM/yyyy" sang LocalDate
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                LocalDate parsedDate = LocalDate.parse(dateEndStr, formatter);
+
+                // Kết hợp với 23:59:59 để tạo LocalDateTime
+                dateEnd = parsedDate.atTime(23, 59, 59);
+            } catch (DateTimeParseException e) {
+                showMessageFail("Sai định dạng");
+                return null; // Trả về null nếu có lỗi nhập ngày
+            }
         }
 
         c.setDateStart(dateStart);
@@ -421,6 +450,7 @@ public class PopupService extends javax.swing.JPanel {
         btnConfirm = new com.petshop.swing.Button1();
         txtSearch = new com.petshop.swing.textfield.TextFieldAnimation();
         btnCancel = new com.petshop.swing.Button();
+        txtCustomerCode = new com.petshop.swing.textfield.TextField1();
 
         dateChooser1.setTextRefernce(txtServiceStart);
 
@@ -461,7 +491,7 @@ public class PopupService extends javax.swing.JPanel {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -636,22 +666,20 @@ public class PopupService extends javax.swing.JPanel {
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addComponent(txtServiceCode, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(txtServiceStart, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(txtServiceEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addComponent(jLabel8)
-                                .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(jLabel8)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                        .addComponent(txtServiceCode, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(textAreaScroll1, javax.swing.GroupLayout.PREFERRED_SIZE, 327, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(txtServiceStart, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(txtServiceEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(textAreaScroll1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 327, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                         .addComponent(btnAddToCareService, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -663,17 +691,19 @@ public class PopupService extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(textAreaScroll1, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnAddToCareService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
                         .addComponent(jLabel8)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(txtServiceCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtServiceStart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtServiceEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(textAreaScroll1, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnAddToCareService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txtServiceEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -698,6 +728,8 @@ public class PopupService extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(txtCustomerCode, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
                         .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -718,7 +750,8 @@ public class PopupService extends javax.swing.JPanel {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel1)
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtCustomerCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -793,6 +826,7 @@ public class PopupService extends javax.swing.JPanel {
     private com.petshop.swing.textfield.TextField1 txtAge;
     private com.petshop.swing.textfield.TextField1 txtBreed;
     private com.petshop.swing.textfield.TextField1 txtColor;
+    private com.petshop.swing.textfield.TextField1 txtCustomerCode;
     private com.petshop.swing.textarea.TextArea txtNote;
     private com.petshop.swing.textfield.TextField1 txtOwner;
     private com.petshop.swing.textfield.TextField1 txtPetCode;
