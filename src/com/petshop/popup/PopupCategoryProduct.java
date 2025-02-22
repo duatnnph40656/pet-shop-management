@@ -5,10 +5,16 @@
 package com.petshop.popup;
 
 import com.petshop.daos.CategoryProductDAO;
-import com.petshop.models.CategoryProduct;
+import com.petshop.event.ConfirmListener;
+import com.petshop.models.CategoryProducts;
+import com.petshop.models.Products;
+import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogMessageError;
 import com.petshop.swing.message.DialogMessageFail;
 import com.petshop.swing.message.DialogMessageSuccess;
+import com.petshop.swing.table.EventAction;
+import com.petshop.swing.table.ModelAction;
+import com.petshop.ultils.Ultil;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -28,14 +34,40 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
     /**
      * Creates new form PopupCategoryProduct
      */
-    private final CategoryProductDAO dao;
+    private CategoryProductDAO categoryDao;
+    private DefaultTableModel model;
+
+    private ConfirmListener listener;
+
+    // Đăng ký ConfirmListener
+    public void setConfirmListener(ConfirmListener listener) {
+        this.listener = listener;
+    }
 
     public PopupCategoryProduct() {
         initComponents();
         setOpaque(false);
-        dao = new CategoryProductDAO();
         tbCategoryProduct.fixTable(jProduct);
-        findAll(dao.findAll());
+        init();
+        btnThem.addActionListener(evt -> {
+            if (listener != null) {
+                listener.onConfirm();
+            }
+
+        });
+        btnHuy.addActionListener(evt -> {
+            if (listener != null) {
+                listener.onCancel();
+            }
+            raven.glasspanepopup.GlassPanePopup.closePopupLast();
+        });
+    }
+
+    void init() {
+        model = new DefaultTableModel();
+        categoryDao = new CategoryProductDAO();
+        this.findAll(categoryDao.getListCategoryProduct());
+        resetCode();
     }
 
     @Override
@@ -48,27 +80,54 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
         super.paintComponent(grphcs);
     }
 
-    private void findAll(List<CategoryProduct> list) {
-        DefaultTableModel tbModel = (DefaultTableModel) tbCategoryProduct.getModel();
-        tbModel.setRowCount(0);
-        int stt = 1; // Bắt đầu STT từ 1
-
-        for (CategoryProduct c : list) {
-            tbModel.addRow(new Object[]{
+    private void findAll(List<CategoryProducts> list) {
+        model = (DefaultTableModel) tbCategoryProduct.getModel();
+        model.setRowCount(0);
+        int stt = 1;
+        
+         if (list == null || list.isEmpty()) {
+            return; // Nếu danh sách null hoặc rỗng, thoát khỏi phương thức
+        }
+         
+        for (CategoryProducts c : list) {
+            model.addRow(new Object[]{
+                c.getId(),
                 stt++, // STT
                 c.getCategoryProductCode(),
                 c.getCategoryProductName(),
                 c.getCreatedAt(),
-                c.isStatus() ? "Hoạt động" : "Không hoạt động"
+                c.isStatus() ? "Hoạt động" : "Không hoạt động",
+                new ModelAction<>(c, new EventAction<CategoryProducts>() {
+                        @Override
+                        public void delete(CategoryProducts c) {
+                            showMessageConfirm("Xác nhận xóa sản phẩm?", () -> {
+                                deleteCProduct();
+                            });
+                        }
+
+                        @Override
+                        public void update(CategoryProducts c) {
+
+                        }
+
+                        @Override
+                        public void add(CategoryProducts c) {
+                        }
+                    })
             });
         }
     }
 
-    private CategoryProduct readForm() {
+    private CategoryProducts readForm() {
         String cProductCode = txtCode.getText();
         String cProductName = txtName.getText();
-
-        return new CategoryProduct(cProductCode, cProductName);
+        boolean cStatus = true;
+        return new CategoryProducts(cProductCode, cProductName, cStatus);
+    }
+    
+    public void resetCode(){
+        txtCode.setText("LSP" + Ultil.generateRandomCode());
+        txtName.setText("");
     }
 
     private void showMessageSuccess(String message) {
@@ -80,14 +139,36 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
         DialogMessageError error = new DialogMessageError(message);
         GlassPanePopup.showPopup(error);
     }
-    
-    private void showMessageFail(String message){
+
+    private void showMessageFail(String message) {
         DialogMessageFail fail = new DialogMessageFail(message);
         GlassPanePopup.showPopup(fail);
     }
 
+    public void showMessageConfirm(String message, Runnable onConfirmAction) {
+        DialogConfirm confirm = new DialogConfirm(message);
+        confirm.setConfirmListener(new ConfirmListener() {
+            @Override
+            public void onConfirm() {
+                if (onConfirmAction != null) {
+                    onConfirmAction.run(); // Thực hiện hành động truyền vào
+                }
+                raven.glasspanepopup.GlassPanePopup.closePopup("confirm");
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+        raven.glasspanepopup.GlassPanePopup.showPopup(confirm, "confirm"); // Hiển thị popup
+    }
+
     private boolean check() {
-        // Kiểm tra nếu trường mã và tên bị rỗng
+        if(categoryDao.isCategoryNameExists(txtName.getText())){
+            showMessageError("Tên loại sản phẩm đã tồn tại!!");
+            return false;
+        }
         if (txtCode.getText().isEmpty()) {
             showMessageError("Mã không được để trống");
             return false;
@@ -96,21 +177,36 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
             showMessageError("Tên không được để trống");
             return false;
         }
-        return true; // Trả về true nếu tất cả đều hợp lệ
+        return true;
     }
 
     private void insert() {
         if (!check()) {
             return;
         }
-        if (dao.insert(readForm())) {
-            showMessageSuccess("Thêm thành công");
-            findAll(dao.findAll());
+        if (categoryDao.addCategoryProduct(readForm())) {
+            this.showMessageSuccess("Thêm thành công!");
+            this.findAll(categoryDao.getListCategoryProduct());
+            resetCode();
         } else {
-            showMessageFail("Thêm thất bại");
+            this.showMessageFail("Thêm thất bại!!");
         }
     }
 
+    private int getSelectedRow(){
+        return tbCategoryProduct.getSelectedRow();
+    }
+    
+    private void deleteCProduct(){
+        if(getSelectedRow() == -1){
+            showMessageFail("Vui lòng chọn thông tin để xóa");
+            return;
+        }
+        int id = (int)tbCategoryProduct.getValueAt(getSelectedRow(), 0);
+        categoryDao.deleteCategoryProduct(id);
+        findAll(categoryDao.getListCategoryProduct());
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -159,6 +255,8 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
                 btnThemActionPerformed(evt);
             }
         });
+
+        txtCode.setEnabled(false);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -212,11 +310,11 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
 
             },
             new String [] {
-                "STT", "Mã LSP", "Tên LSP", "Ngày tạo", "Trạng thái", "Thao tác"
+                "", "STT", "Mã LSP", "Tên LSP", "Ngày tạo", "Trạng thái", "Thao tác"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, true, true
+                true, false, false, false, false, true, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -224,6 +322,10 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
             }
         });
         jProduct.setViewportView(tbCategoryProduct);
+        if (tbCategoryProduct.getColumnModel().getColumnCount() > 0) {
+            tbCategoryProduct.getColumnModel().getColumn(0).setMinWidth(0);
+            tbCategoryProduct.getColumnModel().getColumn(0).setMaxWidth(0);
+        }
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -260,7 +362,7 @@ public class PopupCategoryProduct extends javax.swing.JPanel {
 
     private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemActionPerformed
         // TODO add your handling code here:
-        insert();
+       this.showMessageConfirm("Xác nhận thêm mới!!", () -> {insert();});
     }//GEN-LAST:event_btnThemActionPerformed
 
 

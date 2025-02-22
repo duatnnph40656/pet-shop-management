@@ -3,11 +3,19 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+<<<<<<< HEAD
             <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/main/login.java</file>
             <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/form/ProductManagement.java</file>
             <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/form/PetManagement.java</file>
             <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/models/Role.java</file>
             <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/form/ServiceManagerment.java</file>
+=======
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/daos/CustomerDAO.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/daos/ProductDetailDAO.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/form/Dashboard.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/daos/InvoiceDAO.java</file>
+            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/daos/PetCareServiceDAO.java</file>
+>>>>>>> c38aac4bec327b76f8cc71ce49b56b3566392a0a
             <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/form/Shop.java</file>
         </group>
     </open-files>

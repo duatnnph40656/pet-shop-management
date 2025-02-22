@@ -6,7 +6,12 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
+import javax.swing.JOptionPane;
 
 public class Card extends javax.swing.JPanel {
 
@@ -18,6 +23,12 @@ public class Card extends javax.swing.JPanel {
         this.colorGradient = colorGradient;
     }
 
+    private ActionListener actionListener;
+
+    public void setOnClickListener(ActionListener actionListener) {
+        this.actionListener = actionListener;
+    }
+
     private Color colorGradient;
 
     public Card() {
@@ -27,14 +38,25 @@ public class Card extends javax.swing.JPanel {
         colorGradient = new Color(255, 255, 255);
         pro.setBackground(new Color(255, 255, 255, 100));
         pro.setForeground(Color.WHITE);
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (actionListener != null) {
+                    actionListener.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "cardClicked"));
+                }
+            }
+        });
+
     }
+
 
     public void setData(ModelCard data) {
         DecimalFormat df = new DecimalFormat("#,##0.##");
         lbTitle.setText(data.getTitle());
         lbValues.setText(df.format(data.getValues()));
         lbIcon.setIcon(data.getIcon());
-        pro.setValue(data.getPercentage());
+        pro.setValue((int) data.getPercentage());
         lbPer.setText(df.format(data.getPercentage()) + "%");
     }
 
@@ -50,11 +72,11 @@ public class Card extends javax.swing.JPanel {
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        lbTitle.setFont(new java.awt.Font("sansserif", 1, 18)); // NOI18N
+        lbTitle.setFont(new java.awt.Font("sansserif", 1, 13)); // NOI18N
         lbTitle.setForeground(new java.awt.Color(225, 225, 225));
         lbTitle.setText("Title");
 
-        lbValues.setFont(new java.awt.Font("sansserif", 0, 24)); // NOI18N
+        lbValues.setFont(new java.awt.Font("sansserif", 0, 19)); // NOI18N
         lbValues.setForeground(new java.awt.Color(225, 225, 225));
         lbValues.setText("Values");
 
@@ -79,7 +101,8 @@ public class Card extends javax.swing.JPanel {
                             .addComponent(lbTitle)
                             .addComponent(lbValues))
                         .addGap(18, 18, 18)
-                        .addComponent(lbIcon, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addComponent(lbIcon, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

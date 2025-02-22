@@ -29,7 +29,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="lbUserName" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="lbRole" alignment="1" min="-2" max="-2" attributes="0"/>
+                  <Component id="lbAcount" alignment="1" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="imageAvatar1" min="-2" pref="44" max="-2" attributes="0"/>
@@ -46,7 +46,7 @@
                   <Group type="102" attributes="0">
                       <Component id="lbUserName" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
-                      <Component id="lbRole" min="-2" max="-2" attributes="0"/>
+                      <Component id="lbAcount" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="cmdMenu" max="32767" attributes="0"/>
                   <Component id="jSeparator1" max="32767" attributes="0"/>
@@ -67,7 +67,7 @@
     <Component class="javax.swing.JLabel" name="lbUserName">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="sansserif" size="12" style="1"/>
+          <Font name="Arial" size="12" style="1"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="7f" green="7f" red="7f" type="rgb"/>
@@ -75,7 +75,7 @@
         <Property name="text" type="java.lang.String" value="User Name"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="lbRole">
+    <Component class="javax.swing.JLabel" name="lbAcount">
       <Properties>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="7f" green="7f" red="7f" type="rgb"/>
@@ -89,6 +89,11 @@
       </Properties>
     </Component>
     <Container class="com.petshop.swing.ImageAvatar" name="imageAvatar1">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/com/petshop/icon/icons8-circled-user-male-skin-type-1-and-2-30.png"/>
+        </Property>
+      </Properties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout">
         <Property name="useNullLayout" type="boolean" value="true"/>

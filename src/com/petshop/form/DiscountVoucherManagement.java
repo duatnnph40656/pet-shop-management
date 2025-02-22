@@ -15,6 +15,7 @@ public class DiscountVoucherManagement extends javax.swing.JPanel {
      */
     public DiscountVoucherManagement() {
         initComponents();
+       
     }
 
     /**

@@ -11,6 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.swing.JFrame;
+import javax.swing.JLayeredPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -25,8 +27,12 @@ public final class DateChooser extends javax.swing.JPanel {
     }
 
     private JTextField textRefernce;
-    private final String MONTH_ENGLISH[] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-    private String dateFormat = "dd-MM-yyyy";
+    private final String MONTH_VIETNAMESE[] = {
+        "Tháng Một", "Tháng Hai", "Tháng Ba", "Tháng Tư", "Tháng Năm", "Tháng Sáu",
+        "Tháng Bảy", "Tháng Tám", "Tháng Chín", "Tháng Mười", "Tháng Mười Một", "Tháng Mười Hai"
+    };
+
+    private String dateFormat = "dd/MM/yyyy";
     private int MONTH = 1;
     private int YEAR = 2021;
     private int DAY = 1;
@@ -37,6 +43,7 @@ public final class DateChooser extends javax.swing.JPanel {
 
     public DateChooser() {
         initComponents();
+        popup.setLightWeightPopupEnabled(false);
         execute();
     }
 
@@ -64,8 +71,8 @@ public final class DateChooser extends javax.swing.JPanel {
     private void setText(boolean runEvent, int act) {
         if (textRefernce != null) {
             try {
-                SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
-                Date date = df.parse(DAY + "-" + MONTH + "-" + YEAR);
+                SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                Date date = df.parse(DAY + "/" + MONTH + "/" + YEAR);
                 textRefernce.setText(new SimpleDateFormat(dateFormat).format(date));
             } catch (ParseException e) {
                 System.err.println(e);
@@ -115,7 +122,7 @@ public final class DateChooser extends javax.swing.JPanel {
             d.setEvent(getEventDay(d));
             d.showDate(MONTH, YEAR, selectedDate);
             if (slide.slideToDown(d)) {
-                cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+                cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
                 cmdYear.setText(YEAR + "");
                 STATUS = 1;
             }
@@ -132,7 +139,7 @@ public final class DateChooser extends javax.swing.JPanel {
             Months d = new Months();
             d.setEvent(getEventMonth());
             if (slide.slideToDown(d)) {
-                cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+                cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
                 cmdYear.setText(YEAR + "");
                 STATUS = 2;
             }
@@ -143,18 +150,18 @@ public final class DateChooser extends javax.swing.JPanel {
         Dates dates = new Dates();
         dates.setForeground(getForeground());
         dates.setEvent(getEventDay(dates));
-        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         Date date = new Date();
         String toDay = df.format(date);
-        DAY = Integer.valueOf(toDay.split("-")[0]);
-        MONTH = Integer.valueOf(toDay.split("-")[1]);
-        YEAR = Integer.valueOf(toDay.split("-")[2]);
+        DAY = Integer.valueOf(toDay.split("/")[0]);
+        MONTH = Integer.valueOf(toDay.split("/")[1]);
+        YEAR = Integer.valueOf(toDay.split("/")[2]);
         selectedDate.setDay(DAY);
         selectedDate.setMonth(MONTH);
         selectedDate.setYear(YEAR);
         dates.showDate(MONTH, YEAR, selectedDate);
         slide.slideNon(dates);
-        cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+        cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
         cmdYear.setText(YEAR + "");
         setText(runEvent, 0);
     }
@@ -169,7 +176,7 @@ public final class DateChooser extends javax.swing.JPanel {
         dates.setEvent(getEventDay(dates));
         dates.showDate(MONTH, YEAR, selectedDate);
         if (slide.slideToLeft(dates)) {
-            cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+            cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
             cmdYear.setText(YEAR + "");
         }
     }
@@ -180,7 +187,7 @@ public final class DateChooser extends javax.swing.JPanel {
         dates.setEvent(getEventDay(dates));
         dates.showDate(MONTH, YEAR, selectedDate);
         if (slide.slideToRight(dates)) {
-            cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+            cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
             cmdYear.setText(YEAR + "");
         }
     }
@@ -460,11 +467,11 @@ public final class DateChooser extends javax.swing.JPanel {
     }
 
     public void setSelectedDate(Date date) {
-        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
         String d = df.format(date);
-        DAY = Integer.valueOf(d.split("-")[0]);
-        MONTH = Integer.valueOf(d.split("-")[1]);
-        YEAR = Integer.valueOf(d.split("-")[2]);
+        DAY = Integer.valueOf(d.split("/")[0]);
+        MONTH = Integer.valueOf(d.split("/")[1]);
+        YEAR = Integer.valueOf(d.split("/")[2]);
         selectedDate.setDay(DAY);
         selectedDate.setMonth(MONTH);
         selectedDate.setYear(YEAR);
@@ -474,7 +481,7 @@ public final class DateChooser extends javax.swing.JPanel {
         dates.setSelected(DAY);
         dates.showDate(MONTH, YEAR, selectedDate);
         slide.slideNon(dates);
-        cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+        cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
         cmdYear.setText(YEAR + "");
         setText(true, 0);
         STATUS = 1;
@@ -507,7 +514,7 @@ public final class DateChooser extends javax.swing.JPanel {
         dates.setSelected(DAY);
         dates.showDate(MONTH, YEAR, selectedDate);
         slide.slideNon(dates);
-        cmdMonth.setText(MONTH_ENGLISH[MONTH - 1]);
+        cmdMonth.setText(MONTH_VIETNAMESE[MONTH - 1]);
         cmdYear.setText(YEAR + "");
         setText(true, 0);
         STATUS = 1;
