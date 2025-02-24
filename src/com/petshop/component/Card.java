@@ -76,7 +76,7 @@ public class Card extends javax.swing.JPanel {
         lbTitle.setForeground(new java.awt.Color(225, 225, 225));
         lbTitle.setText("Title");
 
-        lbValues.setFont(new java.awt.Font("sansserif", 0, 19)); // NOI18N
+        lbValues.setFont(new java.awt.Font("sansserif", 0, 18)); // NOI18N
         lbValues.setForeground(new java.awt.Color(225, 225, 225));
         lbValues.setText("Values");
 
@@ -90,10 +90,10 @@ public class Card extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(pro, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                        .addComponent(pro, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lbPer))
                     .addGroup(layout.createSequentialGroup()
@@ -102,7 +102,7 @@ public class Card extends javax.swing.JPanel {
                             .addComponent(lbValues))
                         .addGap(18, 18, 18)
                         .addComponent(lbIcon, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())))
+                        .addGap(0, 0, 0))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

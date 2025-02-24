@@ -14,6 +14,7 @@ import com.petshop.daos.PetServiceDAO;
 import com.petshop.daos.ProductDAO;
 import com.petshop.daos.ProductDetailDAO;
 import com.petshop.daos.TypePetDAO;
+import com.petshop.daos.TypeServiceDAO;
 import com.petshop.event.ConfirmListener;
 import com.petshop.event.ConfirmListenerInput;
 import com.petshop.event.EventCallBack;
@@ -28,6 +29,7 @@ import com.petshop.models.Pets;
 import com.petshop.models.ProductDetails;
 import com.petshop.models.Products;
 import com.petshop.models.TypePets;
+import com.petshop.models.TypeServices;
 import com.petshop.popup.PopupCustomer;
 import com.petshop.popup.PopupInvoice;
 import com.petshop.popup.PopupScan;
@@ -42,6 +44,7 @@ import com.petshop.swing.table.EventAction;
 import com.petshop.swing.table.ModelAction;
 import com.petshop.swing.table.ModelImage;
 import com.petshop.ultils.Ultil;
+import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -67,6 +70,7 @@ public class Shop extends javax.swing.JPanel {
     private final CustomerDAO customerDAO;
     private final EmployeeDAO employeeDAO;
     private final PetServiceDAO petServiceDAO;
+    private final TypeServiceDAO typeServiceDAO;
     private final PetDAO petDAO;
     private RememberMeService rememberMeService;
 
@@ -85,6 +89,7 @@ public class Shop extends javax.swing.JPanel {
         petServiceDAO = new PetServiceDAO();
         petDAO = new PetDAO();
         typePetDAO = new TypePetDAO();
+        typeServiceDAO = new TypeServiceDAO();
         rememberMeService = new RememberMeService();
         loadCbbPaymentMethod();
         loadCbbSort();
@@ -97,6 +102,7 @@ public class Shop extends javax.swing.JPanel {
         getListInvoice(invoiceDAO.getListInvoice());
         loadCbbFilterTypePet(typePetDAO.getListTypePet());
         loadCbbFilterProduct(productDAO.getListProduct());
+        loadComboBoxes(typeServiceDAO.getListTypeS());
         resetForm();
         searchEvent();
     }
@@ -112,6 +118,27 @@ public class Shop extends javax.swing.JPanel {
                     }
                     searchProductD(txtSearchProductDetail.getText());
                     txtSearchProductDetail.setText("");
+                    call.done();
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+        txtSearchService.addEvent(new EventTextField() { // là tên của cái search
+            @Override
+            public void onPressed(EventCallBack call) {
+                //  Test
+                try {
+                    for (int i = 1; i <= 100; i++) {
+                        Thread.sleep(5); // time sleep
+                    }
+                    searchServiceByName(txtSearchService.getText());
+                    txtSearchService.setText("");
                     call.done();
                 } catch (Exception e) {
                     System.err.println(e);
@@ -227,7 +254,7 @@ public class Shop extends javax.swing.JPanel {
                 showMessageSuccess("Đã thêm sản phẩm");
                 GlassPanePopup.closePopup("pWebCam");
             } else {
-                showMessageFail("Không tìm thấy sản phẩm có mã vạch: " + barcode);
+                showMessageFail("Không tìm thấy sản phẩm hoặc hết hàng");
                 GlassPanePopup.closePopup("pWebCam");
             }
         });
@@ -293,20 +320,20 @@ public class Shop extends javax.swing.JPanel {
     }
 
     private void loadCbbSort() {
-        cbbSort.removeAllItems();
-        cbbSort.addItem("Theo giá tăng dần");
-        cbbSort.addItem("Theo giá giảm dần");
-        cbbSort.setSelectedIndex(-1); // Không chọn mục nào mặc định
+        cbbSortProduct.removeAllItems();
+        cbbSortProduct.addItem("Theo giá tăng dần");
+        cbbSortProduct.addItem("Theo giá giảm dần");
+        cbbSortProduct.setSelectedIndex(-1); // Không chọn mục nào mặc định
 
         // Thêm sự kiện cho JComboBox
-        cbbSort.addActionListener(e -> filterAndSortProductDetails());
+        cbbSortProduct.addActionListener(e -> filterAndSortProductDetails());
     }
 
     private void filterAndSortProductDetails() {
         // Lấy giá trị được chọn từ các JComboBox
         Products selectedProduct = (Products) cbbFilterProduct.getSelectedItem();
         TypePets selectedTypePet = (TypePets) cbbFilterTypePet.getSelectedItem();
-        String selectedSort = (String) cbbSort.getSelectedItem();
+        String selectedSort = (String) cbbSortProduct.getSelectedItem();
 
         // Xác định các tham số lọc
         Integer productId = (selectedProduct != null) ? selectedProduct.getId() : null;
@@ -422,12 +449,12 @@ public class Shop extends javax.swing.JPanel {
                 i.getCustomer().getCustomerCode(),
                 stt,
                 i.getInvoiceCode(),
-                (i.getCustomer() != null) 
+                (i.getCustomer() != null)
                 ? (i.getCustomer().getCustomerName() != null && !i.getCustomer().getCustomerName().trim().isEmpty()
-                    ? i.getCustomer().getCustomerName()
-                    : (i.getCustomer().getPhoneNumber() != null && !i.getCustomer().getPhoneNumber().trim().isEmpty()
-                        ? i.getCustomer().getPhoneNumber()
-                        : "Chưa có thông tin"))
+                ? i.getCustomer().getCustomerName()
+                : (i.getCustomer().getPhoneNumber() != null && !i.getCustomer().getPhoneNumber().trim().isEmpty()
+                ? i.getCustomer().getPhoneNumber()
+                : "Chưa có thông tin"))
                 : "Chưa có thông tin",
                 i.getEmployee().getEmployeeName(),
                 Ultil.formatCurrency(i.getTotalPrice()),
@@ -472,7 +499,7 @@ public class Shop extends javax.swing.JPanel {
 
         cbbFilterProduct.setSelectedIndex(-1);
         cbbFilterTypePet.setSelectedIndex(-1);
-        cbbSort.setSelectedIndex(-1);
+        cbbSortProduct.setSelectedIndex(-1);
     }
 
     public Invoices readFormInsert() {
@@ -583,7 +610,7 @@ public class Shop extends javax.swing.JPanel {
         // Cập nhật lại danh sách hóa đơn trên bảng
         getListInvoice(invoiceDAO.getListInvoice());
 
-        Object priceObj = tbInvoice.getValueAt(selectedRow, 5);
+        Object priceObj = tbInvoice.getValueAt(selectedRow, 6);
 
         lbTotalPrice.setText(priceObj.toString());
         lbTotalPrice1.setText(priceObj.toString());
@@ -620,6 +647,7 @@ public class Shop extends javax.swing.JPanel {
             showMessageSuccess("Thành công");
             getListInvoice(invoiceDAO.getListInvoice());
             clearInvoiceDetailTable();
+            resetForm();
         } else {
             showMessageFail("Thất bại!!");
         }
@@ -842,7 +870,7 @@ public class Shop extends javax.swing.JPanel {
             showInvoiceDetailByIdInvoice();
             GlassPanePopup.closePopup("pInput");
         } else {
-            System.out.println("Thêm sản phẩm thất bại!");
+            showMessageError("Có lỗi sảy ra");
         }
     }
 
@@ -870,6 +898,10 @@ public class Shop extends javax.swing.JPanel {
 
     public void searchCustomer(String keyword) {
         Customers t = customerDAO.searchCustomerByPhoneNumber(keyword);
+        if(keyword.isEmpty()){
+            showMessageFail("Vui lòng nhập thông tin");
+            return;
+        }
         if (t != null) {
             txtSearchCustomer.setText(t.getPhoneNumber());
             lbCustomerCode.setText(t.getCustomerCode());
@@ -892,9 +924,10 @@ public class Shop extends javax.swing.JPanel {
                 stt,
                 p.getServiceCode(),
                 p.getServiceName(),
+                p.getTypeService().getTypeServiceName(),
                 ">= " + p.getDuration(),
                 p.getTimeUnit(),
-                Ultil.formatCurrency(p.getPriceService()),
+                Ultil.formatCurrency(p.getPriceService()) + "/1",
                 p.isStatus() ? "Hoạt động" : "Ngưng nhận",
                 new ModelAction<>(p, new EventAction<PetServices>() {
                     @Override
@@ -970,6 +1003,60 @@ public class Shop extends javax.swing.JPanel {
         }
     }
 
+    public void loadComboBoxes(List<TypeServices> typeServicesList) {
+        // Load combobox loại dịch vụ
+        cbbFilterTypeService.removeAllItems();
+        for (TypeServices type : typeServicesList) {
+            cbbFilterTypeService.addItem(type);
+        }
+        cbbFilterTypeService.setSelectedIndex(-1);
+
+        cbbSortService.removeAllItems();
+        cbbSortService.addItem("Tất cả");
+        cbbSortService.addItem("Theo giá tăng dần");
+        cbbSortService.addItem("Giá giảm dần");
+        cbbSortService.setSelectedIndex(-1);
+
+        // Thêm sự kiện lắng nghe cho cả ba combobox
+        ActionListener filterListener = e -> getListServiceByFilter();
+        cbbFilterTypeService.addActionListener(filterListener);
+        cbbSortProduct.addActionListener(filterListener);
+    }
+
+    public void getListServiceByFilter() {
+        TypeServices selectedType = (TypeServices) cbbFilterTypeService.getSelectedItem();
+
+        Integer typeServiceId = (selectedType != null) ? selectedType.getId() : null;
+
+        List<PetServices> filteredList;
+        if (typeServiceId == null) {
+            filteredList = petServiceDAO.getListServiceAll();
+        } else {
+            filteredList = petServiceDAO.filterServiceByIdTypeService(typeServiceId, true);
+        }
+
+        // Áp dụng sắp xếp
+        String sortBy = (String) cbbSortProduct.getSelectedItem();
+        if (sortBy != null) {
+            if (sortBy.equals("Theo giá tăng dần")) {
+                filteredList.sort(Comparator.comparing(PetServices::getPriceService));
+            } else if (sortBy.equals("Giá giảm dần")) {
+                filteredList.sort(Comparator.comparing(PetServices::getPriceService).reversed());
+            }
+        }
+
+        getListService(filteredList);
+    }
+
+    public void searchServiceByName(String keyword) {
+        List<PetServices> list = petServiceDAO.searchByServiceNameOrCode(keyword);
+        if (list.isEmpty()) {
+            showMessageFail("Không tìm thấy!");
+        } else {
+            getListService(list);
+        }
+    }
+
     //</editor-fold>
     /**
      * This method is called from within the constructor to initialize the form.
@@ -984,7 +1071,6 @@ public class Shop extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tbInvoice = new com.petshop.swing.table.Table();
-        jPanel5 = new javax.swing.JPanel();
         button12 = new com.petshop.swing.Button1();
         jPanel13 = new javax.swing.JPanel();
         jLabel32 = new javax.swing.JLabel();
@@ -1015,27 +1101,25 @@ public class Shop extends javax.swing.JPanel {
         jPanel2 = new javax.swing.JPanel();
         jLabel43 = new javax.swing.JLabel();
         txtSearchProductDetail = new com.petshop.swing.textfield.TextFieldAnimation();
-        cbbSort = new com.petshop.swing.combobox.ComboboxRounded();
-        cbbFilterTypePet = new com.petshop.swing.combobox.ComboboxRounded();
-        cbbFilterProduct = new com.petshop.swing.combobox.ComboboxRounded();
         btnScanBarcode = new com.petshop.swing.Button1();
         jScrollPane3 = new javax.swing.JScrollPane();
         tbProductDetail = new com.petshop.swing.tableMore.TableMore();
+        cbbFilterProduct = new com.petshop.swing.combobox.Combobox();
+        cbbFilterTypePet = new com.petshop.swing.combobox.Combobox();
+        cbbSortProduct = new com.petshop.swing.combobox.Combobox();
         jPanel6 = new javax.swing.JPanel();
-        jPanel7 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
-        textFieldAnimation1 = new com.petshop.swing.textfield.TextFieldAnimation();
-        comboboxRounded1 = new com.petshop.swing.combobox.ComboboxRounded();
-        comboboxRounded3 = new com.petshop.swing.combobox.ComboboxRounded();
+        txtSearchService = new com.petshop.swing.textfield.TextFieldAnimation();
         jScrollPane4 = new javax.swing.JScrollPane();
         tbService = new com.petshop.swing.tableMore.TableMore();
+        cbbFilterTypeService = new com.petshop.swing.combobox.Combobox();
+        cbbSortService = new com.petshop.swing.combobox.Combobox();
 
-        setBackground(new java.awt.Color(255, 255, 255));
+        setBackground(new java.awt.Color(245, 245, 245));
         setMaximumSize(new java.awt.Dimension(1058, 741));
         setPreferredSize(new java.awt.Dimension(1058, 741));
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jLabel1.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
         jLabel1.setText("HÓA ĐƠN CHỜ");
@@ -1074,59 +1158,39 @@ public class Shop extends javax.swing.JPanel {
             tbInvoice.getColumnModel().getColumn(2).setMaxWidth(40);
         }
 
-        button12.setText("Quét hóa đơn");
+        button12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-qr-code-scan-48.png"))); // NOI18N
         button12.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 button12ActionPerformed(evt);
             }
         });
 
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(button12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(button12, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane1))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 731, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0))
+                .addComponent(button12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(0, 0, 0)
                 .addComponent(jLabel1)
                 .addGap(0, 0, 0)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(button12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(0, 0, 0))
         );
 
         jPanel13.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel13.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jLabel32.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
         jLabel32.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -1177,7 +1241,7 @@ public class Shop extends javax.swing.JPanel {
         });
 
         btnDeleteInvoice.setBackground(new java.awt.Color(255, 204, 204));
-        btnDeleteInvoice.setText("Hủy hóa đơn");
+        btnDeleteInvoice.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-delete-20.png"))); // NOI18N
         btnDeleteInvoice.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnDeleteInvoiceActionPerformed(evt);
@@ -1185,7 +1249,7 @@ public class Shop extends javax.swing.JPanel {
         });
 
         btnResetInvoice.setBackground(new java.awt.Color(255, 255, 204));
-        btnResetInvoice.setText("Làm mới");
+        btnResetInvoice.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-restore-20.png"))); // NOI18N
         btnResetInvoice.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnResetInvoiceActionPerformed(evt);
@@ -1261,11 +1325,11 @@ public class Shop extends javax.swing.JPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lbInvoiceCode, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel13Layout.createSequentialGroup()
+                                .addComponent(btnDeleteInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btnResetInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel13Layout.createSequentialGroup()
                                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel13Layout.createSequentialGroup()
-                                        .addComponent(btnResetInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(55, 55, 55)
-                                        .addComponent(btnDeleteInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(jPanel13Layout.createSequentialGroup()
                                         .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                             .addComponent(jLabel33, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1273,7 +1337,7 @@ public class Shop extends javax.swing.JPanel {
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(btnSearchCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(checkBoxPaymStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 2, Short.MAX_VALUE)))
+                                .addGap(0, 0, Short.MAX_VALUE)))
                         .addContainerGap())))
         );
         jPanel13Layout.setVerticalGroup(
@@ -1312,16 +1376,15 @@ public class Shop extends javax.swing.JPanel {
                 .addGap(5, 5, 5)
                 .addComponent(checkBoxPaymStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnResetInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnDeleteInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnResetInvoice, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDeleteInvoice, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnConfirmInvoice, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel4.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jLabel42.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
         jLabel42.setText("HÓA ĐƠN CHI TIẾT");
@@ -1369,14 +1432,11 @@ public class Shop extends javax.swing.JPanel {
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel42)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addGap(0, 0, 0))
+                .addContainerGap()
+                .addComponent(jLabel42)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1391,20 +1451,13 @@ public class Shop extends javax.swing.JPanel {
         materialTabbed1.setBackground(new java.awt.Color(245, 245, 245));
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jLabel43.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
         jLabel43.setText("DANH SÁCH SẢN PHẨM");
 
         txtSearchProductDetail.setBackground(new java.awt.Color(250, 250, 250));
 
-        cbbSort.setLabeText("Sắp xếp theo");
-
-        cbbFilterTypePet.setLabeText("Loại thú cưng");
-
-        cbbFilterProduct.setLabeText("Sản phẩm");
-
-        btnScanBarcode.setText("Quét barcode");
+        btnScanBarcode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-scan-barcode-20.png"))); // NOI18N
         btnScanBarcode.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnScanBarcodeActionPerformed(evt);
@@ -1434,17 +1487,13 @@ public class Shop extends javax.swing.JPanel {
         if (tbProductDetail.getColumnModel().getColumnCount() > 0) {
             tbProductDetail.getColumnModel().getColumn(0).setMinWidth(0);
             tbProductDetail.getColumnModel().getColumn(0).setMaxWidth(0);
-            tbProductDetail.getColumnModel().getColumn(1).setMinWidth(40);
-            tbProductDetail.getColumnModel().getColumn(1).setMaxWidth(40);
-            tbProductDetail.getColumnModel().getColumn(2).setMinWidth(230);
-            tbProductDetail.getColumnModel().getColumn(2).setMaxWidth(230);
-            tbProductDetail.getColumnModel().getColumn(7).setMinWidth(40);
-            tbProductDetail.getColumnModel().getColumn(7).setMaxWidth(40);
-            tbProductDetail.getColumnModel().getColumn(8).setMinWidth(50);
-            tbProductDetail.getColumnModel().getColumn(8).setMaxWidth(50);
-            tbProductDetail.getColumnModel().getColumn(10).setMinWidth(60);
-            tbProductDetail.getColumnModel().getColumn(10).setMaxWidth(60);
         }
+
+        cbbFilterProduct.setLabeText("Sản phẩm");
+
+        cbbFilterTypePet.setLabeText("Dành cho");
+
+        cbbSortProduct.setLabeText("Sắp xêp theo giá");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -1453,13 +1502,13 @@ public class Shop extends javax.swing.JPanel {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel43)
-                .addGap(18, 18, 18)
-                .addComponent(cbbFilterProduct, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(71, 71, 71)
+                .addComponent(cbbFilterProduct, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cbbFilterTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cbbSort, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 75, Short.MAX_VALUE)
+                .addComponent(cbbFilterTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbbSortProduct, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnScanBarcode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtSearchProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1469,48 +1518,43 @@ public class Shop extends javax.swing.JPanel {
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addGap(0, 0, 0)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel43)
+                    .addComponent(btnScanBarcode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(txtSearchProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnScanBarcode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(cbbSort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbbFilterProduct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(cbbFilterTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(cbbFilterProduct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(cbbSortProduct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(txtSearchProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
 
         materialTabbed1.addTab("Sản phẩm", jPanel2);
 
-        jPanel7.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel7.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jPanel6.setBackground(new java.awt.Color(255, 255, 255));
 
         jLabel8.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
         jLabel8.setText("DANH SÁCH DỊCH VỤ");
 
-        textFieldAnimation1.setBackground(new java.awt.Color(250, 250, 250));
-
-        comboboxRounded1.setLabeText("Sắp xếp theo");
-
-        comboboxRounded3.setLabeText("Loại dịch vụ");
+        txtSearchService.setBackground(new java.awt.Color(250, 250, 250));
 
         tbService.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "STT", "Mã DV", "Tên DV", "Thời gian", "Đơn vị thời gian", "Giá DV", "Trạng thái", "Thao tác"
+                "", "STT", "Mã DV", "Tên DV", "Loại dịch vụ", "Thời gian", "Đơn vị thời gian", "Giá DV", "Trạng thái", "Thao tác"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, true
+                false, false, false, false, false, false, false, false, false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1521,57 +1565,48 @@ public class Shop extends javax.swing.JPanel {
         if (tbService.getColumnModel().getColumnCount() > 0) {
             tbService.getColumnModel().getColumn(0).setMinWidth(0);
             tbService.getColumnModel().getColumn(0).setMaxWidth(0);
-            tbService.getColumnModel().getColumn(4).setMinWidth(80);
-            tbService.getColumnModel().getColumn(4).setMaxWidth(80);
+            tbService.getColumnModel().getColumn(1).setMinWidth(35);
+            tbService.getColumnModel().getColumn(1).setMaxWidth(35);
+            tbService.getColumnModel().getColumn(2).setMinWidth(80);
+            tbService.getColumnModel().getColumn(2).setMaxWidth(80);
+            tbService.getColumnModel().getColumn(3).setMinWidth(230);
+            tbService.getColumnModel().getColumn(3).setMaxWidth(230);
+            tbService.getColumnModel().getColumn(4).setMinWidth(170);
+            tbService.getColumnModel().getColumn(4).setMaxWidth(170);
         }
 
-        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
-        jPanel7.setLayout(jPanel7Layout);
-        jPanel7Layout.setHorizontalGroup(
-            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel7Layout.createSequentialGroup()
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel8)
-                        .addGap(126, 126, 126)
-                        .addComponent(comboboxRounded3, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(28, 28, 28)
-                        .addComponent(comboboxRounded1, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(textFieldAnimation1, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE))
-                    .addComponent(jScrollPane4))
-                .addGap(0, 0, 0))
-        );
-        jPanel7Layout.setVerticalGroup(
-            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(textFieldAnimation1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(comboboxRounded1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(comboboxRounded3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.LEADING))
-                .addGap(0, 0, 0)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
-                .addGap(0, 0, 0))
-        );
+        cbbFilterTypeService.setLabeText("Loại dịch vụ");
+
+        cbbSortService.setLabeText("Sắp xếp theo giá");
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1041, Short.MAX_VALUE)
-            .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel8)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(cbbFilterTypeService, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(cbbSortService, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(23, 23, 23)
+                .addComponent(txtSearchService, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 1041, Short.MAX_VALUE)
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 328, Short.MAX_VALUE)
-            .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel8)
+                    .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(cbbFilterTypeService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbbSortService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtSearchService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         materialTabbed1.addTab("Dịch vụ", jPanel6);
@@ -1602,8 +1637,8 @@ public class Shop extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, 0)
-                .addComponent(materialTabbed1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(materialTabbed1, javax.swing.GroupLayout.PREFERRED_SIZE, 326, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -1647,15 +1682,15 @@ public class Shop extends javax.swing.JPanel {
         });
     }//GEN-LAST:event_btnConfirmInvoiceActionPerformed
 
-    private void btnScanBarcodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnScanBarcodeActionPerformed
-        // TODO add your handling code here:
-        showPopupWebcam();
-    }//GEN-LAST:event_btnScanBarcodeActionPerformed
-
     private void button12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button12ActionPerformed
         // TODO add your handling code here:
         showPopupWebcam2();
     }//GEN-LAST:event_button12ActionPerformed
+
+    private void btnScanBarcodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnScanBarcodeActionPerformed
+        // TODO add your handling code here:
+        showPopupWebcam();
+    }//GEN-LAST:event_btnScanBarcodeActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1666,13 +1701,13 @@ public class Shop extends javax.swing.JPanel {
     private com.petshop.swing.Button1 btnScanBarcode;
     private com.petshop.swing.Button btnSearchCustomer;
     private com.petshop.swing.Button1 button12;
-    private com.petshop.swing.combobox.ComboboxRounded cbbFilterProduct;
-    private com.petshop.swing.combobox.ComboboxRounded cbbFilterTypePet;
+    private com.petshop.swing.combobox.Combobox cbbFilterProduct;
+    private com.petshop.swing.combobox.Combobox cbbFilterTypePet;
+    private com.petshop.swing.combobox.Combobox cbbFilterTypeService;
     private com.petshop.swing.combobox.Combobox cbbPayment;
-    private com.petshop.swing.combobox.ComboboxRounded cbbSort;
+    private com.petshop.swing.combobox.Combobox cbbSortProduct;
+    private com.petshop.swing.combobox.Combobox cbbSortService;
     private com.petshop.swing.checkbox.JCheckBoxCustom checkBoxPaymStatus;
-    private com.petshop.swing.combobox.ComboboxRounded comboboxRounded1;
-    private com.petshop.swing.combobox.ComboboxRounded comboboxRounded3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel32;
@@ -1688,9 +1723,7 @@ public class Shop extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
-    private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
@@ -1705,8 +1738,8 @@ public class Shop extends javax.swing.JPanel {
     private com.petshop.swing.tableMore.TableMore1 tbInvoiceDetail;
     private com.petshop.swing.tableMore.TableMore tbProductDetail;
     private com.petshop.swing.tableMore.TableMore tbService;
-    private com.petshop.swing.textfield.TextFieldAnimation textFieldAnimation1;
     private com.petshop.swing.textfield.TextField1 txtSearchCustomer;
     private com.petshop.swing.textfield.TextFieldAnimation txtSearchProductDetail;
+    private com.petshop.swing.textfield.TextFieldAnimation txtSearchService;
     // End of variables declaration//GEN-END:variables
 }

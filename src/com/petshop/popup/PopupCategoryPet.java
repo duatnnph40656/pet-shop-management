@@ -44,13 +44,11 @@ public class PopupCategoryPet extends javax.swing.JPanel {
 
     public PopupCategoryPet() {
         initComponents();
+        setOpaque(false);
         tbTypePet.fixTable(jProduct);
-
         tDao = new TypePetDAO();
         model = new DefaultTableModel();
-
         this.getListTypePet(tDao.getListTypePet());
-
         txtCode.setText("TP" + Ultil.generateRandomCode());
         
         btnThem.addActionListener(evt -> {

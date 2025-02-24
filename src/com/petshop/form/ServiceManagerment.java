@@ -84,7 +84,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         });
     }
 
-     public void showPopUpHistoryDeleted() {
+    public void showPopUpHistoryDeleted() {
         int stt = 1;
         PopupShowHistoryDeleted popup = new PopupShowHistoryDeleted();
         List<PetServices> petServiceses = petServiceDAO.getListServiceDeleted();
@@ -179,10 +179,9 @@ public class ServiceManagerment extends javax.swing.JPanel {
         }
 
         // Cập nhật lại bảng
-        popup.fillTable(data, new String[]{"STT", "Mã DV", "Tên DV", "Loại DV", "T.gian", "Đơn vị TG", "Giá DV", "Ngày tạo","Thao tác"});
+        popup.fillTable(data, new String[]{"STT", "Mã DV", "Tên DV", "Loại DV", "T.gian", "Đơn vị TG", "Giá DV", "Ngày tạo", "Thao tác"});
     }
-    
-    
+
     //<editor-fold defaultstate="collapsed" desc="{Message...">
     private void showMessageSuccess(String message) {
         DialogMessageSuccess success = new DialogMessageSuccess(message);
@@ -332,17 +331,17 @@ public class ServiceManagerment extends javax.swing.JPanel {
         int stt = 1;
         for (PetServices p : list) {
             tbService.addRow(new Object[]{
-                p.getId(),
+                getSafeValue(p.getId()),
                 stt,
-                p.getServiceCode(),
-                p.getServiceName(),
-                p.getTypeService().getTypeServiceName(),
-                p.getDuration(),
-                p.getTimeUnit(),
-                Ultil.formatCurrency(p.getPriceService()),
-                p.getDescribeService(),
-                p.getFormattedCreatedAt(),
-                p.isStatus() ? "Hoạt động" : "Tạm ngưng",
+                getSafeValue(p.getServiceCode()),
+                getSafeValue(p.getServiceName()),
+                (p.getTypeService() != null) ? getSafeValue(p.getTypeService().getTypeServiceName()) : "Chưa có thông tin",
+                getSafeValue(p.getDuration()),
+                getSafeValue(p.getTimeUnit()),
+                getSafeValue(Ultil.formatCurrency(p.getPriceService())),
+                getSafeValue(p.getDescribeService()),
+                getSafeValue(p.getFormattedCreatedAt()),
+                (p.isStatus() ? "Hoạt động" : "Tạm ngưng"),
                 new ModelAction<>(p, new EventAction<PetServices>() {
                     @Override
                     public void delete(PetServices p) {
@@ -353,7 +352,6 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
                     @Override
                     public void update(PetServices p) {
-
                     }
 
                     @Override
@@ -363,6 +361,10 @@ public class ServiceManagerment extends javax.swing.JPanel {
             });
             stt++;
         }
+    }
+
+    private String getSafeValue(Object value) {
+        return (value == null || value.toString().trim().isEmpty()) ? "Chưa có thông tin" : value.toString();
     }
 
     private PetServices readForm() {
@@ -453,7 +455,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
         boolean status = tbService.getValueAt(selectedRow, 10).equals("Hoạt động");
         if (status) {
-            btnEditStatus.setText("Tạm ngưng dịch vụ");
+            btnEditStatus.setText("Tạm ngưng");
 
         } else {
             btnEditStatus.setText("Tiếp tục DV");
@@ -497,7 +499,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
             showMessageFail("Thời gian dịch vụ không được để trống!");
             return false;
         }
-        if(txtDescribeService.getText().isEmpty()){
+        if (txtDescribeService.getText().isEmpty()) {
             showMessageFail("Mô tả dịch vụ không được để trống!");
             return false;
         }
@@ -627,7 +629,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
     public void updateStatusService() {
         // TODO add your handling code here:
         int selectRow = tbService.getSelectedRow();
-        if(selectRow == -1){
+        if (selectRow == -1) {
             showMessageFail("Vui lòng chọn thông tin dịch vụ!!");
             return;
         }
@@ -645,8 +647,8 @@ public class ServiceManagerment extends javax.swing.JPanel {
             getListService(list);
         }
     }
-    
-    private void restoreService(PetServices p){
+
+    private void restoreService(PetServices p) {
         petServiceDAO.restoreService(p.getId());
         getListService(petServiceDAO.getListService());
     }
@@ -690,17 +692,16 @@ public class ServiceManagerment extends javax.swing.JPanel {
         cbbFilterStatus = new com.petshop.swing.combobox.Combobox();
         cbbFilterTypeService = new com.petshop.swing.combobox.Combobox();
 
-        setBackground(new java.awt.Color(255, 255, 255));
+        setBackground(new java.awt.Color(245, 245, 245));
         setMaximumSize(new java.awt.Dimension(1058, 741));
         setPreferredSize(new java.awt.Dimension(1058, 741));
 
         materialTabbed1.setBackground(new java.awt.Color(255, 255, 255));
         materialTabbed1.setPreferredSize(new java.awt.Dimension(1058, 741));
 
-        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel2.setBackground(new java.awt.Color(245, 245, 245));
 
         jPanel6.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel6.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jLabel9.setBackground(new java.awt.Color(255, 255, 255));
         jLabel9.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
@@ -708,7 +709,6 @@ public class ServiceManagerment extends javax.swing.JPanel {
         jLabel9.setText("Thông tin dịch vụ");
 
         jPanel8.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel8.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         txtServiceCode.setLabelText("Mã dịch vụ");
 
@@ -764,7 +764,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
                         .addComponent(cbbTimeUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(txtPriceService, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
-                .addComponent(textAreaScroll1, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                .addComponent(textAreaScroll1, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel8Layout.setVerticalGroup(
@@ -788,12 +788,13 @@ public class ServiceManagerment extends javax.swing.JPanel {
                             .addGroup(jPanel8Layout.createSequentialGroup()
                                 .addGap(22, 22, 22)
                                 .addComponent(cbbTypeService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addGap(0, 22, Short.MAX_VALUE))
                     .addComponent(textAreaScroll1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
-        jPanel9.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jPanel9.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel9.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
         btnAdd.setBackground(new java.awt.Color(204, 255, 255));
         btnAdd.setText("Thêm");
@@ -812,13 +813,14 @@ public class ServiceManagerment extends javax.swing.JPanel {
         });
 
         btnReset.setBackground(new java.awt.Color(255, 204, 255));
-        btnReset.setText("Làm mới");
+        btnReset.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-restore-20.png"))); // NOI18N
         btnReset.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnResetActionPerformed(evt);
             }
         });
 
+        button7.setBackground(new java.awt.Color(255, 204, 204));
         button7.setText("Lịch sử đã xóa");
         button7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -838,30 +840,34 @@ public class ServiceManagerment extends javax.swing.JPanel {
         jPanel9.setLayout(jPanel9Layout);
         jPanel9Layout.setHorizontalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
+            .addGroup(jPanel9Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(button7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnReset, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnEditStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnEdit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(button7, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
+                    .addGroup(jPanel9Layout.createSequentialGroup()
+                        .addComponent(btnEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnEditStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel9Layout.createSequentialGroup()
+                        .addComponent(btnReset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnAdd, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel9Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(button7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnEdit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnEditStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel9Layout.createSequentialGroup()
-                        .addComponent(button7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnEditStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnEdit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnReset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnReset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 28, Short.MAX_VALUE))
                     .addComponent(btnAdd, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -893,7 +899,6 @@ public class ServiceManagerment extends javax.swing.JPanel {
         );
 
         jPanel7.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel7.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         tbService.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -917,6 +922,8 @@ public class ServiceManagerment extends javax.swing.JPanel {
             tbService.getColumnModel().getColumn(1).setMaxWidth(40);
             tbService.getColumnModel().getColumn(5).setMinWidth(60);
             tbService.getColumnModel().getColumn(5).setMaxWidth(60);
+            tbService.getColumnModel().getColumn(8).setMinWidth(200);
+            tbService.getColumnModel().getColumn(8).setMaxWidth(200);
         }
 
         jLabel10.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
@@ -984,7 +991,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(41, Short.MAX_VALUE))
+                .addContainerGap(43, Short.MAX_VALUE))
         );
 
         materialTabbed1.addTab("Quản lý dịch vụ", jPanel2);

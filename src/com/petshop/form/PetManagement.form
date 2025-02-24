@@ -117,7 +117,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jScrollPane4" pref="1053" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane4" pref="1055" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="32767" attributes="0"/>
@@ -314,11 +314,11 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="jPanel6" alignment="0" max="32767" attributes="0"/>
-                      <Group type="102" alignment="1" attributes="0">
-                          <Component id="jPanel10" min="-2" pref="793" max="-2" attributes="0"/>
+                      <Component id="jPanel6" max="32767" attributes="0"/>
+                      <Group type="102" attributes="0">
+                          <Component id="jPanel10" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jPanel11" max="32767" attributes="0"/>
+                          <Component id="jPanel11" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -326,8 +326,8 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jPanel10" max="32767" attributes="0"/>
                               <Component id="jPanel11" max="32767" attributes="0"/>
+                              <Component id="jPanel10" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jPanel6" min="-2" max="-2" attributes="0"/>
@@ -367,34 +367,41 @@
                                           <Component id="txtGiongThuCung" max="32767" attributes="0"/>
                                       </Group>
                                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                           <Group type="102" attributes="0">
                                               <Component id="rdoDuc" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace type="separate" max="-2" attributes="0"/>
                                               <Component id="rdoCai" min="-2" max="-2" attributes="0"/>
                                           </Group>
-                                          <Component id="txtMauSac" min="-2" pref="189" max="-2" attributes="0"/>
-                                          <Component id="txtCanNang" min="-2" pref="189" max="-2" attributes="0"/>
+                                          <Component id="txtMauSac" alignment="0" pref="181" max="32767" attributes="0"/>
+                                          <Component id="txtCanNang" alignment="0" max="32767" attributes="0"/>
                                       </Group>
-                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" attributes="0">
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Component id="txtTuoi" min="-2" pref="181" max="-2" attributes="0"/>
-                                                  <Component id="txtTenThuCung" min="-2" pref="181" max="-2" attributes="0"/>
-                                              </Group>
-                                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                                  <Component id="cboKhachHang" pref="181" max="32767" attributes="0"/>
-                                                  <Component id="txtOwner" max="32767" attributes="0"/>
-                                              </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="cbDaTiem" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
                                           </Group>
-                                          <Component id="cbDaTiem" min="-2" max="-2" attributes="0"/>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                                  <Component id="txtTenThuCung" pref="175" max="32767" attributes="0"/>
+                                                  <Component id="txtTuoi" max="32767" attributes="0"/>
+                                              </Group>
+                                              <EmptySpace pref="30" max="32767" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="txtSearchCustomer" pref="186" max="32767" attributes="0"/>
+                                                  <Component id="txtThongTinKhachHang" min="-2" pref="163" max="-2" attributes="0"/>
+                                              </Group>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="btnCustomerSearch" min="-2" pref="39" max="-2" attributes="0"/>
+                                                  <Component id="btnPopupPets1" min="-2" max="-2" attributes="0"/>
+                                              </Group>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                          </Group>
                                       </Group>
-                                      <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -403,19 +410,25 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="txtMaThuCung" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="cboKhachHang" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="txtTuoi" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
-                                  <Component id="txtMauSac" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                              <EmptySpace pref="18" max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="txtMaThuCung" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="txtTuoi" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                                      <Component id="txtMauSac" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                                      <Component id="txtSearchCustomer" alignment="3" min="-2" pref="46" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="btnCustomerSearch" min="-2" pref="37" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="txtGiongThuCung" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
-                                  <Component id="txtCanNang" alignment="3" min="-2" pref="46" max="-2" attributes="0"/>
-                                  <Component id="txtTenThuCung" alignment="3" min="-2" pref="46" max="-2" attributes="0"/>
-                                  <Component id="txtOwner" alignment="3" min="-2" pref="46" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="103" alignment="1" groupAlignment="3" attributes="0">
+                                      <Component id="txtGiongThuCung" alignment="3" min="-2" pref="50" max="-2" attributes="0"/>
+                                      <Component id="txtCanNang" alignment="3" min="-2" pref="46" max="-2" attributes="0"/>
+                                      <Component id="txtTenThuCung" alignment="3" min="-2" pref="46" max="-2" attributes="0"/>
+                                      <Component id="txtThongTinKhachHang" alignment="3" min="-2" pref="46" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="btnPopupPets1" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
@@ -451,6 +464,9 @@
                     </Component>
                     <Component class="com.petshop.swing.radio_button.RadioButtonCustom" name="rdoDuc">
                       <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                          <ComponentRef name="buttonGroup1"/>
+                        </Property>
                         <Property name="selected" type="boolean" value="true"/>
                         <Property name="text" type="java.lang.String" value="&#x110;&#x1ef1;c"/>
                       </Properties>
@@ -460,6 +476,9 @@
                     </Component>
                     <Component class="com.petshop.swing.radio_button.RadioButtonCustom" name="rdoCai">
                       <Properties>
+                        <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                          <ComponentRef name="buttonGroup1"/>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="C&#xe1;i"/>
                       </Properties>
                     </Component>
@@ -507,21 +526,6 @@
                         <Property name="labelText" type="java.lang.String" value="Tu&#x1ed5;i th&#xfa; c&#x1b0;ng ( Th&#xe1;ng )"/>
                       </Properties>
                     </Component>
-                    <Component class="com.petshop.swing.combobox.Combobox" name="cboKhachHang">
-                      <Properties>
-                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Segoe UI" size="14" style="0"/>
-                        </Property>
-                        <Property name="labeText" type="java.lang.String" value="Kh&#xe1;ch h&#xe0;ng"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cboKhachHangActionPerformed"/>
-                      </Events>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="PetManagement_cboLoaiThuCung"/>
-                        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
-                      </AuxValues>
-                    </Component>
                     <Component class="com.petshop.swing.textfield.TextFieldRounded" name="txtTenThuCung">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
@@ -538,7 +542,7 @@
                         <Property name="labelText" type="java.lang.String" value="Gi&#x1ed1;ng th&#xfa; c&#x1b0;ng"/>
                       </Properties>
                     </Component>
-                    <Component class="com.petshop.swing.textfield.TextFieldRounded" name="txtOwner">
+                    <Component class="com.petshop.swing.textfield.TextFieldRounded" name="txtSearchCustomer">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Segoe UI" size="14" style="0"/>
@@ -560,6 +564,43 @@
                         <Property name="horizontalAlignment" type="int" value="0"/>
                         <Property name="text" type="java.lang.String" value="TH&#xd4;NG TIN PET"/>
                       </Properties>
+                    </Component>
+                    <Component class="com.petshop.swing.textfield.TextFieldRounded" name="txtThongTinKhachHang">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Segoe UI" size="14" style="0"/>
+                        </Property>
+                        <Property name="labelText" type="java.lang.String" value="T&#xea;n kh&#xe1;ch h&#xe0;ng"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtThongTinKhachHangActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="com.petshop.swing.Button" name="btnCustomerSearch">
+                      <Properties>
+                        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="99" green="99" red="0" type="rgb"/>
+                        </Property>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/com/petshop/icon/icons8-search-15.png"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCustomerSearchActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="com.petshop.swing.ButtonBadges" name="btnPopupPets1">
+                      <Properties>
+                        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="ff" green="ff" red="cc" type="rgb"/>
+                        </Property>
+                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+                          <Image iconType="3" name="/com/petshop/icon/icons8-add-24 (1).png"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnPopupPets1ActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -584,7 +625,7 @@
                                   <Component id="jScrollPane3" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Component id="jLabel43" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="241" max="32767" attributes="0"/>
+                                      <EmptySpace pref="243" max="32767" attributes="0"/>
                                       <Component id="cboLocLoaiThuCung" min="-2" pref="152" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
                                       <Component id="cboLocGiongThuCung" min="-2" pref="148" max="-2" attributes="0"/>
@@ -644,6 +685,75 @@
                                 <Column editable="true" title="Ng&#xe0;y t&#x1ea1;o" type="java.lang.Object"/>
                               </Table>
                             </Property>
+                            <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
+                              <TableColumnModel selectionModel="0">
+                                <Column maxWidth="0" minWidth="0" prefWidth="0" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                  <Title/>
+                                  <Editor/>
+                                  <Renderer/>
+                                </Column>
+                              </TableColumnModel>
+                            </Property>
                             <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
                               <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
                             </Property>
@@ -676,8 +786,20 @@
                       </Events>
                     </Component>
                     <Component class="com.petshop.swing.combobox.Combobox" name="cboLocLoaiThuCung">
+                      <Properties>
+                        <Property name="labeText" type="java.lang.String" value=""/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cboLocLoaiThuCungActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="com.petshop.swing.combobox.Combobox" name="cboLocGiongThuCung">
+                      <Properties>
+                        <Property name="labeText" type="java.lang.String" value=""/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cboLocGiongThuCungActionPerformed"/>
+                      </Events>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -703,7 +825,7 @@
                                   <Component id="btnCapNhat" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="btnXoa" min="-2" pref="63" max="-2" attributes="0"/>
-                                      <EmptySpace pref="138" max="32767" attributes="0"/>
+                                      <EmptySpace pref="77" max="32767" attributes="0"/>
                                       <Component id="btnLamMoi" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="btnLichSuaXoa" alignment="0" max="32767" attributes="0"/>
@@ -719,10 +841,10 @@
                               <Component id="btnLichSuaXoa" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
                               <Component id="btnCapNhat" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="btnLamMoi" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="btnXoa" alignment="1" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="32" max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="btnLamMoi" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="btnXoa" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="btnThem" min="-2" pref="50" max="-2" attributes="0"/>

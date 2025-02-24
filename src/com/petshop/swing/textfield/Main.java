@@ -8,6 +8,7 @@ package com.petshop.swing.textfield;
 import java.awt.Color;
 import com.petshop.event.EventCallBack;
 import com.petshop.event.EventTextField;
+import javax.swing.ImageIcon;
 
 /**
  *
@@ -42,6 +43,16 @@ public class Main extends javax.swing.JFrame {
 
             }
         });
+        textFieldSearchOption1.addEventOptionSelected(new SearchOptinEvent() {
+            @Override
+            public void optionSelected(SearchOption option, int index) {
+                textFieldSearchOption1.setHint("Search by " + option.getName() + "...");
+            }
+        });
+        textFieldSearchOption1.addOption(new SearchOption("Name", new ImageIcon(getClass().getResource("/com/petshop/icon/user.png"))));
+        textFieldSearchOption1.addOption(new SearchOption("Tel", new ImageIcon(getClass().getResource("/com/petshop/icon/tel.png"))));
+        textFieldSearchOption1.addOption(new SearchOption("Email", new ImageIcon(getClass().getResource("/com/petshop/icon/email.png"))));
+        textFieldSearchOption1.addOption(new SearchOption("Address", new ImageIcon(getClass().getResource("/com/petshop/icon/address.png"))));
     }
 
     /**
@@ -57,6 +68,7 @@ public class Main extends javax.swing.JFrame {
         lb3 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         txt = new com.petshop.swing.textfield.TextFieldAnimation();
+        textFieldSearchOption1 = new com.petshop.swing.textfield.TextFieldSearchOption();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -72,6 +84,13 @@ public class Main extends javax.swing.JFrame {
         jLabel1.setText("Test Output 1 - 100");
 
         txt.setText("textFieldAnimation1");
+
+        textFieldSearchOption1.setText("textFieldSearchOption1");
+        textFieldSearchOption1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                textFieldSearchOption1KeyReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -89,7 +108,10 @@ public class Main extends javax.swing.JFrame {
                                 .addComponent(lb3, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(85, 85, 85)
-                        .addComponent(txt, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(txt, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(148, 148, 148)
+                        .addComponent(textFieldSearchOption1, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(50, 50, 50))
         );
         layout.setVerticalGroup(
@@ -101,17 +123,21 @@ public class Main extends javax.swing.JFrame {
                 .addComponent(jLabel1)
                 .addGap(62, 62, 62)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lb1)
-                        .addGap(143, 143, 143))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lb3)
-                        .addGap(95, 95, 95))))
+                    .addComponent(lb1)
+                    .addComponent(lb3))
+                .addGap(42, 42, 42)
+                .addComponent(textFieldSearchOption1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void textFieldSearchOption1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textFieldSearchOption1KeyReleased
+        // TODO add your handling code here:
+        System.out.println("aaaa");
+    }//GEN-LAST:event_textFieldSearchOption1KeyReleased
 
     /**
      * @param args the command line arguments
@@ -152,6 +178,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel lb1;
     private javax.swing.JLabel lb3;
+    private com.petshop.swing.textfield.TextFieldSearchOption textFieldSearchOption1;
     private com.petshop.swing.textfield.TextFieldAnimation txt;
     // End of variables declaration//GEN-END:variables
 }

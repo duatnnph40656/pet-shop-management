@@ -1,7 +1,11 @@
 package com.petshop.form;
 
+import com.petshop.btnfloating.FloatingButtonUI;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import javax.swing.JComponent;
+import javax.swing.JLayer;
+import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 public class MainForm extends javax.swing.JPanel {
@@ -15,7 +19,12 @@ public class MainForm extends javax.swing.JPanel {
 
     public void showForm(Component form) {
         removeAll();
-        add(form);
+        if (form instanceof Dashboard) {
+            JLayer<JComponent> layer = new JLayer<>((JComponent) form, new FloatingButtonUI());
+            add(layer, BorderLayout.CENTER);
+        } else {
+            add(form);
+        }
         repaint();
         revalidate();
     }
@@ -24,18 +33,32 @@ public class MainForm extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        body = new javax.swing.JPanel();
+
+        javax.swing.GroupLayout bodyLayout = new javax.swing.GroupLayout(body);
+        body.setLayout(bodyLayout);
+        bodyLayout.setHorizontalGroup(
+            bodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        bodyLayout.setVerticalGroup(
+            bodyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addComponent(body, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addComponent(body, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel body;
     // End of variables declaration//GEN-END:variables
 }

@@ -43,6 +43,7 @@ public class PopupTypeService extends javax.swing.JPanel {
 
     public PopupTypeService() {
         initComponents();
+        setOpaque(false);
         tbTypeService.fixTable(jProduct);
         tDao = new TypeServiceDAO();
         this.getListTypeService(tDao.getListTypeS());
@@ -203,6 +204,8 @@ public class PopupTypeService extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         jProduct = new javax.swing.JScrollPane();
         tbTypeService = new com.petshop.swing.table.Table();
+
+        setBackground(new java.awt.Color(255, 255, 255));
 
         materialTabbed1.setBackground(new java.awt.Color(255, 255, 255));
 

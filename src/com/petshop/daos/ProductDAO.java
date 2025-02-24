@@ -108,6 +108,25 @@ public class ProductDAO {
         return false; // Trả về false nếu có lỗi xảy ra
     }
     
+    public boolean isProductNameExists(String productName) {
+    String sql = "SELECT COUNT(*) FROM [products] WHERE product_name = ?";
+    
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, productName);
+        
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0; // Nếu số lượng > 0, nghĩa là đã tồn tại
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    
+    return false; // Mặc định trả về false nếu có lỗi xảy ra
+}
+
+    
     public boolean updateProduct(int id, Products p) {
         String sql = "UPDATE products SET product_code = ?, product_name = ?, price_base = ?,id_category = ?, is_status = ? WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {

@@ -2,6 +2,8 @@ package com.petshop.main;
 
 import com.petshop.component.Header;
 import com.petshop.component.Menu;
+import com.petshop.event.ConfirmListener;
+import com.petshop.event.ConfirmListenerInput;
 import com.petshop.event.EventMenuSelected;
 import com.petshop.event.EventShowPopupMenu;
 import com.petshop.form.AccountManagement;
@@ -17,14 +19,21 @@ import com.petshop.form.ReturnManagement;
 import com.petshop.form.ServiceManagerment;
 import com.petshop.form.Shop;
 import com.petshop.models.Employees;
+import com.petshop.services.RememberMeService;
 import com.petshop.swing.MenuItem;
 import com.petshop.swing.PopupMenu;
 import com.petshop.swing.icon.GoogleMaterialDesignIcons;
 import com.petshop.swing.icon.IconFontSwing;
+import com.petshop.swing.message.DialogConfirm;
+import com.petshop.swing.message.DialogInput;
+import com.petshop.swing.message.DialogMessageError;
+import com.petshop.swing.message.DialogMessageFail;
+import com.petshop.swing.message.DialogMessageSuccess;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.miginfocom.swing.MigLayout;
@@ -40,18 +49,74 @@ public class Main extends javax.swing.JFrame {
     private Header header;
     private MainForm main;
     private Animator animator;
-    
-    public static boolean isLoggedIn = false;
 
+    public static boolean isLoggedIn = false;
+    private final RememberMeService rememberMeService;
 
     public Main() {
         initComponents();
+        rememberMeService = new RememberMeService();
         GlassPanePopup.install(this);
         init();
     }
 
+    //<editor-fold defaultstate="collapsed" desc="{Message...">
+    private void showMessageSuccess(String message) {
+        DialogMessageSuccess success = new DialogMessageSuccess(message);
+        GlassPanePopup.showPopup(success);
+    }
+
+    private void showMessageError(String message) {
+        DialogMessageError error = new DialogMessageError(message);
+        GlassPanePopup.showPopup(error);
+    }
+
+    private void showMessageFail(String message) {
+        DialogMessageFail fail = new DialogMessageFail(message);
+        GlassPanePopup.showPopup(fail);
+    }
+
+    public void showMessageConfirm(String message, Runnable onConfirmAction) {
+        DialogConfirm confirm = new DialogConfirm(message);
+        confirm.setConfirmListener(new ConfirmListener() {
+            @Override
+            public void onConfirm() {
+                if (onConfirmAction != null) {
+                    onConfirmAction.run(); // Thực hiện hành động truyền vào
+                }
+                GlassPanePopup.closePopup("confirm");
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+        GlassPanePopup.showPopup(confirm, "confirm"); // Hiển thị popup
+    }
+
+    public void showInputDialog(int amount, Consumer<Integer> onConfirmAction) {
+        DialogInput dialog = new DialogInput(amount);
+        dialog.setConfirmListener(new ConfirmListenerInput() {
+            @Override
+            public void onConfirm(int inputAmount) {
+                if (onConfirmAction != null) {
+                    onConfirmAction.accept(inputAmount); // Truyền số lượng nhập vào
+                }
+            }
+
+            @Override
+            public void onCancel() {
+                // Đóng popup nếu người dùng hủy
+                GlassPanePopup.closePopupLast();
+            }
+        });
+        GlassPanePopup.showPopup(dialog, "pInput");
+    }
+    //</editor-fold>
+    
+    
     private void init() {
-        
         layout = new MigLayout("fill", "0[]0[100%, fill]0", "0[fill, top]0");
         bg.setLayout(layout);
         menu = new Menu();
@@ -72,7 +137,11 @@ public class Main extends javax.swing.JFrame {
                 } else if (menuIndex == 4) {
                     main.showForm(new PetManagement());
                 } else if (menuIndex == 5) {
-                    main.showForm(new EmployeeManagement());
+                    if (rememberMeService.getEmployeeId() != 1) {
+                        showMessageFail("Không thể truy cập!!");
+                    } else {
+                        main.showForm(new EmployeeManagement());
+                    }
                 } else if (menuIndex == 6) {
                     main.showForm(new CustomerManagement());
                 } else if (menuIndex == 7) {
@@ -148,6 +217,7 @@ public class Main extends javax.swing.JFrame {
         IconFontSwing.register(GoogleMaterialDesignIcons.getIconFont());
         //  Start with this form
         main.showForm(new Dashboard());
+        
     }
 
     public Header getHeader() {

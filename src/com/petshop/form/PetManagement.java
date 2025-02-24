@@ -27,7 +27,10 @@ import com.petshop.ultils.Ultil;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
@@ -53,82 +56,99 @@ public class PetManagement extends javax.swing.JPanel {
 
     private void init() {
         tblPet.fixTable(jScrollPane3);
+        txtThongTinKhachHang.setEditable(false);
         tbPetCareService.fixTable(jScrollPane4);
-        fillToTable(petDao.getListPet());
-        fillCboCustomer(customerDao.getListCustomers());
-//        fillCboLocGiongThuCung(petDao.loadCboLocGiong());
+        fillToTable(petDao.getList());
+        fillCboTypePet(typetDao.getListTypePet());
+        fillFilterBreedPet(petDao.getList());
+        fillFilterTypePet(typetDao.getListTypePet());
         search();
+        txtThongTinKhachHang.setText("Khách hàng lẻ");
         txtMaThuCung.setText("PET" + Ultil.generateRandomCode());
-
         getListPetCareS(careServiceDAO.getListPetCareService());
     }
 
     //<editor-fold defaultstate="collapsed" desc="{Pets...">
-    public void fillCboLoaiThuCung(List<TypePets> list) {
+    public void fillCboTypePet(List<TypePets> list) {
         cboLoaiThuCung.removeAllItems();
         for (TypePets typePet : list) {
-            cboLoaiThuCung.addItem(typePet);
+            cboLoaiThuCung.addItem(typePet.getTypePetName());
         }
         cboLoaiThuCung.setSelectedIndex(-1);
     }
 
-    public void fillCboCustomer(List<Customers> list) {
-        cboKhachHang.removeAllItems();
-        for (Customers customer : list) {
-            cboKhachHang.addItem(customer);
-        }
-        cboKhachHang.setSelectedIndex(-1);
-    }
-
     private boolean iz = true;
 
-    public void fillCboLocLoaiThuCung(List<TypePets> list) {
+    public void fillFilterTypePet(List<TypePets> list) {
         iz = true;
         cboLocLoaiThuCung.removeAllItems();
         cboLocLoaiThuCung.addItem("Loài");
         for (TypePets typePet : list) {
-            cboLocLoaiThuCung.addItem(typePet);
+            if (typePet != null) {
+                cboLocLoaiThuCung.addItem(typePet.getTypePetName());  // Đổi thành String
+            }
         }
         iz = false;
     }
 
-    public void fillCboLocGiongThuCung(List<Pets> list) {
+    public void fillFilterBreedPet(List<Pets> list) {
         iz = true;
         cboLocGiongThuCung.removeAllItems();
         cboLocGiongThuCung.addItem("Giống");
+
+        // Sử dụng Set để lưu các giống không trùng lặp
+        Set<String> uniqueBreeds = new HashSet<>();
+
+        // Duyệt qua danh sách pets và thêm các giống vào Set
         for (Pets pet : list) {
-            cboLocGiongThuCung.addItem(pet.getBreed());
+            if (pet.getBreed() != null && !pet.getBreed().isEmpty()) {
+                uniqueBreeds.add(pet.getBreed());
+            }
         }
+
+        // Thêm các giống duy nhất vào ComboBox
+        for (String breed : uniqueBreeds) {
+            cboLocGiongThuCung.addItem(breed);
+        }
+
         iz = false;
     }
 
-    private void locTheoGiong() {
+    private void filterBreed() {
         if (iz) {
             return;
         }
-        String loai = (String) cboLocLoaiThuCung.getSelectedItem();
-        String giong = (String) cboLocGiongThuCung.getSelectedItem();
 
-        if ("Loài".equals(loai)) {
-            loai = null;
+        String type = (cboLocLoaiThuCung.getSelectedItem() != null) ? cboLocLoaiThuCung.getSelectedItem().toString() : "";
+        String breed = (cboLocGiongThuCung.getSelectedItem() != null) ? cboLocGiongThuCung.getSelectedItem().toString() : "";
+
+        if ("Loài".equalsIgnoreCase(type)) {
+            type = null;
         }
-        if ("Giống".equals(giong)) {
-            giong = null;
+        if ("Giống".equalsIgnoreCase(breed)) {
+            breed = null;
         }
 
-//        fillToTable(petDao.locPet(loai, giong));
+        List<Pets> filteredPets = petDao.filterPet(type, breed);
+        if (filteredPets != null) {
+            fillToTable(filteredPets);
+        }
     }
 
-    private void locTheoLoai() {
+    private void filterType() {
         if (iz) {
             return;
         }
-        String loai = (String) cboLocLoaiThuCung.getSelectedItem();
 
-        if ("Loài".equals(loai)) {
-            fillToTable(petDao.getListPet()); // Hiển thị toàn bộ danh sách nếu không lọc
+        String type = (cboLocLoaiThuCung.getSelectedItem() != null) ? cboLocLoaiThuCung.getSelectedItem().toString() : "";
+
+        if (type == null || type.trim().isEmpty() || "Loài".equalsIgnoreCase(type)) {
+            fillToTable(petDao.getList());
         } else {
-//            fillToTable(petDao.locPet(loai, null));
+            List<Pets> filteredPets = petDao.filterPet(type, null);
+            if (filteredPets != null) {
+                fillToTable(filteredPets);
+            }
         }
     }
 
@@ -139,7 +159,7 @@ public class PetManagement extends javax.swing.JPanel {
             public void onPressed(EventCallBack call) {
                 try {
                     String search = txtSearch.getText().trim();
-                    List<Pets> firstList = petDao.getListPet();
+                    List<Pets> firstList = petDao.getList();
                     List<Pets> result = new ArrayList<>();
 
                     for (Pets pet : firstList) {
@@ -233,7 +253,7 @@ public class PetManagement extends javax.swing.JPanel {
     private void autoClick() {
         String search = txtSearch.getText();
         if (search.isEmpty()) {
-            fillToTable(petDao.getListPet());
+            fillToTable(petDao.getList());
         }
 
     }
@@ -284,11 +304,9 @@ public class PetManagement extends javax.swing.JPanel {
         } else if (rdoCai.isSelected()) {
             gender = false;
         }
-        String owner = txtOwner.getText();
-
         TypePets loai = typetDao.getTypePetByName(cboLoaiThuCung.getSelectedItem().toString());
 
-        Customers khachHang = customerDao.searchCustomerByCustomerName(cboKhachHang.getSelectedItem().toString());
+        Customers customer = petDao.searchCustomerId(txtThongTinKhachHang.getText());
 
         p.setPetCode(maThuCung);
         p.setPetName(ten);
@@ -299,36 +317,41 @@ public class PetManagement extends javax.swing.JPanel {
         p.setWeight(canNang);
         p.setVaccinated(tiem);
         p.setTypePet(loai);
-        p.setCustomer(khachHang);
-
+        p.setCustomer(customer);
         return p;
     }
 
     private boolean check() {
-        String mauSac = txtMauSac.getText().trim();
-        String canNang = txtCanNang.getText();
-        String tuoi = txtTuoi.getText();
-        String giong = txtGiongThuCung.getText();
-        if (giong.isEmpty()) {
-            showMessageError("Giống thú cưng trống!!");
-            return false;
-        }
+        String color = txtMauSac.getText().trim();
+        String weight = txtCanNang.getText();
+        String age = txtTuoi.getText();
+        String breed = txtGiongThuCung.getText();
+        String name = txtTenThuCung.getText();
 
-        Object selectedLoai = cboLoaiThuCung.getSelectedItem();
+        Object selectTypePet = cboLoaiThuCung.getSelectedItem();
 
-        if (selectedLoai == null) {
+        if (selectTypePet == null) {
             showMessageError("Vui lòng chọn loài thú cưng!");
             return false;
         }
-        if (mauSac.isEmpty() || canNang.isEmpty() || tuoi.isEmpty()) {
+        if (color.isEmpty() || name.isEmpty() || weight.isEmpty()
+                    || age.isEmpty() || weight.isEmpty() || breed.isEmpty()) {
             showMessageError("Không được để trống các trường dữ liệu!");
             return false;
         }
-        if (!mauSac.matches("[\\p{L}\\s]+")) {
-            showMessageError("Ô Màu sắc  không được phép nhập số và kí tự đặc biệt!");
+        if (!breed.matches("[\\p{L}\\s]+")) {
+            showMessageError("Trường giống không được phép nhập số và kí tự đặc biệt!");
             return false;
         }
-        if (!canNang.matches("^\\d+(\\.\\d+)?$")) {
+        if (!name.matches("[\\p{L}\\s]+")) {
+            showMessageError("Trường tên thú cưng không được phép nhập số và kí tự đặc biệt!");
+            return false;
+        }
+        if (!color.matches("[\\p{L}\\s]+")) {
+            showMessageError("Trường màu sắc không được phép nhập số và kí tự đặc biệt!");
+            return false;
+        }
+        if (!weight.matches("^\\d+(\\.\\d+)?$")) {
             showMessageError("Sai định dạng cân nặng (VD :1.5) ");
             return false;
         }
@@ -340,141 +363,161 @@ public class PetManagement extends javax.swing.JPanel {
 
         if (selectedRow != -1) {
 
-            String ma = tblPet.getValueAt(selectedRow, 2).toString();
-            String loai = tblPet.getValueAt(selectedRow, 3).toString();
-            String giong = tblPet.getValueAt(selectedRow, 4).toString();
-            String ten = tblPet.getValueAt(selectedRow, 5).toString();
-            String tuoi = tblPet.getValueAt(selectedRow, 6).toString();
-            String canNang = tblPet.getValueAt(selectedRow, 7).toString();
-            String mauSac = tblPet.getValueAt(selectedRow, 8).toString();
-            String gioiTinhStr = tblPet.getValueAt(selectedRow, 9).toString();
-            boolean gioiTinh = gioiTinhStr.equalsIgnoreCase("Đực");
+            String petCode = tblPet.getValueAt(selectedRow, 2).toString();
+            String type = tblPet.getValueAt(selectedRow, 3).toString();
+            String breed = tblPet.getValueAt(selectedRow, 4).toString();
+            String name = tblPet.getValueAt(selectedRow, 5).toString();
+            String age = tblPet.getValueAt(selectedRow, 6).toString();
+            String weight = tblPet.getValueAt(selectedRow, 7).toString();
+            String color = tblPet.getValueAt(selectedRow, 8).toString();
+            String genderSt = tblPet.getValueAt(selectedRow, 9).toString();
+            boolean gender = genderSt.equalsIgnoreCase("Đực");
 
-            String vaccinStr = tblPet.getValueAt(selectedRow, 10).toString();
-            boolean vaccin = vaccinStr.equalsIgnoreCase("Đã tiêm");
+            String vaccineSt = tblPet.getValueAt(selectedRow, 10).toString();
+            boolean vaccine = vaccineSt.equalsIgnoreCase("Đã tiêm");
 
             String tenKhachHang = tblPet.getValueAt(selectedRow, 11).toString();
             Customers khachHang = customerDao.searchCustomerByCustomerName(tenKhachHang);
 
-            txtMaThuCung.setText(ma);
-            txtGiongThuCung.setText(giong);
-            txtTenThuCung.setText(ten);
-            txtTuoi.setText(tuoi);
-            txtCanNang.setText(canNang);
-            txtMauSac.setText(mauSac);
-            cboLoaiThuCung.setSelectedItem(loai);
-            if (gioiTinh) {
+            String owner = tblPet.getValueAt(selectedRow, 12).toString();
+
+            txtMaThuCung.setText(petCode);
+            txtGiongThuCung.setText(breed);
+            txtTenThuCung.setText(name);
+            txtTuoi.setText(age);
+            txtCanNang.setText(weight);
+            txtMauSac.setText(color);
+            cboLoaiThuCung.setSelectedItem(type);
+            if (gender) {
                 rdoDuc.setSelected(true);
             } else {
                 rdoCai.setSelected(true);
             }
-            if (vaccin) {
+            if (vaccine) {
                 cbDaTiem.setSelected(true);
             } else {
                 cbDaTiem.setSelected(false);
             }
-            cboKhachHang.setSelectedItem(khachHang.getCustomerName());
+            txtThongTinKhachHang.setText(khachHang.toString());
 
         }
     }
 
     private void update() {
-
         int select = tblPet.getSelectedRow();
-        if (select == -1) {
-            showMessageError("Chưa có dữ liệu nào được chọn!");
-            return;
-        }
         if (!check()) {
             return;
         }
 
         int id = Integer.parseInt(tblPet.getValueAt(select, 0).toString());
-        // Pet ban đầu
-        Pets petFrist = null; //petDao.getById(id)
 
-        // Pet từ bảng
+        // Pet ban đầu
+        Pets petFrist = petDao.getById(id);
+        // Pet người dùng nhập
         Pets p = readForm();
         p.setId(id);
-
-        if (petFrist.getPetName().equals(p.getPetName())
-                && petFrist.getCustomer().getId() == p.getCustomer().getId()
-                && petFrist.getTypePet().getId() == p.getTypePet().getId()
-                && petFrist.getAge().equals(p.getAge())
-                && petFrist.getWeight().compareTo(p.getWeight()) == 0
-                && petFrist.isGender() == p.isGender()
-                && petFrist.isVaccinated() == p.isVaccinated()
-                && petFrist.getBreed().equals(p.getBreed())
-                && petFrist.getColor().equals(p.getColor())) {
+        if (isPetUnchanged(petFrist, p)) {
             showMessageFail("Dữ liệu không thay đổi, không cần cập nhật!");
             return;
         }
-
-//        if (petDao.update(p, id)) {
-//            showMessageSuccess("Cập nhật thành công!");
-//            fillToTable(petDao.getList());
-//        } else {
-//            showMessageError("Cập nhật thất bại!");
-//        }
+        if (petDao.update(p, id)) {
+            showMessageSuccess("Cập nhật thành công!");
+            fillToTable(petDao.getList());
+            fillFilterBreedPet(petDao.getList());
+            txtSearchCustomer.setText("");
+        } else {
+            showMessageError("Cập nhật thất bại!");
+        }
     }
 
+private boolean isPetUnchanged(Pets petFirst, Pets p) {
+    return Objects.equals(petFirst.getTypePet().getId(), p.getTypePet().getId())
+            && Objects.equals(petFirst.getBreed(), p.getBreed())
+            && Objects.equals(petFirst.getPetName(), p.getPetName())
+            && Objects.equals(petFirst.getAge(), p.getAge())
+            && petFirst.getWeight().compareTo(p.getWeight()) == 0
+            && Objects.equals(petFirst.getColor(), p.getColor())
+            && petFirst.isGender() == p.isGender()
+            && petFirst.isVaccinated() == p.isVaccinated()
+            && Objects.equals(petFirst.getCustomer().getId(), p.getCustomer().getId());
+}
     private void insertPet() {
         if (!check()) {
             return;
         }
-
-//        if (petDao.insertPet(readForm())) {
-//            showMessageSuccess("Thêm thành công !");
-//            fillToTable(petDao.getList());
-//            fillCboLocGiongThuCung(petDao.loadCboLocGiong());
-//        } else {
-//            showMessageFail("Thêm thất bại");
-//        }
+        if (petDao.insertPet(readForm())) {
+            showMessageSuccess("Thêm thành công !");
+            fillToTable(petDao.getList());
+            fillFilterBreedPet(petDao.getList());
+            txtThongTinKhachHang.setText("Khách hàng lẻ");
+        } else {
+            showMessageFail("Thêm thất bại");
+        }
     }
 
-    private void lamMoi() {
-        txtMaThuCung.setText("Mã thú cưng");
+    private void refresh() {
+        txtMaThuCung.setText("Không điền thông tin");
         txtMauSac.setText("");
         txtCanNang.setText("");
         txtTuoi.setText("");
-        cboKhachHang.setSelectedIndex(-1);
         cboLoaiThuCung.setSelectedIndex(-1);
+        txtSearchCustomer.setText("");
+        txtThongTinKhachHang.setText("Khách hàng lẻ");
+        txtTenThuCung.setText("");
+        txtGiongThuCung.setText("");
         cbDaTiem.setSelected(false);
+        cboLocGiongThuCung.setSelectedItem("Giống");
+        cboLocLoaiThuCung.setSelectedItem("Loài");
     }
 
     private void delete() {
         String id = txtMaThuCung.getText().trim();
-        if (tblPet.getRowCount() == 0) {
-            showMessageError("Không có dữ liệu nào được chọn");
+        if (petDao.delete(id)) {
+            fillToTable(petDao.getList());
+            refresh();
+            showMessageSuccess("Xóa thành công!");
+            fillFilterBreedPet(petDao.getList());
+        } else {
+            showMessageFail("Xóa không thành công!");
+        }
+    }
+
+//    private void showPopDeleteHistory() {
+//        PopupDeleteHistory deleteHistory = new PopupDeleteHistory();
+//        deleteHistory.setConfirmListener(new com.petshop.event.ConfirmListener() {
+//            @Override
+//            public void onConfirm() {
+//                fillToTable(petDao.getList());
+//                fillFilterBreedPet(petDao.getList());
+//            }
+//
+//            @Override
+//            public void onCancel() {
+//                fillToTable(petDao.getList());
+//                fillFilterBreedPet(petDao.getList());
+//            }
+//        });
+//        GlassPanePopup.showPopup(deleteHistory, "pdeleteHistory");
+//
+//    }
+    // Tìm kiếm khách hàng
+    private void searchCustomer() {
+        String search = txtSearchCustomer.getText();
+
+        Customers c = petDao.searchCustomer(search);
+        System.out.println(c);
+        if (search.isEmpty()) {
+            showMessageFail("Chưa nhập thông tin là số điện thoại!");
             return;
         }
-//        if (petDao.delete(id)) {
-//            fillToTable(petDao.getList());
-//            fillCboLocGiongThuCung(petDao.loadCboLocGiong());
-//            fillCboGiongThuCung(petDao.loadCboGiong());
-//            lamMoi();
-//            showMessageSuccess("Xóa thành công!");
-//        } else {
-//            showMessageFail("Xóa không thành công!");
-//        }
+        if (c == null) {
+            showMessageFail("Số điện thoại không tồn tại : " + search);
+            txtSearchCustomer.setText("");
+            return;
+        }
+        txtThongTinKhachHang.setText(c.getCustomerName());
     }
 
-    private void showPopDeleteHistory() {
-        PopupShowHistoryDeleted deleteHistory = new PopupShowHistoryDeleted();
-        deleteHistory.setConfirmListener(new com.petshop.event.ConfirmListener() {
-            @Override
-            public void onConfirm() {
-//                fillToTable(petDao.getList());
-            }
-
-            @Override
-            public void onCancel() {
-//                fillToTable(petDao.getList());
-            }
-        });
-        GlassPanePopup.showPopup(deleteHistory, "pdeleteHistory");
-    }
-    
     private void showPopTypePet() {
         PopupCategoryPet typePet = new PopupCategoryPet();
         typePet.setConfirmListener(new com.petshop.event.ConfirmListener() {
@@ -492,7 +535,7 @@ public class PetManagement extends javax.swing.JPanel {
 
     }
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="{PetCareService...">
     private void getListPetCareS(List<PetCareServices> list) {
         int stt = 1;
@@ -532,7 +575,6 @@ public class PetManagement extends javax.swing.JPanel {
         }
     }
     //</editor-fold>
-    
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -560,12 +602,14 @@ public class PetManagement extends javax.swing.JPanel {
         btnPopupPets = new com.petshop.swing.ButtonBadges();
         cboLoaiThuCung = new com.petshop.swing.combobox.Combobox();
         txtTuoi = new com.petshop.swing.textfield.TextFieldRounded();
-        cboKhachHang = new com.petshop.swing.combobox.Combobox();
         txtTenThuCung = new com.petshop.swing.textfield.TextFieldRounded();
         txtGiongThuCung = new com.petshop.swing.textfield.TextFieldRounded();
-        txtOwner = new com.petshop.swing.textfield.TextFieldRounded();
+        txtSearchCustomer = new com.petshop.swing.textfield.TextFieldRounded();
         txtMaThuCung = new com.petshop.swing.textfield.TextField();
         jLabel1 = new javax.swing.JLabel();
+        txtThongTinKhachHang = new com.petshop.swing.textfield.TextFieldRounded();
+        btnCustomerSearch = new com.petshop.swing.Button();
+        btnPopupPets1 = new com.petshop.swing.ButtonBadges();
         jPanel6 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         tblPet = new com.petshop.swing.table.Table();
@@ -626,7 +670,7 @@ public class PetManagement extends javax.swing.JPanel {
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 1053, Short.MAX_VALUE)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 1055, Short.MAX_VALUE)
                     .addGroup(jPanel8Layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -692,6 +736,7 @@ public class PetManagement extends javax.swing.JPanel {
         txtMauSac.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtMauSac.setLabelText("Màu sắc");
 
+        buttonGroup1.add(rdoDuc);
         rdoDuc.setSelected(true);
         rdoDuc.setText("Đực");
         rdoDuc.addActionListener(new java.awt.event.ActionListener() {
@@ -700,6 +745,7 @@ public class PetManagement extends javax.swing.JPanel {
             }
         });
 
+        buttonGroup1.add(rdoCai);
         rdoCai.setText("Cái");
 
         cbDaTiem.setText("Đã tiêm");
@@ -728,22 +774,14 @@ public class PetManagement extends javax.swing.JPanel {
         txtTuoi.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtTuoi.setLabelText("Tuổi thú cưng ( Tháng )");
 
-        cboKhachHang.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        cboKhachHang.setLabeText("Khách hàng");
-        cboKhachHang.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cboKhachHangActionPerformed(evt);
-            }
-        });
-
         txtTenThuCung.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtTenThuCung.setLabelText("Tên thú cưng");
 
         txtGiongThuCung.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtGiongThuCung.setLabelText("Giống thú cưng");
 
-        txtOwner.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtOwner.setLabelText("Thông tin chủ sở hữu");
+        txtSearchCustomer.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtSearchCustomer.setLabelText("Thông tin chủ sở hữu");
 
         txtMaThuCung.setEnabled(false);
         txtMaThuCung.setLabelText("Mã Pet");
@@ -751,6 +789,30 @@ public class PetManagement extends javax.swing.JPanel {
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("THÔNG TIN PET");
+
+        txtThongTinKhachHang.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtThongTinKhachHang.setLabelText("Tên khách hàng");
+        txtThongTinKhachHang.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtThongTinKhachHangActionPerformed(evt);
+            }
+        });
+
+        btnCustomerSearch.setBackground(new java.awt.Color(0, 153, 153));
+        btnCustomerSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-search-15.png"))); // NOI18N
+        btnCustomerSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCustomerSearchActionPerformed(evt);
+            }
+        });
+
+        btnPopupPets1.setBackground(new java.awt.Color(204, 255, 255));
+        btnPopupPets1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-add-24 (1).png"))); // NOI18N
+        btnPopupPets1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPopupPets1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
         jPanel10.setLayout(jPanel10Layout);
@@ -769,44 +831,53 @@ public class PetManagement extends javax.swing.JPanel {
                             .addComponent(txtMaThuCung, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(txtGiongThuCung, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(18, 18, 18)
-                        .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(jPanel10Layout.createSequentialGroup()
                                 .addComponent(rdoDuc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(rdoCai, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(txtMauSac, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtCanNang, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
+                            .addComponent(txtMauSac, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                            .addComponent(txtCanNang, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(26, 26, 26)
                         .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel10Layout.createSequentialGroup()
-                                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtTuoi, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtTenThuCung, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
+                                .addComponent(cbDaTiem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(17, 17, 17))
+                            .addGroup(jPanel10Layout.createSequentialGroup()
                                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(cboKhachHang, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
-                                    .addComponent(txtOwner, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addComponent(cbDaTiem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(58, 58, 58)))
-                .addContainerGap())
+                                    .addComponent(txtTenThuCung, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
+                                    .addComponent(txtTuoi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
+                                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtSearchCustomer, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
+                                    .addComponent(txtThongTinKhachHang, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(btnCustomerSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(btnPopupPets1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addContainerGap())))))
         );
         jPanel10Layout.setVerticalGroup(
             jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel10Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtMaThuCung, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cboKhachHang, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtTuoi, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtMauSac, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txtMaThuCung, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtTuoi, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtMauSac, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtSearchCustomer, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnCustomerSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtGiongThuCung, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtCanNang, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtTenThuCung, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtOwner, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txtGiongThuCung, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtCanNang, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtTenThuCung, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtThongTinKhachHang, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnPopupPets1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(btnPopupPets, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -841,6 +912,11 @@ public class PetManagement extends javax.swing.JPanel {
             }
         });
         jScrollPane3.setViewportView(tblPet);
+        if (tblPet.getColumnModel().getColumnCount() > 0) {
+            tblPet.getColumnModel().getColumn(0).setMinWidth(0);
+            tblPet.getColumnModel().getColumn(0).setPreferredWidth(0);
+            tblPet.getColumnModel().getColumn(0).setMaxWidth(0);
+        }
 
         jLabel43.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
         jLabel43.setText("DANH SÁCH PET");
@@ -858,6 +934,20 @@ public class PetManagement extends javax.swing.JPanel {
             }
         });
 
+        cboLocLoaiThuCung.setLabeText("");
+        cboLocLoaiThuCung.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cboLocLoaiThuCungActionPerformed(evt);
+            }
+        });
+
+        cboLocGiongThuCung.setLabeText("");
+        cboLocGiongThuCung.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cboLocGiongThuCungActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
@@ -868,7 +958,7 @@ public class PetManagement extends javax.swing.JPanel {
                     .addComponent(jScrollPane3)
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addComponent(jLabel43)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 241, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 243, Short.MAX_VALUE)
                         .addComponent(cboLocLoaiThuCung, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(34, 34, 34)
                         .addComponent(cboLocGiongThuCung, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -946,7 +1036,7 @@ public class PetManagement extends javax.swing.JPanel {
                     .addComponent(btnCapNhat, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel11Layout.createSequentialGroup()
                         .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 138, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 77, Short.MAX_VALUE)
                         .addComponent(btnLamMoi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(btnLichSuaXoa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -958,10 +1048,10 @@ public class PetManagement extends javax.swing.JPanel {
                 .addComponent(btnLichSuaXoa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(31, 31, 31)
                 .addComponent(btnCapNhat, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnLamMoi, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnXoa, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
+                .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnLamMoi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(btnThem, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -972,17 +1062,17 @@ public class PetManagement extends javax.swing.JPanel {
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, 793, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(39, 39, 39))
@@ -1029,10 +1119,6 @@ public class PetManagement extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_cboLoaiThuCungActionPerformed
 
-    private void cboKhachHangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboKhachHangActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cboKhachHangActionPerformed
-
     private void tblPetMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblPetMouseClicked
 
     }//GEN-LAST:event_tblPetMouseClicked
@@ -1050,43 +1136,86 @@ public class PetManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_txtSearchActionPerformed
 
     private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemActionPerformed
-
+        if (!check()) {
+            return;
+        }
         showMessageConfirm("Bạn có chắc chắn muốn thêm không?", () -> {
             insertPet();
         });
     }//GEN-LAST:event_btnThemActionPerformed
 
     private void btnCapNhatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCapNhatActionPerformed
+        if (tblPet.getRowCount() == 0) {
+            showMessageError("Bảng không có dữ liệu!");
+            return;
+        }
+
+        int select = tblPet.getSelectedRow();
+        if (select == -1) {
+            showMessageError("Không có dữ liệu nào được chọn!");
+            return;
+        }
         showMessageConfirm("Bạn có chắc chắn muốn cập nhật không?", () -> {
             update();
         });
     }//GEN-LAST:event_btnCapNhatActionPerformed
 
     private void btnLamMoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLamMoiActionPerformed
-        lamMoi();
+        refresh();
     }//GEN-LAST:event_btnLamMoiActionPerformed
 
     private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaActionPerformed
-        showMessageConfirm("Bạn có chắc chắn muốn xóa không?", () -> {
+        if (tblPet.getRowCount() == 0) {
+            showMessageError("Bảng không có dữ liệu!");
+            return;
+        }
+
+        int select = tblPet.getSelectedRow();
+        if (select == -1) {
+            showMessageError("Không có dữ liệu nào được chọn!");
+            return;
+        }
+        showMessageConfirm("Bạn có chắc chắn muốn cập nhật không?", () -> {
             delete();
         });
     }//GEN-LAST:event_btnXoaActionPerformed
 
     private void btnLichSuaXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLichSuaXoaActionPerformed
-        //        showPopDeleteHistory();
+//                showPopDeleteHistory();
     }//GEN-LAST:event_btnLichSuaXoaActionPerformed
+
+    private void cboLocLoaiThuCungActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboLocLoaiThuCungActionPerformed
+        filterType();
+    }//GEN-LAST:event_cboLocLoaiThuCungActionPerformed
+
+    private void cboLocGiongThuCungActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboLocGiongThuCungActionPerformed
+        filterBreed();
+    }//GEN-LAST:event_cboLocGiongThuCungActionPerformed
+
+    private void btnCustomerSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCustomerSearchActionPerformed
+        searchCustomer();
+    }//GEN-LAST:event_btnCustomerSearchActionPerformed
+
+    private void txtThongTinKhachHangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtThongTinKhachHangActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtThongTinKhachHangActionPerformed
+
+    private void btnPopupPets1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPopupPets1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnPopupPets1ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.Button btnCapNhat;
+    private com.petshop.swing.Button btnCustomerSearch;
     private com.petshop.swing.Button btnLamMoi;
     private com.petshop.swing.Button btnLichSuaXoa;
     private com.petshop.swing.ButtonBadges btnPopupPets;
+    private com.petshop.swing.ButtonBadges btnPopupPets1;
     private com.petshop.swing.Button btnThem;
     private com.petshop.swing.Button btnXoa;
     private javax.swing.ButtonGroup buttonGroup1;
     private com.petshop.swing.checkbox.JCheckBoxCustom cbDaTiem;
-    com.petshop.swing.combobox.Combobox cboKhachHang;
     com.petshop.swing.combobox.Combobox cboLoaiThuCung;
     private com.petshop.swing.combobox.Combobox cboLocGiongThuCung;
     private com.petshop.swing.combobox.Combobox cboLocLoaiThuCung;
@@ -1115,9 +1244,10 @@ public class PetManagement extends javax.swing.JPanel {
     private com.petshop.swing.textfield.TextFieldRounded txtGiongThuCung;
     private com.petshop.swing.textfield.TextField txtMaThuCung;
     private com.petshop.swing.textfield.TextFieldRounded txtMauSac;
-    private com.petshop.swing.textfield.TextFieldRounded txtOwner;
     private com.petshop.swing.textfield.TextFieldAnimation txtSearch;
+    private com.petshop.swing.textfield.TextFieldRounded txtSearchCustomer;
     private com.petshop.swing.textfield.TextFieldRounded txtTenThuCung;
+    private com.petshop.swing.textfield.TextFieldRounded txtThongTinKhachHang;
     private com.petshop.swing.textfield.TextFieldRounded txtTuoi;
     // End of variables declaration//GEN-END:variables
 

@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.Handler;
 import com.petshop.event.CodeListener;
+import com.petshop.event.ConfirmListener;
 
 /**
  *
@@ -40,22 +41,34 @@ public class PopupScan extends javax.swing.JPanel {
      * Creates new form PopupScanBarCode
      */
     private Webcam webcam;
+    private ConfirmListener confirmListener;
+
+    private CodeListener codeListener;
+
+    // Đăng ký ConfirmListener
+    public void setConfirmListener(ConfirmListener listener) {
+        this.confirmListener = listener;
+    }
 
     public PopupScan() {
         initComponents();
+        setOpaque(false);
         startWebcam();
+        btnClose.addActionListener(evt -> {
+            if (confirmListener != null) {
+                confirmListener.onConfirm();
+            }
+            webcam.close();
+            raven.glasspanepopup.GlassPanePopup.closePopup("pWebCam");
+        });
     }
-
-    private CodeListener codeListener;
 
     public void setCodeListener(CodeListener listener) {
         this.codeListener = listener;
     }
 
-
     private void startWebcam() {
         new Thread(() -> {
-
 
             webcam = Webcam.getDefault();
             if (webcam == null) {
@@ -66,6 +79,10 @@ public class PopupScan extends javax.swing.JPanel {
             // Chọn độ phân giải cao nhất
             Dimension[] sizes = webcam.getViewSizes();
             webcam.setViewSize(sizes[sizes.length - 1]);
+
+            for (Dimension d : sizes) {
+                System.out.println(d.width + "x" + d.height);
+            }
 
             webcam.open();
             System.out.println("📸 Webcam đang hoạt động, chờ quét mã vạch...");
@@ -111,11 +128,11 @@ public class PopupScan extends javax.swing.JPanel {
             // Cấu hình định dạng để nhận diện cả QR Code và Barcode
             Map<DecodeHintType, Object> hints = new HashMap<>();
             hints.put(DecodeHintType.POSSIBLE_FORMATS, Arrays.asList(
-                    BarcodeFormat.QR_CODE // Hỗ trợ QR Code
-//                    BarcodeFormat.CODE_39, // Barcode chuẩn CODE_39
-//                    BarcodeFormat.CODE_128, // Barcode chuẩn CODE_128
-//                    BarcodeFormat.EAN_13, // Barcode chuẩn EAN_13
-//                    BarcodeFormat.EAN_8 // Barcode chuẩn EAN_8
+                    BarcodeFormat.QR_CODE, // Hỗ trợ QR Code
+                    BarcodeFormat.CODE_39, // Barcode chuẩn CODE_39
+                    BarcodeFormat.CODE_128, // Barcode chuẩn CODE_128
+                    BarcodeFormat.EAN_13, // Barcode chuẩn EAN_13
+                    BarcodeFormat.EAN_8 // Barcode chuẩn EAN_8
             ));
 
             Result result = new MultiFormatReader().decode(bitmap, hints);
@@ -145,27 +162,39 @@ public class PopupScan extends javax.swing.JPanel {
     private void initComponents() {
 
         lbWebCam = new javax.swing.JLabel();
+        btnClose = new com.petshop.swing.Button();
+
+        setBackground(new java.awt.Color(245, 245, 245));
+        setPreferredSize(new java.awt.Dimension(680, 550));
+
+        btnClose.setBackground(new java.awt.Color(245, 245, 245));
+        btnClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-close-15.png"))); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lbWebCam, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-                .addContainerGap())
+                .addContainerGap(655, Short.MAX_VALUE)
+                .addComponent(btnClose, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(31, 31, 31)
+                .addComponent(lbWebCam, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(31, 31, 31))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lbWebCam, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(btnClose, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(lbWebCam, javax.swing.GroupLayout.PREFERRED_SIZE, 490, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(31, 31, 31))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private com.petshop.swing.Button btnClose;
     private javax.swing.JLabel lbWebCam;
     // End of variables declaration//GEN-END:variables
 }

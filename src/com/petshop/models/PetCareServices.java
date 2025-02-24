@@ -22,6 +22,7 @@ public class PetCareServices {
     private Date createdAt;
     private boolean deleted;
     private boolean status;
+    private Invoices invoices;
 
     public PetCareServices() {
     }
@@ -37,6 +38,14 @@ public class PetCareServices {
         this.createdAt = createdAt;
         this.deleted = deleted;
         this.status = status;
+    }
+
+    public Invoices getInvoices() {
+        return invoices;
+    }
+
+    public void setInvoices(Invoices invoices) {
+        this.invoices = invoices;
     }
 
     public int getId() {

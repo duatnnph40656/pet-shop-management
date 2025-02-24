@@ -384,7 +384,7 @@ public class ProductDetailDAO {
                 + "JOIN products p ON pd.id_product = p.id "
                 + "JOIN type_pets t ON pd.id_type_pet = t.id "
                 + "WHERE (pd.product_detail_name LIKE ? OR pd.flavor LIKE ?) "
-                + "AND pd.is_deleted = 0 AND pd.is_status = 1";
+                + "AND pd.is_deleted = 0;";
 
         List<ProductDetails> list = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -410,7 +410,7 @@ public class ProductDetailDAO {
                 + "FROM product_details pd "
                 + "JOIN products p ON pd.id_product = p.id "
                 + "JOIN type_pets t ON pd.id_type_pet = t.id "
-                + "WHERE pd.bar_code = ? AND pd.is_deleted = 0 AND pd.is_status = 1";
+                + "WHERE pd.bar_code = ? AND pd.is_deleted = 0;";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, barCode);
@@ -603,7 +603,7 @@ public class ProductDetailDAO {
 
     public List<BestSellingProduct> getBestSellingProducts(LocalDateTime startDate, LocalDateTime endDate, int limit) {
         List<BestSellingProduct> list = new ArrayList<>();
-        String sql = "{CALL GetBestSellingProducts(?, ?, ?)}";
+        String sql = "EXEC GetBestSellingProducts ?, ?, ?;";
 
         try (CallableStatement cs = conn.prepareCall(sql)) {
             cs.setTimestamp(1, Timestamp.valueOf(startDate));

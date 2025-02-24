@@ -10,6 +10,7 @@ import com.petshop.models.PetServices;
 import com.petshop.models.TypeServices;
 import java.security.Provider;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -309,13 +310,13 @@ public class PetServiceDAO {
         return p;
     }
 
-    public List<MostUsedService> getMostUsedServices(Date startDate, Date endDate, int limit) {
+    public List<MostUsedService> getMostUsedServices(LocalDate startDate, LocalDate endDate, int limit) {
         List<MostUsedService> list = new ArrayList<>();
-        String sql = "{CALL GetMostUsedServices(?, ?, ?)}"; // Gọi stored procedure
+        String sql = "EXEC GetMostUsedServices ?, ?, ?"; // Gọi stored procedure
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setDate(1, startDate);
-            ps.setDate(2, endDate);
+            ps.setDate(1, java.sql.Date.valueOf(startDate));
+            ps.setDate(2, java.sql.Date.valueOf(endDate));
             ps.setInt(3, limit);
 
             try (ResultSet rs = ps.executeQuery()) {

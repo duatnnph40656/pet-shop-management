@@ -23,12 +23,14 @@ public class AccountDAO {
     }
 
     public Account getAccount(String username, String password) {
-        String sql = "SELECT a.id, a.username, a.password, a.created_at, a.is_deleted, a.is_status, "
-                + "e.id AS id, e.employee_name, " // Lấy thông tin nhân viên
-                + "r.id AS id, r.role_name " // Lấy thông tin role
+        String sql = "SELECT "
+                + "a.id AS account_id, a.username, a.password, a.created_at, "
+                + "a.is_deleted, a.is_status, "
+                + "e.id AS id_employee, e.employee_name, " // Lấy thông tin nhân viên
+                + "r.id AS id_role, r.role_name " // Lấy thông tin role
                 + "FROM accounts a "
-                + "JOIN employees e ON a.id = e.id " // Liên kết với bảng employees
-                + "JOIN roles r ON a.id = r.id " // Liên kết với bảng roles
+                + "JOIN employees e ON a.id_employee = e.id " // Liên kết đúng với employee_id
+                + "JOIN roles r ON a.id_role = r.id " // Liên kết đúng với role_id
                 + "WHERE a.username = ? AND a.password = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -37,11 +39,11 @@ public class AccountDAO {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                Employees employee = new Employees(rs.getInt("id"), rs.getString("employee_name"));
-                Roles role = new Roles(rs.getInt("id"), rs.getString("role_name"));
+                Employees employee = new Employees(rs.getInt("id_employee"), rs.getString("employee_name"));
+                Roles role = new Roles(rs.getInt("id_role"), rs.getString("role_name"));
 
                 return new Account(
-                        rs.getInt("id"),
+                        rs.getInt("account_id"),
                         rs.getString("username"),
                         rs.getString("password"),
                         employee, // Gán nhân viên vào tài khoản

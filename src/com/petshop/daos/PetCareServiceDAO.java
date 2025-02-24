@@ -1,6 +1,7 @@
 package com.petshop.daos;
 
 import com.petshop.connect.DBConnect;
+import com.petshop.models.Invoices;
 import com.petshop.models.PetCareServices;
 import com.petshop.models.PetServices;
 import com.petshop.models.Pets;
@@ -20,12 +21,15 @@ public class PetCareServiceDAO {
     public List<PetCareServices> getListPetCareService() {
         List<PetCareServices> list = new ArrayList<>();
         String sql = "SELECT pcs.id, pcs.pet_id, pcs.service_id, pcs.service_start, pcs.service_end, "
-                + "pcs.actual_end, pcs.notes, pcs.created_at, pcs.is_status, "
+                + "pcs.actual_end, pcs.notes, pcs.created_at, pcs.is_status, pcs.id_invoice, "
                 + "p.pet_name, p.pet_code, p.breed, "
-                + "s.service_code, s.service_name "
+                + "s.service_code, s.service_name, "
+                + "i.id AS invoice_id "
                 + "FROM pet_care_services pcs "
                 + "JOIN pets p ON pcs.pet_id = p.id "
-                + "JOIN service_details s ON pcs.service_id = s.id";
+                + "JOIN service_details s ON pcs.service_id = s.id "
+                + "JOIN invoices i ON pcs.id_invoice = i.id "
+                + "WHERE i.is_deleted = 0 AND i.is_status = 0";  // Thêm điều kiện is_deleted = 0
 
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -70,6 +74,10 @@ public class PetCareServiceDAO {
         e.setPetCode(rs.getString("pet_code"));
         e.setBreed(rs.getString("breed"));
         p.setPet(e);
+
+        Invoices i = new Invoices();
+        i.setId(rs.getInt("invoice_id")); // Lấy id_invoice từ bảng invoices
+        p.setInvoices(i);
 
         // Chuyển đổi DATETIME từ SQL sang LocalDateTime
         p.setDateStart(getLocalDateTime(rs, "service_start"));

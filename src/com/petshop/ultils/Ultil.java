@@ -25,6 +25,8 @@ import com.itextpdf.layout.property.*;
 import com.itextpdf.layout.borders.Border;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.petshop.swing.message.DialogMessageFail;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.*;
@@ -34,11 +36,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 import javax.swing.JTextField;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import raven.glasspanepopup.GlassPanePopup;
 
 /**
@@ -296,10 +304,57 @@ public class Ultil {
     }
 
     public static void main(String[] args) {
-        List<String[]> items = List.of(
-                new String[]{"Dog Food", "2", "10.00", "20.00"},
-                new String[]{"Leash", "1", "15.00", "15.00"}
+//        List<String[]> items = List.of(
+//                new String[]{"Dog Food", "2", "10.00", "20.00"},
+//                new String[]{"Leash", "1", "15.00", "15.00"}
+//        );
+//        generateInvoice("INV123456", removeAccent("Nguyễn Nông Duật"), "0365190926", "John Doe", items, "206.00");
+
+        List<Object[]> employees = Arrays.asList(
+                new Object[]{"ID", "Họ tên", "Lương"},
+                new Object[]{1, "Nguyễn Văn A", 1000},
+                new Object[]{2, "Trần Thị B", 1200},
+                new Object[]{3, "Lê Văn C", 1100}
         );
-        generateInvoice("INV123456", removeAccent("Nguyễn Nông Duật"), "0365190926", "John Doe", items, "206.00");
+
+        // Đường dẫn mặc định
+        String folderPath = "src/com/resources/excels";
+        String fileName = "employees.xlsx";
+        File directory = new File(folderPath);
+
+        // Kiểm tra thư mục, nếu chưa có thì tạo mới
+        if (!directory.exists()) {
+            directory.mkdirs();
+            System.out.println("Thư mục đã được tạo: " + directory.getAbsolutePath());
+        }
+
+        // Tạo workbook
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Danh sách nhân viên");
+
+        // Ghi dữ liệu vào Excel
+        int rowNum = 0;
+        for (Object[] emp : employees) {
+            Row row = sheet.createRow(rowNum++);
+            for (int i = 0; i < emp.length; i++) {
+                org.apache.poi.ss.usermodel.Cell cell = row.createCell(i);
+                if (emp[i] instanceof String) {
+                    cell.setCellValue((String) emp[i]);
+                } else if (emp[i] instanceof Integer) {
+                    cell.setCellValue((Integer) emp[i]);
+                }
+            }
+        }
+
+        // Xuất file Excel vào thư mục
+        String filePath = folderPath + "/" + fileName;
+        try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
+            workbook.write(outputStream);
+            workbook.close();
+            System.out.println("Xuất file Excel thành công: " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }
