@@ -795,7 +795,7 @@ public class Shop extends javax.swing.JPanel {
         Customers t = customerDAO.searchCustomerByPhoneNumber(keyword);
         if (t != null) {
             txtSearchCustomer.setText(t.getPhoneNumber());
-            lbInvoiceCode.setText(t.getCustomerCode());
+            lbCustomerCode.setText(t.getCustomerCode());
             lbCustomerName.setText(t.getCustomerName());
         } else {
             showMessageConfirm("Không tìm thấy khách hàng \nbạn có muốn thêm mới khách hàng", () -> {

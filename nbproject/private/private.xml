@@ -3,15 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-<<<<<<< HEAD
+            <file>file:/D:/PetShop/pet-shop-management/src/com/petshop/form/Shop.java</file>
             <file>file:/D:/PetShop/pet-shop-management/src/com/petshop/form/CustomerManagement.java</file>
-            <file>file:/D:/PetShop/pet-shop-management/src/com/petshop/form/InvoiceManagement.java</file>
-=======
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/form/ProductManagement.java</file>
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/popup/PopupScanBarCode.java</file>
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/form/PetManagement.java</file>
-            <file>file:/D:/FPT/DA1/Demo/pet-shop/src/com/petshop/form/Shop.java</file>
->>>>>>> d4691eec05dfcedbbedbcc9ac6e7fc6ab1810591
+            <file>file:/D:/PetShop/pet-shop-management/src/com/petshop/ultils/Ultil.java</file>
+            <file>file:/D:/PetShop/pet-shop-management/src/com/petshop/daos/CustomerDAO.java</file>
+            <file>file:/D:/PetShop/pet-shop-management/src/com/petshop/form/ProductManagement.java</file>
         </group>
     </open-files>
 </project-private>
