@@ -12,6 +12,7 @@ import com.petshop.event.EventTextField;
 import com.petshop.models.Employees;
 import com.petshop.models.Products;
 import com.petshop.models.Roles;
+import com.petshop.popup.PopupShowHistoryDeleted;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogInput;
 import com.petshop.swing.message.DialogMessageError;
@@ -69,13 +70,14 @@ public class EmployeeManagement extends javax.swing.JPanel {
 
             }
         });
-        
+
         init();
     }
 
     public void init() {
         fillTable(employeeDao.getListEmployee());
         resetFields();
+        txtMaNhanVien.setEditable(false);
     }
 
     //<editor-fold defaultstate="collapsed" desc="{Message...">
@@ -139,37 +141,38 @@ public class EmployeeManagement extends javax.swing.JPanel {
         tblnhanvien.setRowCount(0);
         // Lấy danh sách nhân viên từ DB
         for (Employees emp : list) {
+
             tblnhanvien.addRow(new Object[]{
                 emp.getId(),
-                stt++, // 0 - ID
-                emp.getEmployeeCode(), // 1 - Mã nhân viên
-                emp.getEmployeeName(), // 2 - Tên nhân viên
-                emp.getEmail(), // 4 - Email
-                emp.isGender() ? "Nam" : "Nữ", // 7 - Giới tính (Nam/Nữ)
-                emp.getPhoneNumber(), // 3 - Số điện thoại
-                emp.getRole().getRoleName(), // 8 - Chức vụ (Nhân viên/Quản lý)
-                emp.getCreatedAt(), // 6 - Ngày tạo
-                emp.getAddress(), // 5 - Địa chỉ         
+                stt, // 0 - ID
+                emp.getEmployeeCode() == null ? "Chua co thong tin" : emp.getEmployeeCode(), // 1 - Mã nhân viên
+                emp.getEmployeeName() == null ? "Chua co thong tin" : emp.getEmployeeName(), // 2 - Tên nhân viên
+                emp.getEmail() == null ? "Chua co thong tin" : emp.getEmail(), // 4 - Email
+                emp.isGender() ? "Nam" : "Nu", // 7 - Giới tính (Nam/Nữ)
+                emp.getPhoneNumber() == null ? "Chua co thong tin" : emp.getPhoneNumber(), // 3 - Số điện thoại
+                emp.getRole().getId() == 2 ? "Nhan Vien" : "Quan Ly", // 8 - Chức vụ (Nhân viên/Quản lý)
+                emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(), // 6 - Ngày tạo
+                emp.getAddress() == null ? "Chua co thong tin" : emp.getAddress(), // 5 - Địa chỉ         
                 emp.isStatus() ? "Hoat dong" : "Ngung hoat dong",
                 new ModelAction<>(emp, new EventAction<Employees>() {
-                        @Override
-                        public void delete(Employees e) {
-                            showMessageConfirm("Xác nhận xóa nhân viên?", () -> {
-                                deleteEmployee();
-                            });
-                        }
+                    @Override
+                    public void delete(Employees e) {
+                        showMessageConfirm("Xác nhận xóa nhân viên?", () -> {
+                            deleteEmployee();
+                        });
+                    }
 
-                        @Override
-                        public void update(Employees e) {
+                    @Override
+                    public void update(Employees e) {
 
-                        }
+                    }
 
-                        @Override
-                        public void add(Employees e) {
-                            
-                        }
-                    })
+                    @Override
+                    public void add(Employees e) {
+                    }
+                })
             });
+            stt++;
         }
     }
 
@@ -188,7 +191,7 @@ public class EmployeeManagement extends javax.swing.JPanel {
         // Đặt lại trạng thái checkbox
         // Nếu có trường hợp khác cần đặt lại, bạn cũng có thể thêm vào đây
     }
-    
+
     public int getSelectedRowEmployee() {
         return tblnhanvien.getSelectedRow();
     }
@@ -214,11 +217,17 @@ public class EmployeeManagement extends javax.swing.JPanel {
 
         employee.setAddress(txtDiaChi.getText());
 
-        employee.setGender(rdNam.isSelected());
+        if (rdNam.isSelected()) {
+            employee.setGender(true);
+        } else if (rdNu.isSelected()) {
+            employee.setGender(false);
+        } else {
+            // Trường hợp không chọn gì cả (nếu cần)
+        }
 
         return employee;
     }
-    
+
     private Employees readFormUpdate() {
         Employees employee = new Employees();
         employee.setEmployeeName(txtTenNhanVien.getText());
@@ -235,18 +244,18 @@ public class EmployeeManagement extends javax.swing.JPanel {
             return; // Không chọn dòng nào thì thoát
         }
 
-        String statusValue = tblnhanvien.getValueAt(selectedRow, 9).toString();
+        String statusValue = tblnhanvien.getValueAt(selectedRow, 10).toString();
         System.out.println(statusValue);
 
         // Lấy dữ liệu từ bảng (Dựa theo vị trí cột)
-        String employeeCode = tblnhanvien.getValueAt(selectedRow, 1).toString();
-        String employeeName = tblnhanvien.getValueAt(selectedRow, 2).toString();
-        String phoneNumber = tblnhanvien.getValueAt(selectedRow, 5).toString();
-        String email = tblnhanvien.getValueAt(selectedRow, 3).toString();
-        String address = tblnhanvien.getValueAt(selectedRow, 8).toString();
-        String createdAt = tblnhanvien.getValueAt(selectedRow, 7).toString();
-        String sexText = tblnhanvien.getValueAt(selectedRow, 4).toString();  // Hiển thị "Nam" hoặc "Nữ"
-        String roleText = tblnhanvien.getValueAt(selectedRow, 6).toString(); // "Nhân viên" hoặc "Quản lý"
+        String employeeCode = tblnhanvien.getValueAt(selectedRow, 2).toString();
+        String employeeName = tblnhanvien.getValueAt(selectedRow, 3).toString();
+        String email = tblnhanvien.getValueAt(selectedRow, 4).toString();
+        String sexText = tblnhanvien.getValueAt(selectedRow, 5).toString();  // Hiển thị "Nam" hoặc "Nữ"
+        String phoneNumber = tblnhanvien.getValueAt(selectedRow, 6).toString();
+
+        String createdAt = tblnhanvien.getValueAt(selectedRow, 8).toString();
+        String address = tblnhanvien.getValueAt(selectedRow, 9).toString();
 
         // Đưa dữ liệu lên form nhập liệu
         txtMaNhanVien.setText(employeeCode);
@@ -256,26 +265,136 @@ public class EmployeeManagement extends javax.swing.JPanel {
         txtDiaChi.setText(address);
         txtNgayTao.setText(createdAt);
 
+        if (sexText.equalsIgnoreCase("Nam")) {
+            this.rdNam.setSelected(true);
+        } else {
+            this.rdNu.setSelected(true);
+        }
+
     }
 
     private void fillDeletedEmployeeTable(List<Employees> list) {
-        tblnhanvien.setRowCount(0); // Xóa dữ liệu cũ trước khi load mới
-        int stt = 1; // Đánh số thứ tự từ 1
-        for (Employees emp : list) {
-            tblnhanvien.addRow(new Object[]{
-                stt++, // Số thứ tự
-                emp.getEmployeeCode(),
-                emp.getEmployeeName(),
-                emp.getEmail(),
-                emp.getPhoneNumber(),
-                emp.isGender() ? "Nam" : "Nữ",
-                emp.getRole().getRoleName(),
-                emp.getAddress(),
-                emp.getCreatedAt(),
-                emp.isStatus() ? "Hoạt động" : "Ngừng hoạt động",
-                "Đã Xóa" // Trạng thái để dễ nhận diện
+        int stt = 1;
+        PopupShowHistoryDeleted popup = new PopupShowHistoryDeleted();
+        List<Employees> employee = employeeDao.getListEmployeeDeleted();
+        List<Object[]> data = new ArrayList<>();
+        for (Employees c : employee) {
+            data.add(new Object[]{
+                stt,
+                c.getEmployeeCode(),
+                c.getEmployeeName(),
+                c.getEmail(),
+                c.getPhoneNumber(),
+                c.isGender() ? "Nam" : "Nu",
+                c.getRole().getRoleName(),
+                c.getAddress(),
+                c.getCreatedAt(),
+                c.isStatus() ? "Hoat Dong" : "Ngung Hoat Dong",
+                new ModelAction<>(c, new EventAction<Employees>() {
+                    @Override
+                    public void delete(Employees employees) {
+                        showMessageConfirm("Xác nhận khôi phục khách hàng này?", () -> {
+                            restoreCustomer(employees);
+                            reloadTableCustomer(popup); // Gọi lại để cập nhật giao diện
+                        });
+                    }
+
+                    @Override
+                    public void update(Employees employees) {
+                    }
+
+                    @Override
+                    public void add(Employees model) {
+                    }
+
+                })
             });
+            stt++;
         }
+        // Định nghĩa tiêu đề cột
+        String[] columnNames = {"STT", "Mã KH", "Họ tên", "Email", "SĐT", "Giới tính", "Cong Viec", "Địa chỉ", "Ngày Tạo", "Trạng thái", "Thao tác"};
+
+        // Hiển thị popup
+        popup.setLbText("Danh sách khách hàng đã xóa");
+        popup.fillTable(data, columnNames); // Đảm bảo bảng có dữ liệu trước khi hiển thị
+
+        popup.setConfirmListener(new ConfirmListener() {
+            @Override
+            public void onConfirm() {
+
+            }
+
+            @Override
+            public void onCancel() {
+                fillTable(employeeDao.getListEmployee());
+            }
+        });
+        GlassPanePopup.showPopup(popup);
+
+//        for (Employees emp : list) {
+//            tblnhanvien.addRow(new Object[]{
+//                emp.getId(),
+//                stt++, // Số thứ tự
+//                emp.getEmployeeCode(),
+//                emp.getEmployeeName(),
+//                emp.getEmail(),
+//                emp.getPhoneNumber(),
+//                emp.isGender() ? "Nam" : "Nữ",
+//                emp.getRole().getRoleName(),
+//                emp.getAddress(),
+//                emp.getCreatedAt(),
+//                emp.isStatus() ? "Hoạt động" : "Ngừng hoạt động",
+//                "Đã Xóa" // Trạng thái để dễ nhận diện
+//            });
+//        }
+    }
+
+    private void restoreCustomer(Employees employees) {
+        employeeDao.restoreEmployee(employees.getId());
+        fillTable(employeeDao.getListEmployee());
+    }
+
+    private void reloadTableCustomer(PopupShowHistoryDeleted popup) {
+        int stt = 1;
+        List<Employees> cus = employeeDao.getListEmployeeDeleted();
+        List<Object[]> data = new ArrayList<>();
+
+        for (Employees customer : cus) {
+            data.add(new Object[]{
+                stt,
+                customer.getEmployeeCode(),
+                customer.getEmployeeName(),
+                customer.getEmail(),
+                customer.getPhoneNumber(),
+                customer.isGender() ? "Nam" : "Nữ",
+                customer.isGender() ? "Nam" : "Nu",
+                customer.getAddress(),
+                customer.getCreatedAt(),
+                customer.isStatus() ? "Đã kích hoạt" : "Chưa kích hoạt",
+                new ModelAction<>(customer, new EventAction<Employees>() {
+                    @Override
+                    public void delete(Employees customer) {
+                        showMessageConfirm("Xác nhận khôi phục khách hàng này?", () -> {
+                            restoreCustomer(customer);
+                            reloadTableCustomer(popup); // Gọi lại để cập nhật giao diện
+                        });
+                    }
+
+                    @Override
+                    public void update(Employees customer) {
+                    }
+
+                    @Override
+                    public void add(Employees model) {
+                    }
+                })
+            });
+            stt++;
+        }
+
+        String[] columnNames = {"STT", "Mã KH", "Họ tên", "Email", "SĐT", "Giới tính", "Cong Viec", "Địa chỉ", "Ngày Tạo", "Trạng thái", "Thao tác"};
+
+        popup.fillTable(data, columnNames); // Cập nhật lại dữ liệu bảng
     }
 
     private void restoreEmployees() {
@@ -381,27 +500,31 @@ public class EmployeeManagement extends javax.swing.JPanel {
             showMessageFail("Thêm thất bại");
         }
     }
-    
-    public void updateEmployee(){
-        if(!check()){
+
+    public void updateEmployee() {
+        if (!check()) {
             return;
         }
-        if(employeeDao.updateEmployee(getIdSelectedEmployee(),readFormUpdate())){
+        if (employeeDao.updateEmployee(getIdSelectedEmployee(), readFormUpdate())) {
             showMessageSuccess("Update nhân viên thành công!!");
             fillTable(employeeDao.getListEmployee());
         } else {
             showMessageFail("Update thất bại");
         }
     }
-    
-    public void deleteEmployee(){
-        if(getSelectedRowEmployee() == -1){
+
+    public void deleteEmployee() {
+        
+        if (getSelectedRowEmployee() == -1) {
             showMessageFail("Vui lòng chọn nhân viên để xóa");
             return;
         }
         employeeDao.deletedEmployee(getIdSelectedEmployee());
+        fillTable(employeeDao.getListEmployee());
         showMessageSuccess("Xóa thành công!");
     }
+    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -452,11 +575,11 @@ public class EmployeeManagement extends javax.swing.JPanel {
                 {null, null, null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "STT", "Mã NV", "Tên NV", "Email", "Giới Tính", "SĐT", "Công Việc", "Ngày tạo", "Địa Chỉ", "Trạng Thái", "Thao Tac"
+                "", "STT", "Mã NV", "Tên NV", "Email", "Giới Tính", "SĐT", "Cong Viec", "Ngày tạo", "Địa Chỉ", "Trạng Thái", "Thao Tac"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                true, false, false, false, false, false, false, false, false, false, false, false
+                true, false, false, false, false, false, false, false, false, false, false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -484,9 +607,21 @@ public class EmployeeManagement extends javax.swing.JPanel {
             }
         });
 
+        combobox3.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "A-Z", "Z-A" }));
         combobox3.setLabeText("Sắp xếp theo");
+        combobox3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                combobox3ActionPerformed(evt);
+            }
+        });
 
+        combobox4.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Nam", "Nu" }));
         combobox4.setLabeText("Lọc theo giới tính");
+        combobox4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                combobox4ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -516,11 +651,9 @@ public class EmployeeManagement extends javax.swing.JPanel {
                         .addGroup(jPanel4Layout.createSequentialGroup()
                             .addGap(7, 7, 7)
                             .addComponent(jLabel2))
-                        .addGroup(jPanel4Layout.createSequentialGroup()
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE))
         );
 
         jPanel8.setBackground(new java.awt.Color(255, 255, 255));
@@ -555,7 +688,7 @@ public class EmployeeManagement extends javax.swing.JPanel {
         rdNam.setText("Nam");
 
         buttonGroup1.add(rdNu);
-        rdNu.setText("Nữ");
+        rdNu.setText("Nu");
 
         javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
         jPanel10.setLayout(jPanel10Layout);
@@ -563,25 +696,23 @@ public class EmployeeManagement extends javax.swing.JPanel {
             jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel10Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel10Layout.createSequentialGroup()
-                        .addComponent(txtMaNhanVien, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(5, 5, 5)
-                        .addComponent(txtTenNhanVien, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel10Layout.createSequentialGroup()
-                        .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtSDT, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(10, 10, 10)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(txtEmail, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+                    .addComponent(txtMaNhanVien, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(txtTenNhanVien, javax.swing.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
+                    .addComponent(txtSDT, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel10Layout.createSequentialGroup()
                         .addComponent(rdNu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(rdNam, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 44, Short.MAX_VALUE))
-                    .addComponent(txtNgayTao, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(txtNgayTao, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
-                .addComponent(txt, javax.swing.GroupLayout.PREFERRED_SIZE, 362, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txt, javax.swing.GroupLayout.PREFERRED_SIZE, 279, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel10Layout.setVerticalGroup(
@@ -728,7 +859,20 @@ public class EmployeeManagement extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
+        String keyword = txtSearch.getText().trim(); // Lấy dữ liệu từ ô tìm kiếm
 
+        if (!keyword.isEmpty()) {
+            EmployeeDAO employeeDAO = new EmployeeDAO();
+            List<Employees> employeesList = employeeDAO.searchEmployee(keyword); // Tìm kiếm theo tên hoặc mã
+
+            if (employeesList.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy nhân viên!");
+            } else {
+                fillTable(employeesList); // Hiển thị danh sách nhân viên tìm được lên bảng
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập từ khóa tìm kiếm!");
+        }
     }//GEN-LAST:event_txtSearchActionPerformed
 
     private void btnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetActionPerformed
@@ -739,24 +883,89 @@ public class EmployeeManagement extends javax.swing.JPanel {
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         // TODO add your handling code here:
 
-        showMessageConfirm("Xác nhận thêm mới!",() -> {insertEmployee();});
+        showMessageConfirm("Xác nhận thêm mới!", () -> {
+            insertEmployee();
+        });
     }//GEN-LAST:event_btnAddActionPerformed
 
     private void tblnhanvienMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblnhanvienMouseClicked
-
+        showDataEmployee();
     }//GEN-LAST:event_tblnhanvienMouseClicked
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
-        showMessageConfirm("Xác nhận update nhân viên?",() -> {updateEmployee();});
+        showMessageConfirm("Xác nhận update nhân viên?", () -> {
+            updateEmployee();
+        });
     }//GEN-LAST:event_btnUpdateActionPerformed
 
     private void button69ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button69ActionPerformed
-
+        fillDeletedEmployeeTable(employeeDao.getListEmployeeDeleted());
     }//GEN-LAST:event_button69ActionPerformed
 
     private void btnRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRestoreActionPerformed
         // TODO add your handling code here:
+        restoreEmployees();
     }//GEN-LAST:event_btnRestoreActionPerformed
+
+    private void combobox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_combobox3ActionPerformed
+        // TODO add your handling code here:
+        EmployeeDAO employeeDAO = new EmployeeDAO();
+        List<Employees> sortedEmployees = employeeDAO.getSortedEmployeesByName(true); // Sắp xếp từ bé đến lớn
+        int stt = 1;
+        // Cập nhật dữ liệu lên bảng (ví dụ JTable)
+        DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
+        model.setRowCount(0); // Xóa dữ liệu cũ
+        for (Employees emp : sortedEmployees) {
+            model.addRow(new Object[]{
+                emp.getId(),
+                stt, // 0 - ID
+                emp.getEmployeeCode() == null ? "Chua co thong tin" : emp.getEmployeeCode(), // 1 - Mã nhân viên
+                emp.getEmployeeName() == null ? "Chua co thong tin" : emp.getEmployeeName(), // 2 - Tên nhân viên
+                emp.getEmail() == null ? "Chua co thong tin" : emp.getEmail(), // 4 - Email
+                emp.isGender() ? "Nam" : "Nu", // 7 - Giới tính (Nam/Nữ)
+                emp.getPhoneNumber() == null ? "Chua co thong tin" : emp.getPhoneNumber(), // 3 - Số điện thoại
+                emp.getRole().getId() == 2 ? "Nhan Vien" : "Quan Ly", // 8 - Chức vụ (Nhân viên/Quản lý)
+                emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(), // 6 - Ngày tạo
+                emp.getAddress() == null ? "Chua co thong tin" : emp.getAddress(), // 5 - Địa chỉ         
+                emp.isStatus() ? "Hoat dong" : "Ngung hoat dong",});
+        }
+        stt++;
+    }//GEN-LAST:event_combobox3ActionPerformed
+
+    private void combobox4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_combobox4ActionPerformed
+        // TODO add your handling code here:
+        EmployeeDAO employeeDAO = new EmployeeDAO();
+        String selectedGender = combobox4.getSelectedItem().toString(); // Lấy giá trị đã chọn
+        Boolean gender = null; // Mặc định null để lấy tất cả nhân viên
+
+        if (selectedGender.equals("Nam")) {
+            gender = true;
+        } else if (selectedGender.equals("Nu")) {
+            gender = false;
+        }
+
+        List<Employees> filteredEmployees = employeeDAO.getListEmployeeByGender(gender);
+        int stt = 1;
+        // Cập nhật dữ liệu lên bảng (JTable)
+        DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
+        model.setRowCount(0); // Xóa dữ liệu c
+
+        for (Employees emp : filteredEmployees) {
+            model.addRow(new Object[]{
+                emp.getId(),
+                stt, // 0 - ID
+                emp.getEmployeeCode() == null ? "Chua co thong tin" : emp.getEmployeeCode(), // 1 - Mã nhân viên
+                emp.getEmployeeName() == null ? "Chua co thong tin" : emp.getEmployeeName(), // 2 - Tên nhân viên
+                emp.getEmail() == null ? "Chua co thong tin" : emp.getEmail(), // 4 - Email
+                emp.isGender() ? "Nam" : "Nu", // 7 - Giới tính (Nam/Nữ)
+                emp.getPhoneNumber() == null ? "Chua co thong tin" : emp.getPhoneNumber(), // 3 - Số điện thoại
+                emp.getRole().getId() == 2 ? "Nhan Vien" : "Quan Ly", // 8 - Chức vụ (Nhân viên/Quản lý)
+                emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(), // 6 - Ngày tạo
+                emp.getAddress() == null ? "Chua co thong tin" : emp.getAddress(), // 5 - Địa chỉ         
+                emp.isStatus() ? "Hoat dong" : "Ngung hoat dong",});
+        }
+        stt++;
+    }//GEN-LAST:event_combobox4ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

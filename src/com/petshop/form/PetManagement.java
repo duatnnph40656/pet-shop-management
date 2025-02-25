@@ -17,6 +17,7 @@ import com.petshop.models.Pets;
 import com.petshop.models.ProductDetails;
 import com.petshop.models.TypePets;
 import com.petshop.popup.PopupCategoryPet;
+import com.petshop.popup.PopupCustomer;
 import com.petshop.popup.PopupShowHistoryDeleted;
 import com.petshop.popup.PopupShowPet;
 import com.petshop.popup.PopupUpdateService;
@@ -27,6 +28,11 @@ import com.petshop.swing.message.DialogMessageSuccess;
 import com.petshop.swing.table.EventAction;
 import com.petshop.swing.table.ModelAction;
 import com.petshop.ultils.Ultil;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
@@ -37,9 +43,17 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import raven.glasspanepopup.GlassPanePopup;
 
 /**
@@ -61,7 +75,7 @@ public class PetManagement extends javax.swing.JPanel {
     private void init() {
         tblPet.fixTable(jScrollPane3);
         txtThongTinKhachHang.setEditable(false);
-        tbPetCareService.fixTable(jScrollPane4);
+        tbPetCareService.fixTable(jScrollPane5);
         fillToTable(petDao.getList());
         fillCboTypePet(typetDao.getListTypePet());
         fillFilterBreedPet(petDao.getList());
@@ -155,6 +169,45 @@ public class PetManagement extends javax.swing.JPanel {
                 fillToTable(filteredPets);
             }
         }
+    }
+
+//    private void showPopDeleteHistory() {
+//        PopupDeleteHistory deleteHistory = new PopupDeleteHistory();
+//        deleteHistory.setConfirmListener(new com.petshop.event.ConfirmListener() {
+//            @Override
+//            public void onConfirm() {
+//                fillToTable(petDao.getList());
+//                fillFilterBreedPet(petDao.getList());
+//            }
+//
+//            @Override
+//            public void onCancel() {
+//                fillToTable(petDao.getList());
+//                fillFilterBreedPet(petDao.getList());
+//            }
+//        });
+//        GlassPanePopup.showPopup(deleteHistory, "pdeleteHistory");
+//
+//    }
+//
+    private void showPopInsertCustomers() {
+        PopupCustomer popupCustomer = new PopupCustomer();
+        popupCustomer.setConfirmListener(new com.petshop.event.ConfirmListener() {
+            @Override
+            public void onConfirm() {
+                fillToTable(petDao.getList());
+                fillFilterBreedPet(petDao.getList());
+
+            }
+
+            @Override
+            public void onCancel() {
+                fillToTable(petDao.getList());
+                fillFilterBreedPet(petDao.getList());
+            }
+        });
+        GlassPanePopup.showPopup(popupCustomer, "pdeleteHistory");
+
     }
 
     // search
@@ -488,24 +541,55 @@ public class PetManagement extends javax.swing.JPanel {
         }
     }
 
-//    private void showPopDeleteHistory() {
-//        PopupDeleteHistory deleteHistory = new PopupDeleteHistory();
-//        deleteHistory.setConfirmListener(new com.petshop.event.ConfirmListener() {
-//            @Override
-//            public void onConfirm() {
-//                fillToTable(petDao.getList());
-//                fillFilterBreedPet(petDao.getList());
-//            }
-//
-//            @Override
-//            public void onCancel() {
-//                fillToTable(petDao.getList());
-//                fillFilterBreedPet(petDao.getList());
-//            }
-//        });
-//        GlassPanePopup.showPopup(deleteHistory, "pdeleteHistory");
-//
-//    }
+    private void exportToExcel() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn nơi lưu file");
+        int userSelection = fileChooser.showSaveDialog(this);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            String filePath = fileToSave.getAbsolutePath();
+            if (!filePath.endsWith(".xlsx")) {
+                filePath += ".xlsx";
+            }
+
+            try (Workbook workbook = new XSSFWorkbook(); FileOutputStream fileOut = new FileOutputStream(filePath)) {
+
+                Sheet sheet = workbook.createSheet("Danh sách thú cưng");
+                DefaultTableModel model = (DefaultTableModel) tblPet.getModel();
+
+                // Xác định cột ID (giả sử cột ID là cột đầu tiên)
+                int idColumnIndex = 0;
+
+                // Ghi tiêu đề cột (bỏ qua cột ID)
+                Row headerRow = sheet.createRow(0);
+                for (int i = 1; i < model.getColumnCount(); i++) { // Bắt đầu từ 1 để bỏ qua cột ID
+                    Cell cell = headerRow.createCell(i - 1);
+                    cell.setCellValue(model.getColumnName(i));
+                }
+
+                // Ghi dữ liệu từng dòng trong bảng (bỏ qua cột ID)
+                for (int row = 0; row < model.getRowCount(); row++) {
+                    Row dataRow = sheet.createRow(row + 1);
+                    for (int col = 1; col < model.getColumnCount(); col++) { // Bắt đầu từ 1 để bỏ qua cột ID
+                        Cell cell = dataRow.createCell(col - 1);
+                        Object value = model.getValueAt(row, col);
+                        if (value instanceof Number) {
+                            cell.setCellValue(((Number) value).doubleValue());
+                        } else {
+                            cell.setCellValue(value.toString());
+                        }
+                    }
+                }
+
+                workbook.write(fileOut);
+                showMessageSuccess("Xuất Excel thành công!");
+            } catch (Exception ex) {
+                showMessageFail("Xuất Excel thất bại!");
+            }
+        }
+    }
+
     // Tìm kiếm khách hàng
     private void searchCustomer() {
         String search = txtSearchCustomer.getText();
@@ -669,12 +753,12 @@ public class PetManagement extends javax.swing.JPanel {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         materialTabbed1 = new com.petshop.swing.tabbed.MaterialTabbed();
-        jPanel1 = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
-        jPanel8 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        textFieldAnimation1 = new com.petshop.swing.textfield.TextFieldAnimation();
-        jScrollPane4 = new javax.swing.JScrollPane();
+        jPanel5 = new javax.swing.JPanel();
+        jPanel7 = new javax.swing.JPanel();
+        jPanel9 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        txtSearchService = new com.petshop.swing.textfield.TextFieldAnimation();
+        jScrollPane5 = new javax.swing.JScrollPane();
         tbPetCareService = new com.petshop.swing.tableMore.TableMore3();
         cbbSortDate = new com.petshop.swing.combobox.ComboboxRounded();
         cbbStatus = new com.petshop.swing.combobox.ComboboxRounded();
@@ -710,22 +794,23 @@ public class PetManagement extends javax.swing.JPanel {
         btnLamMoi = new com.petshop.swing.Button();
         btnXoa = new com.petshop.swing.Button();
         btnLichSuaXoa = new com.petshop.swing.Button();
+        button9 = new com.petshop.swing.Button();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setPreferredSize(new java.awt.Dimension(1058, 741));
 
         materialTabbed1.setBackground(new java.awt.Color(255, 255, 255));
 
-        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel5.setBackground(new java.awt.Color(255, 255, 255));
 
-        jPanel3.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel7.setBackground(new java.awt.Color(255, 255, 255));
 
-        jPanel8.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel9.setBackground(new java.awt.Color(255, 255, 255));
 
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel2.setText("DANH SÁCH DỊCH VỤ");
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel3.setText("DANH SÁCH DỊCH VỤ");
 
-        textFieldAnimation1.setBackground(new java.awt.Color(250, 250, 250));
+        txtSearchService.setBackground(new java.awt.Color(250, 250, 250));
 
         tbPetCareService.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -738,81 +823,75 @@ public class PetManagement extends javax.swing.JPanel {
                 "Title 1", "STT", "Mã DV", "Tên DV", "Mã Pet", "Tên Pet", "Giống loài", "Ngày bắt đầu", "Ngày kết thúc", "Ngày kết thúc thực tế", "Note", "Trạng thái", "Thao tác"
             }
         ));
-        jScrollPane4.setViewportView(tbPetCareService);
-        if (tbPetCareService.getColumnModel().getColumnCount() > 0) {
-            tbPetCareService.getColumnModel().getColumn(0).setMinWidth(0);
-            tbPetCareService.getColumnModel().getColumn(0).setMaxWidth(0);
-            tbPetCareService.getColumnModel().getColumn(1).setMinWidth(35);
-            tbPetCareService.getColumnModel().getColumn(1).setMaxWidth(35);
-        }
+        jScrollPane5.setViewportView(tbPetCareService);
 
         cbbSortDate.setLabeText("Tìm kiếm theo ngày");
 
         cbbStatus.setLabeText("Trạng thái");
 
-        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
-        jPanel8.setLayout(jPanel8Layout);
-        jPanel8Layout.setHorizontalGroup(
-            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel8Layout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
+        jPanel9.setLayout(jPanel9Layout);
+        jPanel9Layout.setHorizontalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel9Layout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 1055, Short.MAX_VALUE)
-                    .addGroup(jPanel8Layout.createSequentialGroup()
-                        .addComponent(jLabel2)
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 1065, Short.MAX_VALUE)
+                    .addGroup(jPanel9Layout.createSequentialGroup()
+                        .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(cbbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(cbbSortDate, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(textFieldAnimation1, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addComponent(txtSearchService, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE))))
         );
-        jPanel8Layout.setVerticalGroup(
-            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel8Layout.createSequentialGroup()
-                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addGroup(jPanel8Layout.createSequentialGroup()
+        jPanel9Layout.setVerticalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addGroup(jPanel9Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(cbbSortDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(cbbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(textFieldAnimation1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(txtSearchService, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE))
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE))
         );
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
+        jPanel7.setLayout(jPanel7Layout);
+        jPanel7Layout.setHorizontalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addComponent(jPanel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        jPanel7Layout.setVerticalGroup(
+            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel7Layout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 46, Short.MAX_VALUE))
         );
 
-        materialTabbed1.addTab("Quản lý dịch vụ thú cưng", jPanel1);
+        materialTabbed1.addTab("Quản lý dịch vụ thú cưng", jPanel5);
 
         jPanel10.setBackground(new java.awt.Color(255, 255, 255));
         jPanel10.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -934,9 +1013,9 @@ public class PetManagement extends javax.swing.JPanel {
                                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(txtTenThuCung, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
                                     .addComponent(txtTuoi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
                                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtSearchCustomer, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
+                                    .addComponent(txtSearchCustomer, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
                                     .addComponent(txtThongTinKhachHang, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -949,7 +1028,7 @@ public class PetManagement extends javax.swing.JPanel {
             .addGroup(jPanel10Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(txtMaThuCung, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1045,7 +1124,7 @@ public class PetManagement extends javax.swing.JPanel {
                     .addComponent(jScrollPane3)
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addComponent(jLabel43)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 243, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(cboLocLoaiThuCung, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(34, 34, 34)
                         .addComponent(cboLocGiongThuCung, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1112,6 +1191,14 @@ public class PetManagement extends javax.swing.JPanel {
             }
         });
 
+        button9.setBackground(new java.awt.Color(51, 153, 255));
+        button9.setText("Export Excel");
+        button9.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                button9ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
         jPanel11.setLayout(jPanel11Layout);
         jPanel11Layout.setHorizontalGroup(
@@ -1121,26 +1208,32 @@ public class PetManagement extends javax.swing.JPanel {
                 .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnThem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnCapNhat, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnLichSuaXoa, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
                     .addGroup(jPanel11Layout.createSequentialGroup()
-                        .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 77, Short.MAX_VALUE)
-                        .addComponent(btnLamMoi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(btnLichSuaXoa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnLamMoi, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
+            .addGroup(jPanel11Layout.createSequentialGroup()
+                .addGap(67, 67, 67)
+                .addComponent(button9, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel11Layout.setVerticalGroup(
             jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel11Layout.createSequentialGroup()
-                .addGap(16, 16, 16)
-                .addComponent(btnLichSuaXoa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(31, 31, 31)
-                .addComponent(btnCapNhat, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
-                .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnLamMoi, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(btnThem, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addComponent(btnLichSuaXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnCapNhat, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(9, 9, 9)
+                .addComponent(button9, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnXoa, javax.swing.GroupLayout.DEFAULT_SIZE, 35, Short.MAX_VALUE)
+                    .addComponent(btnLamMoi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnThem, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -1150,9 +1243,10 @@ public class PetManagement extends javax.swing.JPanel {
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1268,7 +1362,6 @@ public class PetManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_btnXoaActionPerformed
 
     private void btnLichSuaXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLichSuaXoaActionPerformed
-//                showPopDeleteHistory();
     }//GEN-LAST:event_btnLichSuaXoaActionPerformed
 
     private void cboLocLoaiThuCungActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboLocLoaiThuCungActionPerformed
@@ -1288,8 +1381,12 @@ public class PetManagement extends javax.swing.JPanel {
     }//GEN-LAST:event_txtThongTinKhachHangActionPerformed
 
     private void btnPopupPets1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPopupPets1ActionPerformed
-        // TODO add your handling code here:
+        showPopInsertCustomers();
     }//GEN-LAST:event_btnPopupPets1ActionPerformed
+
+    private void button9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button9ActionPerformed
+        exportToExcel();
+    }//GEN-LAST:event_button9ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1301,6 +1398,7 @@ public class PetManagement extends javax.swing.JPanel {
     private com.petshop.swing.ButtonBadges btnPopupPets1;
     private com.petshop.swing.Button btnThem;
     private com.petshop.swing.Button btnXoa;
+    private com.petshop.swing.Button button9;
     private javax.swing.ButtonGroup buttonGroup1;
     private com.petshop.swing.checkbox.JCheckBoxCustom cbDaTiem;
     private com.petshop.swing.combobox.ComboboxRounded cbbSortDate;
@@ -1309,30 +1407,30 @@ public class PetManagement extends javax.swing.JPanel {
     private com.petshop.swing.combobox.Combobox cboLocGiongThuCung;
     private com.petshop.swing.combobox.Combobox cboLocLoaiThuCung;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel43;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
-    private javax.swing.JPanel jPanel8;
+    private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private com.petshop.swing.tabbed.MaterialTabbed materialTabbed1;
     private com.petshop.swing.radio_button.RadioButtonCustom rdoCai;
     private com.petshop.swing.radio_button.RadioButtonCustom rdoDuc;
     private com.petshop.swing.tableMore.TableMore3 tbPetCareService;
     private com.petshop.swing.table.Table tblPet;
-    private com.petshop.swing.textfield.TextFieldAnimation textFieldAnimation1;
     private com.petshop.swing.textfield.TextFieldRounded txtCanNang;
     private com.petshop.swing.textfield.TextFieldRounded txtGiongThuCung;
     private com.petshop.swing.textfield.TextField txtMaThuCung;
     private com.petshop.swing.textfield.TextFieldRounded txtMauSac;
     private com.petshop.swing.textfield.TextFieldAnimation txtSearch;
     private com.petshop.swing.textfield.TextFieldRounded txtSearchCustomer;
+    private com.petshop.swing.textfield.TextFieldAnimation txtSearchService;
     private com.petshop.swing.textfield.TextFieldRounded txtTenThuCung;
     private com.petshop.swing.textfield.TextFieldRounded txtThongTinKhachHang;
     private com.petshop.swing.textfield.TextFieldRounded txtTuoi;
