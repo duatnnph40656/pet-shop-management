@@ -220,6 +220,27 @@ public class InvoiceDAO {
 
         return null; // Trả về null nếu không tìm thấy hóa đơn
     }
+    
+    public Invoices getInvoiceByCode(String invoiceCode) {
+        String sql = "SELECT id,invoice_code FROM invoices WHERE invoice_code = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, invoiceCode);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Invoices i = new Invoices();
+                    i.setId(rs.getInt("id"));
+                    i.setInvoiceCode(rs.getString("invoice_code"));
+                    return i; // Chuyển đổi kết quả thành object Invoices
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null; // Trả về null nếu không tìm thấy hóa đơn
+    }
 
     public List<Invoices> searchInvoiceByCode(String invoiceCode) {
         String sql = """

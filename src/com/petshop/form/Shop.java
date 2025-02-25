@@ -220,6 +220,7 @@ public class Shop extends javax.swing.JPanel {
         poup.setServiceCode(p.getServiceCode());
         poup.setCustomerCode(c.getCustomerCode());
         poup.setPhoneNumber(c.getPhoneNumber());
+        poup.setInvoiceCode(lbInvoiceCode.getText());
         poup.setConfirmListener(new ConfirmListener() {
             @Override
             public void onConfirm() {

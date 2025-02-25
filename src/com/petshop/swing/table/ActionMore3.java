@@ -31,6 +31,12 @@ public class ActionMore3<T> extends javax.swing.JPanel {
                 data.getEvent().delete(data.getModel());
             }
         });
+        cmdShow.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                data.getEvent().add(data.getModel());
+            }
+        });
     }
     
 
@@ -44,6 +50,7 @@ public class ActionMore3<T> extends javax.swing.JPanel {
     private void initComponents() {
 
         cmdRestore1 = new com.petshop.swing.Button();
+        cmdShow = new com.petshop.swing.Button();
 
         setPreferredSize(new java.awt.Dimension(70, 40));
 
@@ -54,12 +61,21 @@ public class ActionMore3<T> extends javax.swing.JPanel {
             }
         });
 
+        cmdShow.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-eye-20.png"))); // NOI18N
+        cmdShow.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmdShowActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(36, Short.MAX_VALUE)
+                .addContainerGap(15, Short.MAX_VALUE)
+                .addComponent(cmdShow, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cmdRestore1, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -67,7 +83,9 @@ public class ActionMore3<T> extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(cmdRestore1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cmdShow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmdRestore1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -76,8 +94,13 @@ public class ActionMore3<T> extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_cmdRestore1ActionPerformed
 
+    private void cmdShowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdShowActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmdShowActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.Button cmdRestore1;
+    private com.petshop.swing.Button cmdShow;
     // End of variables declaration//GEN-END:variables
 }

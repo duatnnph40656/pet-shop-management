@@ -75,8 +75,8 @@ public class PetDAO {
 
     public boolean insertPetNew(Pets p) {
         String sql = """
-        INSERT INTO pets (pet_code, pet_name, breed, color,gender, id_customer,owner, id_type_pet,vaccinated, is_deleted,is_status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?,?, 0, 1)
+        INSERT INTO pets (pet_code, pet_name, breed, color,gender, id_customer,owner, id_type_pet,vaccinated, is_deleted,is_status,weight)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?,?, 0, 1,?)
     """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -89,6 +89,7 @@ public class PetDAO {
             ps.setString(7, p.getOwner());
             ps.setInt(8, p.getTypePet().getId());
             ps.setBoolean(9, p.isVaccinated());
+            ps.setBigDecimal(10, p.getWeight());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace(); // Hoặc log lỗi
@@ -129,6 +130,7 @@ public class PetDAO {
         p.setCreatedAt(rs.getDate("created_at"));
         p.setStatus(rs.getBoolean("is_status"));
         p.setAge(rs.getString("age"));
+        p.setWeight(rs.getBigDecimal("weight"));
         Customers c = new Customers();
         c.setCustomerName(rs.getString("customer_name"));
         p.setCustomer(c);
@@ -508,7 +510,7 @@ public class PetDAO {
         List<Pets> list = new ArrayList<>();
         String sql = """
         SELECT p.id, p.pet_code, p.pet_name, p.breed, p.weight, p.color, p.age, p.gender, 
-               p.owner, p.id_type_pet, p.vaccinated, p.is_deleted, p.is_status, p.created_at, 
+               p.owner, p.id_type_pet, p.vaccinated, p.is_deleted, p.is_status, p.created_at,p.weight, 
                c.customer_name, t.type_pet_name
         FROM pets p
         LEFT JOIN customers c ON p.id_customer = c.id

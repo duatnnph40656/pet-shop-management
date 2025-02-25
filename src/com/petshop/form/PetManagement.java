@@ -17,6 +17,7 @@ import com.petshop.models.ProductDetails;
 import com.petshop.models.TypePets;
 import com.petshop.popup.PopupCategoryPet;
 import com.petshop.popup.PopupShowHistoryDeleted;
+import com.petshop.popup.PopupShowPet;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogMessageError;
 import com.petshop.swing.message.DialogMessageFail;
@@ -66,6 +67,7 @@ public class PetManagement extends javax.swing.JPanel {
         txtThongTinKhachHang.setText("Khách hàng lẻ");
         txtMaThuCung.setText("PET" + Ultil.generateRandomCode());
         getListPetCareS(careServiceDAO.getListPetCareService());
+        loadCombobox();
     }
 
     //<editor-fold defaultstate="collapsed" desc="{Pets...">
@@ -335,7 +337,7 @@ public class PetManagement extends javax.swing.JPanel {
             return false;
         }
         if (color.isEmpty() || name.isEmpty() || weight.isEmpty()
-                    || age.isEmpty() || weight.isEmpty() || breed.isEmpty()) {
+                || age.isEmpty() || weight.isEmpty() || breed.isEmpty()) {
             showMessageError("Không được để trống các trường dữ liệu!");
             return false;
         }
@@ -430,17 +432,18 @@ public class PetManagement extends javax.swing.JPanel {
         }
     }
 
-private boolean isPetUnchanged(Pets petFirst, Pets p) {
-    return Objects.equals(petFirst.getTypePet().getId(), p.getTypePet().getId())
-            && Objects.equals(petFirst.getBreed(), p.getBreed())
-            && Objects.equals(petFirst.getPetName(), p.getPetName())
-            && Objects.equals(petFirst.getAge(), p.getAge())
-            && petFirst.getWeight().compareTo(p.getWeight()) == 0
-            && Objects.equals(petFirst.getColor(), p.getColor())
-            && petFirst.isGender() == p.isGender()
-            && petFirst.isVaccinated() == p.isVaccinated()
-            && Objects.equals(petFirst.getCustomer().getId(), p.getCustomer().getId());
-}
+    private boolean isPetUnchanged(Pets petFirst, Pets p) {
+        return Objects.equals(petFirst.getTypePet().getId(), p.getTypePet().getId())
+                && Objects.equals(petFirst.getBreed(), p.getBreed())
+                && Objects.equals(petFirst.getPetName(), p.getPetName())
+                && Objects.equals(petFirst.getAge(), p.getAge())
+                && petFirst.getWeight().compareTo(p.getWeight()) == 0
+                && Objects.equals(petFirst.getColor(), p.getColor())
+                && petFirst.isGender() == p.isGender()
+                && petFirst.isVaccinated() == p.isVaccinated()
+                && Objects.equals(petFirst.getCustomer().getId(), p.getCustomer().getId());
+    }
+
     private void insertPet() {
         if (!check()) {
             return;
@@ -544,20 +547,21 @@ private boolean isPetUnchanged(Pets petFirst, Pets p) {
             tbPetCareService.addRow(new Object[]{
                 p.getId(),
                 stt,
-                (p.getPetS() != null && p.getPetS().getServiceCode() != null) ? p.getPetS().getServiceCode() : "Chưa có thông tin",
-                (p.getPetS() != null && p.getPetS().getServiceName() != null) ? p.getPetS().getServiceName() : "Chưa có thông tin",
-                (p.getPet() != null && p.getPet().getPetCode() != null) ? p.getPet().getPetCode() : "Chưa có thông tin",
-                (p.getPet() != null && p.getPet().getPetName() != null) ? p.getPet().getPetName() : "Chưa có thông tin",
-                (p.getPet() != null && p.getPet().getBreed() != null) ? p.getPet().getBreed() : "Chưa có thông tin",
+                (p.getPetS() != null) ? checkNullOrEmpty(p.getPetS().getServiceCode()) : "Chưa có thông tin",
+                (p.getPetS() != null) ? checkNullOrEmpty(p.getPetS().getServiceName()) : "Chưa có thông tin",
+                (p.getPet() != null) ? checkNullOrEmpty(p.getPet().getPetCode()) : "Chưa có thông tin",
+                (p.getPet() != null) ? checkNullOrEmpty(p.getPet().getPetName()) : "Chưa có thông tin",
+                (p.getPet() != null) ? checkNullOrEmpty(p.getPet().getBreed()) : "Chưa có thông tin",
                 (p.getDateStart() != null) ? Ultil.getFormatted(p.getDateStart()) : "Chưa có thông tin",
                 (p.getDateEnd() != null) ? Ultil.getFormatted(p.getDateEnd()) : "Chưa có thông tin",
-                (p.getActualEnd() != null) ? p.getActualEnd() : "Chưa có thông tin",
-                (p.getNote() != null) ? p.getNote() : "Chưa có thông tin",
+                (p.getActualEnd() != null) ? Ultil.getFormatted(p.getActualEnd()) : "Chưa có thông tin", // Định dạng ngày kết thúc thực tế
+                checkNullOrEmpty(p.getNote()),
                 p.isStatus() ? "Đang tiến hành" : "Đã hoàn thành",
                 new ModelAction<>(p, new EventAction<PetCareServices>() {
                     @Override
                     public void delete(PetCareServices p) {
                         // Xử lý xóa
+                       
                     }
 
                     @Override
@@ -568,14 +572,66 @@ private boolean isPetUnchanged(Pets petFirst, Pets p) {
                     @Override
                     public void add(PetCareServices model) {
                         // Xử lý thêm mới
+                         showPopInfPet(model);
                     }
                 })
             });
             stt++;
         }
     }
-    //</editor-fold>
 
+    private String checkNullOrEmpty(String value) {
+        return (value == null || value.trim().isEmpty()) ? "Chưa có thông tin" : value;
+    }
+
+    private void loadCombobox() {
+        cbbStatus.addItem("Tất cả");
+        cbbStatus.addItem("Hoàn thành");
+        cbbStatus.addItem("Chưa hoàn thành");
+
+        cbbSortDate.addItem("Tất cả");
+        cbbSortDate.addItem("1 ngày trước");
+        cbbSortDate.addItem("7 ngày trước");
+        cbbSortDate.addItem("1 tháng trước");
+
+        // Gắn sự kiện lọc dữ liệu khi chọn giá trị trong ComboBox
+        cbbStatus.addActionListener(e -> filterByCBB());
+        cbbSortDate.addActionListener(e -> filterByCBB());
+    }
+
+    private void filterByCBB() {
+        // Xác định khoảng thời gian dựa trên lựa chọn trong cbbSortDate
+        int daysAgo = 0;
+        String selectedDate = (String) cbbSortDate.getSelectedItem();
+        if ("1 ngày trước".equals(selectedDate)) {
+            daysAgo = 1;
+        } else if ("7 ngày trước".equals(selectedDate)) {
+            daysAgo = 7;
+        } else if ("1 tháng trước".equals(selectedDate)) {
+            daysAgo = 30;
+        }
+
+        // Xác định trạng thái dựa trên cbbStatus
+        Boolean isStatus = null; // Mặc định là null (không lọc)
+        String selectedStatus = (String) cbbStatus.getSelectedItem();
+        if ("Hoàn thành".equals(selectedStatus)) {
+            isStatus = true;
+        } else if ("Chưa hoàn thành".equals(selectedStatus)) {
+            isStatus = false;
+        }
+
+        // Gọi DAO để lấy danh sách đã lọc
+        List<PetCareServices> list = careServiceDAO.searchServices(daysAgo, isStatus);
+        getListPetCareS(list); // Load lại danh sách hiển thị
+    }
+
+    
+    private void showPopInfPet(PetCareServices p){
+        PopupShowPet pa = new PopupShowPet(p);
+        
+        GlassPanePopup.showPopup(pa,"pShowInfPet");
+    }
+    //</editor-fold>
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -589,8 +645,8 @@ private boolean isPetUnchanged(Pets petFirst, Pets p) {
         textFieldAnimation1 = new com.petshop.swing.textfield.TextFieldAnimation();
         jScrollPane4 = new javax.swing.JScrollPane();
         tbPetCareService = new com.petshop.swing.tableMore.TableMore3();
-        comboboxRounded1 = new com.petshop.swing.combobox.ComboboxRounded();
-        comboboxRounded2 = new com.petshop.swing.combobox.ComboboxRounded();
+        cbbSortDate = new com.petshop.swing.combobox.ComboboxRounded();
+        cbbStatus = new com.petshop.swing.combobox.ComboboxRounded();
         jPanel2 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jPanel10 = new javax.swing.JPanel();
@@ -659,9 +715,9 @@ private boolean isPetUnchanged(Pets petFirst, Pets p) {
             tbPetCareService.getColumnModel().getColumn(1).setMaxWidth(35);
         }
 
-        comboboxRounded1.setLabeText("Tìm kiếm theo ngày");
+        cbbSortDate.setLabeText("Tìm kiếm theo ngày");
 
-        comboboxRounded2.setLabeText("Trạng thái");
+        cbbStatus.setLabeText("Trạng thái");
 
         javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
         jPanel8.setLayout(jPanel8Layout);
@@ -674,9 +730,9 @@ private boolean isPetUnchanged(Pets petFirst, Pets p) {
                     .addGroup(jPanel8Layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(comboboxRounded2, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(comboboxRounded1, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbbSortDate, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(textFieldAnimation1, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE))))
         );
@@ -689,10 +745,10 @@ private boolean isPetUnchanged(Pets petFirst, Pets p) {
                         .addContainerGap()
                         .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(comboboxRounded1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(comboboxRounded2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(cbbSortDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(cbbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(textFieldAnimation1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE))
         );
 
@@ -722,7 +778,7 @@ private boolean isPetUnchanged(Pets petFirst, Pets p) {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 40, Short.MAX_VALUE))
+                .addGap(0, 46, Short.MAX_VALUE))
         );
 
         materialTabbed1.addTab("Quản lý dịch vụ thú cưng", jPanel1);
@@ -1216,11 +1272,11 @@ private boolean isPetUnchanged(Pets petFirst, Pets p) {
     private com.petshop.swing.Button btnXoa;
     private javax.swing.ButtonGroup buttonGroup1;
     private com.petshop.swing.checkbox.JCheckBoxCustom cbDaTiem;
+    private com.petshop.swing.combobox.ComboboxRounded cbbSortDate;
+    private com.petshop.swing.combobox.ComboboxRounded cbbStatus;
     com.petshop.swing.combobox.Combobox cboLoaiThuCung;
     private com.petshop.swing.combobox.Combobox cboLocGiongThuCung;
     private com.petshop.swing.combobox.Combobox cboLocLoaiThuCung;
-    private com.petshop.swing.combobox.ComboboxRounded comboboxRounded1;
-    private com.petshop.swing.combobox.ComboboxRounded comboboxRounded2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel43;

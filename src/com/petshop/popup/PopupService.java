@@ -5,6 +5,7 @@
 package com.petshop.popup;
 
 import com.petshop.daos.CustomerDAO;
+import com.petshop.daos.InvoiceDAO;
 import com.petshop.daos.PetCareServiceDAO;
 import com.petshop.daos.PetDAO;
 import com.petshop.daos.PetServiceDAO;
@@ -14,6 +15,7 @@ import com.petshop.event.ConfirmListenerInput;
 import com.petshop.event.EventCallBack;
 import com.petshop.event.EventTextField;
 import com.petshop.models.Customers;
+import com.petshop.models.Invoices;
 import com.petshop.models.PetCareServices;
 import com.petshop.models.PetServices;
 import com.petshop.models.Pets;
@@ -35,6 +37,7 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -62,6 +65,7 @@ public class PopupService extends javax.swing.JPanel {
     private final PetServiceDAO petServiceDAO;
     private final PetCareServiceDAO careServices;
     private final CustomerDAO customerDAO;
+    private final InvoiceDAO invoiceDAO;
     private ConfirmListener listener;
 
     // Đăng ký ConfirmListener
@@ -79,6 +83,7 @@ public class PopupService extends javax.swing.JPanel {
         petServiceDAO = new PetServiceDAO();
         careServices = new PetCareServiceDAO();
         customerDAO = new CustomerDAO();
+        invoiceDAO = new InvoiceDAO();
         btnCancel.addActionListener(evt -> {
             if (listener != null) {
                 listener.onCancel();
@@ -159,6 +164,10 @@ public class PopupService extends javax.swing.JPanel {
     public void setCustomerCode(String customers) {
         txtCustomerCode.setText(customers);
         fillTableByCustomerCode(customers);
+    }
+
+    public void setInvoiceCode(String invoice) {
+        txtInvoiceCode.setText(invoice);
     }
 
     public String getPetCode() {
@@ -271,19 +280,29 @@ public class PopupService extends javax.swing.JPanel {
             tbPet.addRow(new Object[]{
                 p.getId(),
                 stt,
-                p.getPetCode(),
-                p.getPetName() == null ? "Chưa có thông tin" : p.getPetName(),
-                p.getTypePet().getTypePetName() == null ? "Chưa có thông tin" : p.getTypePet().getTypePetName(),
-                p.getAge() == null ? "Chưa có thông tin" : p.getAge() + " Tháng", // Kiểm tra null cho Age
-                p.getBreed() == null ? "Chưa có thông tin" : p.getBreed(),
-                p.isGender() ? "Đực" : "Cái",
-                p.getColor() == null ? "Chưa có thông tin" : p.getColor(), // Kiểm tra null cho Color
-                p.isVaccinated() ? "Đã tiêm" : "Chưa tiêm",
-                p.getOwner() == null ? "Chưa có thông tin" : p.getOwner(), // Kiểm tra null cho Owner
-                p.isStatus() ? "Hoạt động" : "Không hoạt động", // Thêm điều kiện cho Status
+                checkNullOrEmpty(p.getPetCode()), // Kiểm tra mã thú cưng
+                checkNullOrEmpty(p.getPetName()), // Kiểm tra tên thú cưng
+                (p.getTypePet() != null && !isNullOrEmpty(p.getTypePet().getTypePetName()))
+                ? p.getTypePet().getTypePetName() : "Chưa có thông tin", // Kiểm tra loại thú cưng
+                (p.getAge() != null) ? p.getAge() + " Tháng" : "Chưa có thông tin", // Kiểm tra tuổi
+                checkNullOrEmpty(p.getBreed()), // Kiểm tra giống loài
+                (p.getWeight() != null) ? p.getWeight().toString() : "Chưa có thông tin", // Kiểm tra cân nặng
+                p.isGender() ? "Đực" : "Cái", // Kiểm tra giới tính
+                checkNullOrEmpty(p.getColor()), // Kiểm tra màu sắc
+                p.isVaccinated() ? "Đã tiêm" : "Chưa tiêm", // Kiểm tra tiêm phòng
+                checkNullOrEmpty(p.getOwner()), // Kiểm tra chủ sở hữu
+                p.isStatus() ? "Hoạt động" : "Không hoạt động", // Kiểm tra trạng thái
             });
             stt++;
         }
+    }
+
+    private String checkNullOrEmpty(String value) {
+        return (value == null || value.trim().isEmpty()) ? "Chưa có thông tin" : value;
+    }
+
+    private boolean isNullOrEmpty(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     private void resetForm() {
@@ -328,8 +347,8 @@ public class PopupService extends javax.swing.JPanel {
         p.setTypePet(t);
         p.setVaccinated(cbVaccina.isSelected());
         p.setGender(rdMale.isSelected());
-
-        Customers c = customerDAO.searchCustomerByCustomerCode(txtCustomerCode.getText());
+        p.setWeight(new BigDecimal(txtWeight.getText()));
+        Customers c = customerDAO.searchCustomerByCustomerCode(txtInvoiceCode.getText());
         p.setCustomer(c);
 
         return p;
@@ -348,16 +367,17 @@ public class PopupService extends javax.swing.JPanel {
         }
 
         txtBreed.setText((String) tbPet.getValueAt(getSeletedRowTable(), 6));
+        txtWeight.setText((String) tbPet.getValueAt(getSeletedRowTable(), 7));
         txtAge.setText((String) tbPet.getValueAt(getSeletedRowTable(), 5));
-        txtColor.setText((String) tbPet.getValueAt(getSeletedRowTable(), 8));
+        txtColor.setText((String) tbPet.getValueAt(getSeletedRowTable(), 9));
 
-        boolean gender = tbPet.getValueAt(getSeletedRowTable(), 7).equals("Đực");
+        boolean gender = tbPet.getValueAt(getSeletedRowTable(), 8).equals("Đực");
         if (gender) {
             rdMale.isSelected();
         } else {
             rdFemale.isSelected();
         }
-        txtOwner.setText((String) tbPet.getValueAt(getSeletedRowTable(), 10));
+        txtOwner.setText((String) tbPet.getValueAt(getSeletedRowTable(), 11));
     }
 
     private void insertPet() {
@@ -411,6 +431,9 @@ public class PopupService extends javax.swing.JPanel {
         Pets e = new Pets();
         e.setId((int) tbPet.getValueAt(getSeletedRowTable(), 0));
         c.setPet(e);
+
+        Invoices i = invoiceDAO.getInvoiceByCode(txtInvoiceCode.getText());
+        c.setInvoices(i);
 
         c.setStatus(true);
 
@@ -485,6 +508,8 @@ public class PopupService extends javax.swing.JPanel {
         cbbTypePet = new com.petshop.swing.combobox.Combobox();
         btnCancel = new com.petshop.swing.Button();
         btnResetFormPet = new com.petshop.swing.Button();
+        jLabel12 = new javax.swing.JLabel();
+        txtWeight = new com.petshop.swing.textfield.TextField1();
         jLabel3 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
@@ -495,8 +520,10 @@ public class PopupService extends javax.swing.JPanel {
         txtNote = new com.petshop.swing.textarea.TextArea();
         btnConfirm = new com.petshop.swing.Button1();
         txtSearch = new com.petshop.swing.textfield.TextFieldAnimation();
-        txtCustomerCode = new com.petshop.swing.textfield.TextField1();
+        txtInvoiceCode = new com.petshop.swing.textfield.TextField1();
         jLabel1 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        txtCustomerCode = new com.petshop.swing.textfield.TextField1();
 
         dateChooser1.setTextRefernce(txtServiceStart);
 
@@ -508,15 +535,23 @@ public class PopupService extends javax.swing.JPanel {
 
         tbPet.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Title 1", "STT", "Mã Pet", "Tên Pet", "Loại Pet", "Tuổi", "Giống loài", "Giới tính", "Màu sắc", "Vaccinated", "Thông tin chủ", "Trạng thái"
+                "Title 1", "STT", "Mã Pet", "Tên Pet", "Loại Pet", "Tuổi", "Giống loài", "Cân nặng", "Giới tính", "Màu sắc", "Vaccinated", "Thông tin chủ", "Trạng thái"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane1.setViewportView(tbPet);
         if (tbPet.getColumnModel().getColumnCount() > 0) {
             tbPet.getColumnModel().getColumn(0).setMinWidth(0);
@@ -535,8 +570,8 @@ public class PopupService extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
-                .addGap(0, 0, 0))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jPanel2.setBackground(new java.awt.Color(245, 245, 245));
@@ -592,52 +627,61 @@ public class PopupService extends javax.swing.JPanel {
             }
         });
 
+        btnCancel.setBackground(new java.awt.Color(245, 245, 245));
         btnCancel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-close-15.png"))); // NOI18N
+        btnCancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancelActionPerformed(evt);
+            }
+        });
 
         btnResetFormPet.setBackground(new java.awt.Color(245, 245, 245));
         btnResetFormPet.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-restore-20.png"))); // NOI18N
+
+        jLabel12.setText("Cân nặng:");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(txtPetCode, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtPetName, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtOwner, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtColor, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtAge, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtBreed, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(txtPetCode, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(txtPetName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(txtOwner, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(txtColor, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(txtAge, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                                .addComponent(rdMale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
-                                .addComponent(rdFemale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
-                                .addComponent(jLabel6)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel2Layout.createSequentialGroup()
-                                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jLabel4)
-                                            .addComponent(jLabel5)
-                                            .addComponent(jLabel7)
-                                            .addComponent(cbVaccina, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(jLabel10))
-                                        .addGap(0, 0, Short.MAX_VALUE))
-                                    .addGroup(jPanel2Layout.createSequentialGroup()
-                                        .addComponent(jLabel2)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(cbbTypePet, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(rdMale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                        .addComponent(rdFemale, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel6)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(btnResetFormPet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnAddPet, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addGap(0, 0, 0))
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel4)
+                                    .addComponent(jLabel5)
+                                    .addComponent(jLabel7)
+                                    .addComponent(cbVaccina, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel10))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(cbbTypePet, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addComponent(btnResetFormPet, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnAddPet, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel12)
+                        .addGap(0, 0, Short.MAX_VALUE))))
+            .addComponent(txtBreed, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(txtWeight, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -660,11 +704,15 @@ public class PopupService extends javax.swing.JPanel {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(18, 18, 18)
                         .addComponent(cbbTypePet, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel5)
                 .addGap(0, 0, 0)
                 .addComponent(txtBreed, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel12)
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(txtWeight, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(6, 6, 6)
                 .addComponent(jLabel9)
                 .addGap(0, 0, 0)
                 .addComponent(txtColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -720,7 +768,7 @@ public class PopupService extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                        .addComponent(txtServiceCode, javax.swing.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
+                        .addComponent(txtServiceCode, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(txtServiceStart, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -739,19 +787,17 @@ public class PopupService extends javax.swing.JPanel {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(textAreaScroll1, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
+                    .addComponent(textAreaScroll1, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addComponent(jLabel8)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(txtServiceCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtServiceStart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtServiceEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(txtServiceEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         txtSearch.setBackground(new java.awt.Color(204, 255, 255));
@@ -761,8 +807,15 @@ public class PopupService extends javax.swing.JPanel {
             }
         });
 
+        txtInvoiceCode.setEnabled(false);
+
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel1.setText("Mã KH:");
+
+        jLabel11.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel11.setText("Mã HD:");
+
+        txtCustomerCode.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -776,9 +829,13 @@ public class PopupService extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel11)
+                        .addGap(0, 0, 0)
+                        .addComponent(txtInvoiceCode, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtCustomerCode, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, 0)
+                        .addComponent(txtCustomerCode, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -796,8 +853,10 @@ public class PopupService extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtCustomerCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel1))
+                            .addComponent(txtInvoiceCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel11)
+                            .addComponent(txtCustomerCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -828,6 +887,10 @@ public class PopupService extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtAgeActionPerformed
 
+    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnCancelActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.Button1 btnAddPet;
@@ -841,6 +904,8 @@ public class PopupService extends javax.swing.JPanel {
     private com.petshop.swing.datechooser.DateChooser dateChooser2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -861,6 +926,7 @@ public class PopupService extends javax.swing.JPanel {
     private com.petshop.swing.textfield.TextField1 txtBreed;
     private com.petshop.swing.textfield.TextField1 txtColor;
     private com.petshop.swing.textfield.TextField1 txtCustomerCode;
+    private com.petshop.swing.textfield.TextField1 txtInvoiceCode;
     private com.petshop.swing.textarea.TextArea txtNote;
     private com.petshop.swing.textfield.TextField1 txtOwner;
     private com.petshop.swing.textfield.TextField1 txtPetCode;
@@ -869,5 +935,6 @@ public class PopupService extends javax.swing.JPanel {
     private com.petshop.swing.textfield.TextField txtServiceCode;
     private com.petshop.swing.textfield.TextField txtServiceEnd;
     private com.petshop.swing.textfield.TextField txtServiceStart;
+    private com.petshop.swing.textfield.TextField1 txtWeight;
     // End of variables declaration//GEN-END:variables
 }
