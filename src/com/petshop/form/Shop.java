@@ -290,74 +290,76 @@ public class Shop extends javax.swing.JPanel {
 
     private void loadCbbFilterTypePet(List<TypePets> list) {
         cbbFilterTypePet.removeAllItems();
+        // Thêm một đối tượng đặc biệt đại diện cho "Tất cả"
+        TypePets allPetsOption = new TypePets();
+        allPetsOption.setId(0); // ID null để biểu thị không lọc
+        allPetsOption.setTypePetName("Tất cả");
+        cbbFilterTypePet.addItem(allPetsOption);// Thêm tùy chọn "Tất cả"
 
         if (list == null || list.isEmpty()) {
-            return; // Nếu danh sách null hoặc rỗng, thoát khỏi phương thức
+            return;
         }
 
         for (TypePets t : list) {
             cbbFilterTypePet.addItem(t);
         }
-        cbbFilterTypePet.setSelectedIndex(-1);
 
-        // Thêm sự kiện cho JComboBox
+        cbbFilterTypePet.setSelectedIndex(0);
         cbbFilterTypePet.addActionListener(e -> filterAndSortProductDetails());
     }
 
     private void loadCbbFilterProduct(List<Products> productList) {
         cbbFilterProduct.removeAllItems();
+        cbbFilterProduct.addItem("Tất cả"); // Thêm tùy chọn "Tất cả"
 
         if (productList == null || productList.isEmpty()) {
-            return; // Nếu danh sách null hoặc rỗng, thoát khỏi phương thức
+            return;
         }
 
         for (Products p : productList) {
             cbbFilterProduct.addItem(p);
         }
-        cbbFilterProduct.setSelectedIndex(-1);
 
-        // Thêm sự kiện cho JComboBox
+        cbbFilterProduct.setSelectedIndex(0);
         cbbFilterProduct.addActionListener(e -> filterAndSortProductDetails());
     }
 
     private void loadCbbSort() {
         cbbSortProduct.removeAllItems();
+        cbbSortProduct.addItem("Tất cả"); // Thêm tùy chọn "Tất cả"
         cbbSortProduct.addItem("Theo giá tăng dần");
         cbbSortProduct.addItem("Theo giá giảm dần");
-        cbbSortProduct.setSelectedIndex(-1); // Không chọn mục nào mặc định
 
-        // Thêm sự kiện cho JComboBox
+        cbbSortProduct.setSelectedIndex(0);
         cbbSortProduct.addActionListener(e -> filterAndSortProductDetails());
     }
 
     private void filterAndSortProductDetails() {
         // Lấy giá trị được chọn từ các JComboBox
-        Products selectedProduct = (Products) cbbFilterProduct.getSelectedItem();
-        TypePets selectedTypePet = (TypePets) cbbFilterTypePet.getSelectedItem();
+        Object selectedProduct = cbbFilterProduct.getSelectedItem();
+        Object selectedTypePet = cbbFilterTypePet.getSelectedItem();
         String selectedSort = (String) cbbSortProduct.getSelectedItem();
 
-        // Xác định các tham số lọc
-        Integer productId = (selectedProduct != null) ? selectedProduct.getId() : null;
-        Integer typePetId = (selectedTypePet != null) ? selectedTypePet.getId() : null;
+        // Kiểm tra nếu chọn "Tất cả", đặt ID thành null để bỏ qua bộ lọc
+        Integer productId = (selectedProduct instanceof Products) ? ((Products) selectedProduct).getId() : null;
+        Integer typePetId = (selectedTypePet instanceof TypePets) ? ((TypePets) selectedTypePet).getId() : null;
 
         // Lấy danh sách sản phẩm chi tiết dựa trên bộ lọc
         List<ProductDetails> filteredList;
         if (productId == null && typePetId == null) {
-            filteredList = productDetailDAO.getListProductDetail(); // Lấy toàn bộ danh sách nếu không có bộ lọc
+            filteredList = productDetailDAO.getListProductDetail(); // Lấy toàn bộ danh sách
         } else {
-            filteredList = productDetailDAO.searchProductDetails(productId, typePetId); // Lọc theo sản phẩm và loại thú cưng
+            filteredList = productDetailDAO.searchProductDetails(productId, typePetId);
         }
 
         // Sắp xếp danh sách nếu có yêu cầu sắp xếp
-        if (selectedSort != null) {
+        if (selectedSort != null && !"Tất cả".equals(selectedSort)) {
             switch (selectedSort) {
                 case "Theo giá tăng dần":
-                    filteredList.sort(Comparator.comparing(ProductDetails::getPrice)); // Sắp xếp tăng dần theo giá
+                    filteredList.sort(Comparator.comparing(ProductDetails::getPrice));
                     break;
                 case "Theo giá giảm dần":
-                    filteredList.sort(Comparator.comparing(ProductDetails::getPrice).reversed()); // Sắp xếp giảm dần theo giá
-                    break;
-                default:
+                    filteredList.sort(Comparator.comparing(ProductDetails::getPrice).reversed());
                     break;
             }
         }
@@ -477,6 +479,7 @@ public class Shop extends javax.swing.JPanel {
     }
 
     public void showDataInvoice() {
+        lbCustomerCode.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 1));
         lbInvoiceCode.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 3));
         lbCustomerName.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 4));
         lbTotalPrice.setText((String) tbInvoice.getValueAt(getSelectedRowInvoice(), 6));
@@ -899,7 +902,7 @@ public class Shop extends javax.swing.JPanel {
 
     public void searchCustomer(String keyword) {
         Customers t = customerDAO.searchCustomerByPhoneNumber(keyword);
-        if(keyword.isEmpty()){
+        if (keyword.isEmpty()) {
             showMessageFail("Vui lòng nhập thông tin");
             return;
         }
@@ -1007,37 +1010,43 @@ public class Shop extends javax.swing.JPanel {
     public void loadComboBoxes(List<TypeServices> typeServicesList) {
         // Load combobox loại dịch vụ
         cbbFilterTypeService.removeAllItems();
+        cbbFilterTypeService.addItem("Tất cả"); // Thêm mục "Tất cả" đầu tiên
+
         for (TypeServices type : typeServicesList) {
             cbbFilterTypeService.addItem(type);
         }
-        cbbFilterTypeService.setSelectedIndex(-1);
+        cbbFilterTypeService.setSelectedIndex(0); // Mặc định chọn "Tất cả"
 
+        // Load combobox sắp xếp dịch vụ
         cbbSortService.removeAllItems();
         cbbSortService.addItem("Tất cả");
         cbbSortService.addItem("Theo giá tăng dần");
         cbbSortService.addItem("Giá giảm dần");
-        cbbSortService.setSelectedIndex(-1);
+        cbbSortService.setSelectedIndex(0);
 
-        // Thêm sự kiện lắng nghe cho cả ba combobox
+        // Thêm sự kiện lắng nghe cho cả hai combobox
         ActionListener filterListener = e -> getListServiceByFilter();
         cbbFilterTypeService.addActionListener(filterListener);
-        cbbSortProduct.addActionListener(filterListener);
+        cbbSortService.addActionListener(filterListener);
     }
 
     public void getListServiceByFilter() {
-        TypeServices selectedType = (TypeServices) cbbFilterTypeService.getSelectedItem();
+        Object selectedType = cbbFilterTypeService.getSelectedItem();
+        Integer typeServiceId = null;
 
-        Integer typeServiceId = (selectedType != null) ? selectedType.getId() : null;
+        if (selectedType instanceof TypeServices) {
+            typeServiceId = ((TypeServices) selectedType).getId();
+        }
 
         List<PetServices> filteredList;
         if (typeServiceId == null) {
-            filteredList = petServiceDAO.getListServiceAll();
+            filteredList = petServiceDAO.getListService();
         } else {
             filteredList = petServiceDAO.filterServiceByIdTypeService(typeServiceId, true);
         }
 
         // Áp dụng sắp xếp
-        String sortBy = (String) cbbSortProduct.getSelectedItem();
+        String sortBy = (String) cbbSortService.getSelectedItem();
         if (sortBy != null) {
             if (sortBy.equals("Theo giá tăng dần")) {
                 filteredList.sort(Comparator.comparing(PetServices::getPriceService));
@@ -1488,6 +1497,8 @@ public class Shop extends javax.swing.JPanel {
         if (tbProductDetail.getColumnModel().getColumnCount() > 0) {
             tbProductDetail.getColumnModel().getColumn(0).setMinWidth(0);
             tbProductDetail.getColumnModel().getColumn(0).setMaxWidth(0);
+            tbProductDetail.getColumnModel().getColumn(1).setMinWidth(35);
+            tbProductDetail.getColumnModel().getColumn(1).setMaxWidth(35);
         }
 
         cbbFilterProduct.setLabeText("Sản phẩm");

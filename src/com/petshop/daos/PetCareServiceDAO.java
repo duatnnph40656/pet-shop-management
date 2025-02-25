@@ -32,7 +32,7 @@ public class PetCareServiceDAO {
                 + "JOIN type_pets t ON p.id_type_pet = t.id  " // Không cần comment ở đây
                 + "JOIN service_details s ON pcs.service_id = s.id "
                 + "JOIN invoices i ON pcs.id_invoice = i.id "
-                + "WHERE i.is_deleted = 0 AND i.is_status = 0;";
+                + "WHERE i.is_deleted = 0;";
         // Thêm điều kiện is_deleted = 0
 
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
@@ -58,6 +58,23 @@ public class PetCareServiceDAO {
             ps.setString(5, service.getNote());
             ps.setBoolean(6, service.isStatus());
             ps.setInt(7, service.getInvoices().getId());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateActualEndAndNote(int id, LocalDateTime actualEnd, String note) {
+        String sql = "UPDATE pet_care_services "
+                + "SET actual_end = ?, notes = ?, is_status = 0"
+                + "WHERE id = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, actualEnd != null ? Timestamp.valueOf(actualEnd) : null);
+            ps.setString(2, note);
+            ps.setInt(3, id);
+
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -170,15 +187,14 @@ public class PetCareServiceDAO {
                 + "FROM pet_care_services pcs "
                 + "JOIN pets p ON pcs.pet_id = p.id "
                 + "JOIN type_pets t ON p.id_type_pet = t.id "
-                + // Join để lấy type_pet_name
-                "JOIN service_details s ON pcs.service_id = s.id "
+                + "JOIN service_details s ON pcs.service_id = s.id "
                 + "JOIN invoices i ON pcs.id_invoice = i.id "
                 + "WHERE i.is_deleted = 0 AND i.is_status = 0"
         );
 
-        // Nếu lọc theo ngày
+        // Nếu lọc theo ngày (chỉ lấy từ N ngày trước đến ngày hôm qua)
         if (daysAgo > 0) {
-            sql.append(" AND pcs.created_at BETWEEN DATE_SUB(NOW(), INTERVAL ? DAY) AND NOW()");
+            sql.append(" AND CAST(pcs.created_at AS DATE) BETWEEN DATEADD(DAY, -?, CAST(GETDATE() AS DATE)) AND DATEADD(DAY, -1, CAST(GETDATE() AS DATE))");
         }
 
         // Nếu lọc theo trạng thái

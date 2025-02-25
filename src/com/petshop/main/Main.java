@@ -114,8 +114,7 @@ public class Main extends javax.swing.JFrame {
         GlassPanePopup.showPopup(dialog, "pInput");
     }
     //</editor-fold>
-    
-    
+
     private void init() {
         layout = new MigLayout("fill", "0[]0[100%, fill]0", "0[fill, top]0");
         bg.setLayout(layout);
@@ -138,7 +137,7 @@ public class Main extends javax.swing.JFrame {
                     main.showForm(new PetManagement());
                 } else if (menuIndex == 5) {
                     if (rememberMeService.getEmployeeId() != 1) {
-                        showMessageFail("Không thể truy cập!!");
+                        showMessageFail("Không có quyền truy cập!!");
                     } else {
                         main.showForm(new EmployeeManagement());
                     }
@@ -149,7 +148,11 @@ public class Main extends javax.swing.JFrame {
                 } else if (menuIndex == 8) {
                     main.showForm(new ReturnManagement());
                 } else if (menuIndex == 9) {
-                    main.showForm(new AccountManagement());
+                    if (rememberMeService.getEmployeeId() != 1) {
+                        showMessageFail("Không có quyền truy cập!!");
+                    } else {
+                        main.showForm(new AccountManagement());
+                    }
                 } else if (menuIndex == 10) {
                     main.showForm(new DiscountVoucherManagement());
                 } else if (menuIndex == 11) {
@@ -217,7 +220,7 @@ public class Main extends javax.swing.JFrame {
         IconFontSwing.register(GoogleMaterialDesignIcons.getIconFont());
         //  Start with this form
         main.showForm(new Dashboard());
-        
+
     }
 
     public Header getHeader() {

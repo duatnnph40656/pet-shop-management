@@ -4,6 +4,7 @@
  */
 package com.petshop.models;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -17,20 +18,20 @@ public class Account {
     private String password;
     private Employees employee;
     private Roles role;
-    private Date createAt;
+    private Date createdAt;
     private boolean deleted;
     private boolean status;
 
     public Account() {
     }
 
-    public Account(int id, String userName, String password, Employees employee, Roles role, Date createAt, boolean deleted, boolean status) {
+    public Account(int id, String userName, String password, Employees employee, Roles role, Date createdAt, boolean deleted, boolean status) {
         this.id = id;
         this.userName = userName;
         this.password = password;
         this.employee = employee;
         this.role = role;
-        this.createAt = createAt;
+        this.createdAt = createdAt;
         this.deleted = deleted;
         this.status = status;
     }
@@ -76,11 +77,11 @@ public class Account {
     }
 
     public Date getCreateAt() {
-        return createAt;
+        return createdAt;
     }
 
-    public void setCreateAt(Date createAt) {
-        this.createAt = createAt;
+    public void setCreatedAt(Date createAt) {
+        this.createdAt = createAt;
     }
 
     public boolean isDeleted() {
@@ -98,8 +99,14 @@ public class Account {
     public void setStatus(boolean status) {
         this.status = status;
     }
-    
-    
-    
+
+    // Getter tùy chỉnh: Định dạng ngày
+    public String getFormattedCreatedAt() {
+        if (createdAt == null) {
+            return "N/A"; // Nếu ngày tạo là null, trả về chuỗi mặc định
+        }
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        return dateFormat.format(createdAt);
+    }
 
 }

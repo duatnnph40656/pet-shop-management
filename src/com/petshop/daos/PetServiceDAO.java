@@ -53,7 +53,7 @@ public class PetServiceDAO {
 
         return list;
     }
-    
+
     public List<PetServices> getListServiceAll() {
         String sql = "SELECT\n"
                 + "    sd.id,\n"
@@ -266,6 +266,36 @@ public class PetServiceDAO {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, typeServiceId);
             ps.setBoolean(2, status);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapPetService(rs));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<PetServices> filterServiceByStatus(boolean status) {
+        String sql = "SELECT "
+                + "    sd.id, "
+                + "    sd.service_code, "
+                + "    sd.service_name, "
+                + "    ts.type_service_name, "
+                + "    sd.price_service, "
+                + "    sd.describe_service, "
+                + "    sd.created_at, "
+                + "    sd.is_deleted, "
+                + "    sd.is_status, "
+                + "    sd.duration, "
+                + "    sd.time_unit "
+                + "FROM service_details sd "
+                + "JOIN type_services ts ON sd.id_service_type = ts.id "
+                + "WHERE sd.is_status = ? AND sd.is_deleted = 0";
+
+        List<PetServices> list = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, status);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 list.add(mapPetService(rs));

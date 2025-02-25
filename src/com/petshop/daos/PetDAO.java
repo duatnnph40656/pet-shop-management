@@ -538,12 +538,12 @@ public class PetDAO {
         String sql = """
         SELECT p.id, p.pet_code, p.pet_name, p.breed, p.weight, p.color, p.age, p.gender, 
                p.owner, p.id_type_pet, p.vaccinated, p.is_deleted, p.is_status, p.created_at, 
-               c.customer_name, c.customer_code, c.phone, t.type_pet_name
+               c.customer_name, c.customer_code, c.phone_number, t.type_pet_name
         FROM pets p
         LEFT JOIN customers c ON p.id_customer = c.id
         LEFT JOIN type_pets t ON p.id_type_pet = t.id
         WHERE p.is_deleted = 0
-        AND (c.customer_code LIKE ? OR c.customer_name LIKE ? OR c.phone LIKE ?)
+        AND (c.customer_code LIKE ? OR c.customer_name LIKE ? OR c.phone_number LIKE ?)
         ORDER BY p.id DESC
     """;
 
@@ -565,7 +565,7 @@ public class PetDAO {
         return list;
     }
 
-    public List<Pets> searchPetsByOwner(String ownerName) {
+    public List<Pets> searchPetsByOwner(String keyword) {
         List<Pets> list = new ArrayList<>();
         String sql = """
         SELECT p.id, p.pet_code, p.pet_name, p.breed, p.weight, p.color, p.age, p.gender, 
@@ -575,12 +575,15 @@ public class PetDAO {
         LEFT JOIN customers c ON p.id_customer = c.id
         LEFT JOIN type_pets t ON p.id_type_pet = t.id
         WHERE p.is_deleted = 0
-        AND p.owner LIKE ?
+        AND (c.customer_code LIKE ? OR c.customer_name LIKE ? OR c.phone_number LIKE ?)
         ORDER BY p.id DESC
     """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, "%" + ownerName + "%"); // Tìm kiếm theo chủ sở hữu (p.owner) chứa từ khóa
+            String searchPattern = "%" + keyword + "%"; // Tạo chuỗi tìm kiếm với ký tự wildcard '%'
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+            ps.setString(3, searchPattern);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {

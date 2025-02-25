@@ -8,6 +8,7 @@ import com.petshop.daos.CustomerDAO;
 import com.petshop.daos.PetCareServiceDAO;
 import com.petshop.daos.PetDAO;
 import com.petshop.daos.TypePetDAO;
+import com.petshop.event.ConfirmListener;
 import com.petshop.event.EventCallBack;
 import com.petshop.event.EventTextField;
 import com.petshop.models.Customers;
@@ -18,6 +19,7 @@ import com.petshop.models.TypePets;
 import com.petshop.popup.PopupCategoryPet;
 import com.petshop.popup.PopupShowHistoryDeleted;
 import com.petshop.popup.PopupShowPet;
+import com.petshop.popup.PopupUpdateService;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogMessageError;
 import com.petshop.swing.message.DialogMessageFail;
@@ -27,6 +29,7 @@ import com.petshop.swing.table.ModelAction;
 import com.petshop.ultils.Ultil;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -556,12 +559,12 @@ public class PetManagement extends javax.swing.JPanel {
                 (p.getDateEnd() != null) ? Ultil.getFormatted(p.getDateEnd()) : "Chưa có thông tin",
                 (p.getActualEnd() != null) ? Ultil.getFormatted(p.getActualEnd()) : "Chưa có thông tin", // Định dạng ngày kết thúc thực tế
                 checkNullOrEmpty(p.getNote()),
-                p.isStatus() ? "Đang tiến hành" : "Đã hoàn thành",
+                p.isStatus() ? "Đang thực hiện" : "Đã hoàn thành",
                 new ModelAction<>(p, new EventAction<PetCareServices>() {
                     @Override
                     public void delete(PetCareServices p) {
                         // Xử lý xóa
-                       
+                        showPopupUpdateService(p);
                     }
 
                     @Override
@@ -572,7 +575,7 @@ public class PetManagement extends javax.swing.JPanel {
                     @Override
                     public void add(PetCareServices model) {
                         // Xử lý thêm mới
-                         showPopInfPet(model);
+                        showPopInfPet(model);
                     }
                 })
             });
@@ -601,7 +604,7 @@ public class PetManagement extends javax.swing.JPanel {
 
     private void filterByCBB() {
         // Xác định khoảng thời gian dựa trên lựa chọn trong cbbSortDate
-        int daysAgo = 0;
+        int daysAgo = -1; // -1 nghĩa là không lọc theo ngày
         String selectedDate = (String) cbbSortDate.getSelectedItem();
         if ("1 ngày trước".equals(selectedDate)) {
             daysAgo = 1;
@@ -625,12 +628,40 @@ public class PetManagement extends javax.swing.JPanel {
         getListPetCareS(list); // Load lại danh sách hiển thị
     }
 
-    
-    private void showPopInfPet(PetCareServices p){
+    private void showPopInfPet(PetCareServices p) {
         PopupShowPet pa = new PopupShowPet(p);
-        
-        GlassPanePopup.showPopup(pa,"pShowInfPet");
+
+        GlassPanePopup.showPopup(pa, "pShowInfPet");
     }
+
+    private void showPopupUpdateService(PetCareServices p) {
+        PopupUpdateService pop = new PopupUpdateService();
+        pop.setConfirmListener(new ConfirmListener() {
+            @Override
+            public void onConfirm() {
+                updateServicePetCare(p, pop.getTxtNote());
+                GlassPanePopup.closePopup("pServiceCare");
+            }
+
+            @Override
+            public void onCancel() {
+                GlassPanePopup.closePopup("pServiceCare");
+            }
+        });
+        GlassPanePopup.showPopup(pop, "pServiceCare");
+    }
+
+    private void updateServicePetCare(PetCareServices p, String note) {
+        LocalDateTime now = LocalDateTime.now(); // Lấy ngày giờ hiện tại
+
+        if (careServiceDAO.updateActualEndAndNote(p.getId(), now, note)) {
+            showMessageSuccess("Cập nhật thành công");
+            getListPetCareS(careServiceDAO.getListPetCareService());
+        } else {
+            showMessageFail("Cập nhật thất bại");
+        }
+    }
+
     //</editor-fold>
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

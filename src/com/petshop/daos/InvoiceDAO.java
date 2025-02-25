@@ -13,7 +13,9 @@ import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -220,7 +222,7 @@ public class InvoiceDAO {
 
         return null; // Trả về null nếu không tìm thấy hóa đơn
     }
-    
+
     public Invoices getInvoiceByCode(String invoiceCode) {
         String sql = "SELECT id,invoice_code FROM invoices WHERE invoice_code = ?";
 
@@ -354,57 +356,36 @@ public class InvoiceDAO {
 
     public List<Invoices> searchInvoiceByDateRange(String startDateStr, String endDateStr, Boolean paymentStatus) {
         List<Invoices> list = new ArrayList<>();
-        String sql = "SELECT "
-                + "    i.id, "
-                + "    i.invoice_code, "
-                + "    i.total_price, "
-                + "    i.costs_incurred, "
-                + "    i.payment_method, "
-                + "    i.payment_status, "
-                + "    i.note, "
-                + "    i.created_at, "
-                + "    c.customer_code, "
-                + "    c.customer_name, "
-                + "    c.phone_number, "
-                + "    e.employee_name "
+        StringBuilder sql = new StringBuilder(
+                "SELECT i.id, i.invoice_code, i.total_price, i.costs_incurred, "
+                + "i.payment_method, i.payment_status, i.note, i.created_at, "
+                + "c.customer_code, c.customer_name, c.phone_number, e.employee_name "
                 + "FROM invoices i "
                 + "JOIN customers c ON i.id_customer = c.id "
                 + "JOIN employees e ON i.id_employee = e.id "
-                + "WHERE i.is_deleted = 0 "
-                + "AND i.is_status = 0 "
-                + "AND i.created_at BETWEEN ? AND ?";
+                + "WHERE i.is_deleted = 0 AND i.is_status = 0 "
+                + "AND i.created_at BETWEEN ? AND ?"
+        );
 
-        // Nếu có lọc theo trạng thái thanh toán
         if (paymentStatus != null) {
-            sql += " AND i.payment_status = ?";
+            sql.append(" AND i.payment_status = ?");
         }
 
-        sql += " ORDER BY i.id DESC"; // Sắp xếp theo ID giảm dần
-
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        sql.append(" ORDER BY i.id DESC"); // Sắp xếp theo ID giảm dần
 
         try {
-            // Chuyển đổi chuỗi ngày nhập vào thành java.util.Date
-            java.util.Date startDateUtil = sdf.parse(startDateStr);
-            java.util.Date endDateUtil = sdf.parse(endDateStr);
+            // Chuyển đổi ngày từ String sang LocalDateTime
+            LocalDate startDate = LocalDate.parse(startDateStr);
+            LocalDate endDate = LocalDate.parse(endDateStr);
 
-            // Cộng thêm 23:59:59 vào ngày kết thúc
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(endDateUtil);
-            calendar.set(Calendar.HOUR_OF_DAY, 23);
-            calendar.set(Calendar.MINUTE, 59);
-            calendar.set(Calendar.SECOND, 59);
-            endDateUtil = calendar.getTime();
+            // Thời gian bắt đầu là 00:00:00, thời gian kết thúc là 23:59:59
+            Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
+            Timestamp endTimestamp = Timestamp.valueOf(endDate.atTime(23, 59, 59));
 
-            // Chuyển đổi sang SQL Date và Timestamp
-            java.sql.Date startDate = new java.sql.Date(startDateUtil.getTime());
-            java.sql.Timestamp endDate = new java.sql.Timestamp(endDateUtil.getTime());
+            try (PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                ps.setTimestamp(1, startTimestamp);
+                ps.setTimestamp(2, endTimestamp);
 
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setDate(1, startDate);
-                ps.setTimestamp(2, endDate);
-
-                // Nếu có lọc theo payment_status, set giá trị vào query
                 if (paymentStatus != null) {
                     ps.setBoolean(3, paymentStatus);
                 }
@@ -415,9 +396,10 @@ public class InvoiceDAO {
                     }
                 }
             }
-        } catch (ParseException e) {
-            System.out.println("Lỗi chuyển đổi định dạng ngày: " + e.getMessage());
+        } catch (DateTimeParseException e) {
+            System.out.println("Lỗi định dạng ngày: " + e.getMessage());
         } catch (SQLException e) {
+            System.out.println("Lỗi truy vấn SQL: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -550,6 +532,126 @@ public class InvoiceDAO {
             while (rs.next()) {
                 invoices.add(mapInvoice(rs));
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return invoices;
+    }
+
+    public List<Invoices> searchInvoicesByPaymentStatus(Boolean paymentStatus) {
+        List<Invoices> invoices = new ArrayList<>();
+        String sql = "SELECT "
+                + "    i.id, "
+                + "    i.invoice_code, "
+                + "    i.total_price, "
+                + "    i.costs_incurred, "
+                + "    i.payment_method, "
+                + "    i.payment_status, "
+                + "    i.note, "
+                + "    i.created_at, "
+                + "    c.customer_code, "
+                + "    c.customer_name, "
+                + "    c.phone_number, "
+                + "    e.employee_name "
+                + "FROM invoices i "
+                + "JOIN customers c ON i.id_customer = c.id "
+                + "JOIN employees e ON i.id_employee = e.id "
+                + "WHERE i.is_deleted = 0 AND i.is_status = 0 ";
+
+        // Nếu có giá trị paymentStatus, thêm điều kiện WHERE
+        if (paymentStatus != null) {
+            sql += " AND i.payment_status = ?";
+        }
+
+        sql += " ORDER BY i.id DESC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (paymentStatus != null) {
+                ps.setBoolean(1, paymentStatus);
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                invoices.add(mapInvoice(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return invoices;
+    }
+
+    public List<Invoices> searchInvoices(String startDateStr, String endDateStr, String period, Boolean paymentStatus) {
+        List<Invoices> invoices = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT i.id, i.invoice_code, i.total_price, i.costs_incurred, "
+                + "i.payment_method, i.payment_status, i.note, i.created_at, "
+                + "c.customer_code, c.customer_name, c.phone_number, e.employee_name "
+                + "FROM invoices i "
+                + "JOIN customers c ON i.id_customer = c.id "
+                + "JOIN employees e ON i.id_employee = e.id "
+                + "WHERE i.is_deleted = 0 AND i.is_status = 0 "
+        );
+
+        List<Object> params = new ArrayList<>();
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter sqlFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        try {
+            LocalDate startDate = null;
+            LocalDate endDate = LocalDate.now();
+
+            // Nếu có truyền khoảng ngày cụ thể, sử dụng nó
+            if (startDateStr != null && endDateStr != null) {
+                startDate = LocalDate.parse(startDateStr, inputFormatter);
+                endDate = LocalDate.parse(endDateStr, inputFormatter);
+            } // Nếu không có khoảng ngày, kiểm tra theo period
+            else if (period != null) {
+                switch (period.toLowerCase()) {
+                    case "last_1_day":
+                        startDate = endDate.minusDays(1);
+                        break;
+                    case "last_7_days":
+                        startDate = endDate.minusDays(7);
+                        break;
+                    case "last_30_days":
+                        startDate = endDate.minusDays(30);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Invalid period! Use: 'last_1_day', 'last_7_days', 'last_30_days'");
+                }
+            }
+
+            if (startDate != null) {
+                sql.append(" AND i.created_at BETWEEN ? AND ? ");
+                params.add(startDate.atStartOfDay().format(sqlFormatter));
+                params.add(endDate.atTime(23, 59, 59).format(sqlFormatter));
+            }
+
+            if (paymentStatus != null) {
+                sql.append(" AND i.payment_status = ? ");
+                params.add(paymentStatus);
+            }
+
+            sql.append(" ORDER BY i.id DESC");
+
+            try (PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                for (int i = 0; i < params.size(); i++) {
+                    if (params.get(i) instanceof String) {
+                        ps.setString(i + 1, (String) params.get(i));
+                    } else if (params.get(i) instanceof Boolean) {
+                        ps.setBoolean(i + 1, (Boolean) params.get(i));
+                    }
+                }
+
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    invoices.add(mapInvoice(rs));
+                }
+            }
+        } catch (DateTimeParseException e) {
+            System.out.println("Lỗi chuyển đổi định dạng ngày: " + e.getMessage());
         } catch (SQLException e) {
             e.printStackTrace();
         }

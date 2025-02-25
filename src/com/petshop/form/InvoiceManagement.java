@@ -25,8 +25,13 @@ import com.petshop.ultils.Ultil;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 import raven.glasspanepopup.GlassPanePopup;
@@ -55,7 +60,6 @@ public class InvoiceManagement extends javax.swing.JPanel {
         txtDateStart.setText("Chọn ngày");
         txtDateEnd.setText("Chọn ngày");
     }
-   
 
     private void searchEvent() {
         txtSearch.addEvent(new EventTextField() { // là tên của cái search
@@ -221,22 +225,33 @@ public class InvoiceManagement extends javax.swing.JPanel {
     }
 
     private void searchInvoiceByDateRange() {
-        String startDate = txtDateStart.getText();
-        String endDate = txtDateEnd.getText();
+        try {
+            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        // Lấy trạng thái thanh toán từ ComboBox
-        Boolean paymentStatus = null; // null nghĩa là không lọc
-        String selectedStatus = (String) cbbFilterPaymentStatus.getSelectedItem();
+            // Chuyển đổi ngày từ dd/MM/yyyy sang yyyy-MM-dd dưới dạng String
+            LocalDate startDate = LocalDate.parse(txtDateStart.getText(), inputFormatter);
+            LocalDate endDate = LocalDate.parse(txtDateEnd.getText(), inputFormatter);
 
-        if ("Đã thanh toán".equals(selectedStatus)) {
-            paymentStatus = true;  // Giả sử `false` là Tiền mặt
-        } else if ("Chưa thanh toán".equals(selectedStatus)) {
-            paymentStatus = false;   // Giả sử `true` là Banking
+            String formattedStartDate = startDate.format(outputFormatter);
+            String formattedEndDate = endDate.format(outputFormatter);
+
+            Boolean paymentStatus = null;
+            String selectedStatus = (String) cbbFilterPaymentStatus.getSelectedItem();
+
+            if ("Đã thanh toán".equals(selectedStatus)) {
+                paymentStatus = true;
+            } else if ("Chưa thanh toán".equals(selectedStatus)) {
+                paymentStatus = false;
+            }
+
+            
+            
+            List<Invoices> list = invoiceDAO.searchInvoiceByDateRange(formattedStartDate, formattedEndDate, paymentStatus);
+            getListInvoice(list);
+        } catch (DateTimeParseException e) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đúng định dạng ngày (dd/MM/yyyy)", "Lỗi định dạng ngày", JOptionPane.ERROR_MESSAGE);
         }
-
-        // Gọi DAO để lấy danh sách hóa đơn
-        List<Invoices> list = invoiceDAO.searchInvoiceByDateRange(startDate, endDate, paymentStatus);
-        getListInvoice(list);
     }
 
     private void loadFilters() {
@@ -255,19 +270,14 @@ public class InvoiceManagement extends javax.swing.JPanel {
         cbbFilter.setSelectedIndex(0);
         cbbFilterPaymentStatus.setSelectedIndex(0);
 
-        ActionListener filterAction = e -> filterInvoices();
-        cbbFilter.addActionListener(filterAction);
-        cbbFilterPaymentStatus.addActionListener(e -> searchInvoiceByDateRange());
-        cbbFilterPaymentStatus.addActionListener(filterAction);
+        cbbFilter.addActionListener(e -> filterInvoicesByDate());
+        cbbFilterPaymentStatus.addActionListener(e -> filterInvoicesByStatus());
     }
 
-    private void filterInvoices() {
+    private void filterInvoicesByDate() {
         String selectedPeriod = (String) cbbFilter.getSelectedItem();
-        String selectedPaymentStatus = (String) cbbFilterPaymentStatus.getSelectedItem();
         String period = null;
-        Boolean paymentStatus = null;
 
-        // Nếu chọn khoảng thời gian, gán giá trị phù hợp
         if ("1 ngày trước".equals(selectedPeriod)) {
             period = "last_1_day";
         } else if ("7 ngày trước".equals(selectedPeriod)) {
@@ -276,17 +286,35 @@ public class InvoiceManagement extends javax.swing.JPanel {
             period = "last_30_days";
         }
 
-        // Nếu chọn trạng thái thanh toán, gán giá trị phù hợp
+        // Nếu chọn "Tất cả", hiển thị toàn bộ hóa đơn
+        if ("Tất cả".equals(selectedPeriod)) {
+            getListInvoice(invoiceDAO.getListInvoiceAll());
+            return;
+        }
+
+        // Lọc theo khoảng thời gian
+        List<Invoices> invoices = invoiceDAO.searchInvoicesByPeriod(period);
+        getListInvoice(invoices);
+    }
+
+    private void filterInvoicesByStatus() {
+        String selectedPaymentStatus = (String) cbbFilterPaymentStatus.getSelectedItem();
+        Boolean paymentStatus = null;
+
         if ("Đã thanh toán".equals(selectedPaymentStatus)) {
             paymentStatus = true;
         } else if ("Chưa thanh toán".equals(selectedPaymentStatus)) {
             paymentStatus = false;
         }
 
-        // Gọi phương thức DAO để lấy danh sách hóa đơn theo bộ lọc
-        List<Invoices> invoices = invoiceDAO.searchInvoicesByFilters(period, paymentStatus);
+        // Nếu chọn "Tất cả", hiển thị toàn bộ hóa đơn
+        if ("Tất cả".equals(selectedPaymentStatus)) {
+            getListInvoice(invoiceDAO.getListInvoiceAll());
+            return;
+        }
 
-        // Hiển thị danh sách hóa đơn lên bảng
+        // Lọc theo trạng thái thanh toán
+        List<Invoices> invoices = invoiceDAO.searchInvoicesByPaymentStatus(paymentStatus);
         getListInvoice(invoices);
     }
 
@@ -295,6 +323,8 @@ public class InvoiceManagement extends javax.swing.JPanel {
         getListInvoice(list);
     }
 
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

@@ -236,22 +236,22 @@ public class EmployeeDAO {
     }
 
     private Employees mapEmployee(ResultSet rs) throws SQLException {
+        Employees i = new Employees();
+        i.setId(rs.getInt("id"));
+        i.setEmployeeCode(rs.getString("employee_code"));
+        i.setEmployeeName(rs.getString("employee_name"));
+        i.setGender(rs.getBoolean("gender"));
+        i.setPhoneNumber(rs.getString("phone_number"));
+        i.setEmail(rs.getString("email"));
+        i.setAddress(rs.getString("address"));
         Roles role = new Roles();
         role.setId(rs.getInt("id_role")); // Lấy ID role chính xác
+        i.setRole(role);
+        i.setCreatedAt(rs.getTimestamp("created_at"));
+        i.setDeleted(rs.getBoolean("is_deleted"));
+        i.setStatus(rs.getBoolean("is_status"));
 
-        return new Employees(
-                rs.getInt("id"),
-                rs.getString("employee_code"),
-                rs.getString("employee_name"),
-                rs.getString("phone_number"),
-                rs.getString("email"),
-                role,
-                rs.getString("address"),
-                rs.getTimestamp("created_at"),
-                rs.getBoolean("is_deleted"),
-                rs.getBoolean("is_status"),
-                rs.getBoolean("gender")
-        );
+        return i;
     }
 
 }

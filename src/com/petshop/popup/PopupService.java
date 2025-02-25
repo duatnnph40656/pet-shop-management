@@ -343,12 +343,38 @@ public class PopupService extends javax.swing.JPanel {
         p.setBreed(txtBreed.getText());
         p.setOwner(txtOwner.getText());
         p.setColor(txtColor.getText());
+
+        // Lấy loại thú cưng từ ComboBox
         TypePets t = (TypePets) cbbTypePet.getSelectedItem();
         p.setTypePet(t);
+
+        // Kiểm tra checkbox tiêm phòng & giới tính
         p.setVaccinated(cbVaccina.isSelected());
         p.setGender(rdMale.isSelected());
-        p.setWeight(new BigDecimal(txtWeight.getText()));
-        Customers c = customerDAO.searchCustomerByCustomerCode(txtInvoiceCode.getText());
+
+        // Xử lý cân nặng (cho phép null)
+        String weightText = txtWeight.getText().trim();
+        if (!weightText.isEmpty()) {
+            try {
+                p.setWeight(new BigDecimal(weightText));
+            } catch (NumberFormatException e) {
+                showMessageFail("Cân nặng không hợp lệ!");
+                return null; // Trả về null nếu có lỗi
+            }
+        } else {
+            p.setWeight(null); // Nếu trống thì đặt null
+        }
+
+        // Xử lý tuổi (cho phép null)
+        String ageText = txtAge.getText().trim();
+        if (!ageText.isEmpty()) {
+            p.setAge(ageText);
+        } else {
+            p.setAge(null);
+        }
+
+        // Lấy thông tin khách hàng từ mã khách hàng
+        Customers c = customerDAO.searchCustomerByCustomerCode(txtCustomerCode.getText());
         p.setCustomer(c);
 
         return p;
@@ -386,7 +412,7 @@ public class PopupService extends javax.swing.JPanel {
         }
         if (petDAO.insertPetNew(readForm())) {
             showMessageSuccess("Thêm thành công");
-            getListPet(petDAO.getListPetSortId());
+            fillTableByCustomerCode(txtCustomerCode.getText());;
             resetForm();
             selectFirstRow();
         } else {
@@ -460,11 +486,12 @@ public class PopupService extends javax.swing.JPanel {
 
     private void searchPetsByOwner(String keyword) {
         List<Pets> list = petDAO.searchPetsByOwner(keyword);
-        if (list == null) {
+        if (list.isEmpty()) {
             showMessageFail("không tìm thấy thông tin!!");
-            return;
+        } else {
+            getListPet(list);
         }
-        getListPet(list);
+
     }
 
     private void fillTableByCustomerCode(String customerCode) {

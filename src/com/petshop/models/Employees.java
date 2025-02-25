@@ -43,8 +43,19 @@ public class Employees {
     public Employees(int id, String employeeName) {
         this.id = id;
         this.employeeName = employeeName;
+        
     }
 
+    public Employees(int id, String employeeCode, String employeeName, String phoneNumber, String email) {
+        this.id = id;
+        this.employeeCode = employeeCode;
+        this.employeeName = employeeName;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+    }
+
+    
+    
     public int getId() {
         return id;
     }

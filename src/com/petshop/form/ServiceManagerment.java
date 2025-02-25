@@ -264,22 +264,25 @@ public class ServiceManagerment extends javax.swing.JPanel {
     public void loadComboBoxes(List<TypeServices> typeServicesList) {
         // Load combobox loại dịch vụ
         cbbFilterTypeService.removeAllItems();
+        cbbFilterTypeService.addItem("Tất cả"); // Thêm mục "Tất cả"
         for (TypeServices type : typeServicesList) {
             cbbFilterTypeService.addItem(type);
         }
-        cbbFilterTypeService.setSelectedIndex(-1);
+        cbbFilterTypeService.setSelectedIndex(0); // Mặc định chọn "Tất cả"
 
         // Load combobox trạng thái
         cbbFilterStatus.removeAllItems();
+        cbbFilterStatus.addItem("Tất cả"); // Thêm mục "Tất cả"
         cbbFilterStatus.addItem("Hoạt động");
         cbbFilterStatus.addItem("Tạm ngưng");
-        cbbFilterStatus.setSelectedIndex(-1);
+        cbbFilterStatus.setSelectedIndex(0); // Mặc định chọn "Tất cả"
 
         // Load combobox sắp xếp
         cbbSort.removeAllItems();
+        cbbSort.addItem("Tất cả"); // Thêm mục "Tất cả"
         cbbSort.addItem("Theo giá tăng dần");
         cbbSort.addItem("Giá giảm dần");
-        cbbSort.setSelectedIndex(-1);
+        cbbSort.setSelectedIndex(0); // Mặc định chọn "Tất cả"
 
         // Thêm sự kiện lắng nghe cho cả ba combobox
         ActionListener filterListener = e -> getListServiceByFilter();
@@ -289,21 +292,38 @@ public class ServiceManagerment extends javax.swing.JPanel {
     }
 
     public void getListServiceByFilter() {
-        TypeServices selectedType = (TypeServices) cbbFilterTypeService.getSelectedItem();
-        boolean status = "Hoạt động".equals(cbbFilterStatus.getSelectedItem());
+        Object selectedType = cbbFilterTypeService.getSelectedItem();
+        Object selectedStatus = cbbFilterStatus.getSelectedItem();
 
-        Integer typeServiceId = (selectedType != null) ? selectedType.getId() : null;
+        Integer typeServiceId = null;
+        Boolean status = null; // Null nghĩa là không lọc theo trạng thái
+
+        if (selectedType instanceof TypeServices) {
+            typeServiceId = ((TypeServices) selectedType).getId();
+        }
+
+        if (!"Tất cả".equals(selectedStatus)) {
+            status = "Hoạt động".equals(selectedStatus);
+        }
 
         List<PetServices> filteredList;
-        if (typeServiceId == null) {
+        if (typeServiceId == null && status == null) {
+            // Nếu cả loại dịch vụ và trạng thái đều là "Tất cả", lấy toàn bộ
             filteredList = petServiceDAO.getListServiceAll();
+        } else if (typeServiceId == null) {
+            // Nếu chỉ lọc theo trạng thái
+            filteredList = petServiceDAO.filterServiceByStatus(status);
+        } else if (status == null) {
+            // Nếu chỉ lọc theo loại dịch vụ
+            filteredList = petServiceDAO.filterServiceByIdTypeService(typeServiceId, true);
         } else {
+            // Lọc theo cả loại dịch vụ và trạng thái
             filteredList = petServiceDAO.filterServiceByIdTypeService(typeServiceId, status);
         }
 
         // Áp dụng sắp xếp
         String sortBy = (String) cbbSort.getSelectedItem();
-        if (sortBy != null) {
+        if (sortBy != null && !"Tất cả".equals(sortBy)) {
             if (sortBy.equals("Theo giá tăng dần")) {
                 filteredList.sort(Comparator.comparing(PetServices::getPriceService));
             } else if (sortBy.equals("Giá giảm dần")) {
