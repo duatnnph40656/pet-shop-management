@@ -9,6 +9,7 @@ import com.petshop.daos.CustomerDAO;
 import com.petshop.daos.EmployeeDAO;
 import com.petshop.daos.InvoiceDAO;
 import com.petshop.daos.InvoiceDetailDAO;
+import com.petshop.daos.PetCareServiceDAO;
 import com.petshop.daos.PetDAO;
 import com.petshop.daos.PetServiceDAO;
 import com.petshop.daos.ProductDAO;
@@ -24,6 +25,7 @@ import com.petshop.models.Customers;
 import com.petshop.models.Employees;
 import com.petshop.models.InvoiceDetails;
 import com.petshop.models.Invoices;
+import com.petshop.models.PetCareServices;
 import com.petshop.models.PetServices;
 import com.petshop.models.Pets;
 import com.petshop.models.ProductDetails;
@@ -46,6 +48,7 @@ import com.petshop.swing.table.ModelImage;
 import com.petshop.ultils.Ultil;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -70,6 +73,7 @@ public class Shop extends javax.swing.JPanel {
     private final CustomerDAO customerDAO;
     private final EmployeeDAO employeeDAO;
     private final PetServiceDAO petServiceDAO;
+    private final PetCareServiceDAO petCareServiceDAO;
     private final TypeServiceDAO typeServiceDAO;
     private final PetDAO petDAO;
     private RememberMeService rememberMeService;
@@ -91,8 +95,9 @@ public class Shop extends javax.swing.JPanel {
         typePetDAO = new TypePetDAO();
         typeServiceDAO = new TypeServiceDAO();
         rememberMeService = new RememberMeService();
+        petCareServiceDAO = new PetCareServiceDAO();
         loadCbbPaymentMethod();
-        loadCbbSort();
+        loadCbbSortProduct();
         init();
     }
 
@@ -224,7 +229,13 @@ public class Shop extends javax.swing.JPanel {
         poup.setConfirmListener(new ConfirmListener() {
             @Override
             public void onConfirm() {
-                addServiceToInvoiceD(p, 1, poup.getPetCode());
+//                // Kiểm tra nếu insert thành công mới gọi addServiceToInvoiceD()
+//                if (!poup.isServiceInserted()) {
+//                    showMessageFail("Thêm dịch vụ thất bại! Không thể thêm vào hóa đơn.");
+//                    return;
+//                }
+                addServiceToInvoiceD(p, 1, poup.getPetCode(), poup.getTotalDays());
+                GlassPanePopup.closePopup("pPet");
             }
 
             @Override
@@ -242,7 +253,7 @@ public class Shop extends javax.swing.JPanel {
         GlassPanePopup.showPopup(pop, "pInvoice");
     }
 
-    public void showPopupWebcam() {
+    public void showPopupScanBarcode() {
         if (getSelectedRowInvoice() == -1) {
             showMessageFail("Vui lòng chọn hóa đơn trước!!");
             return;
@@ -263,7 +274,7 @@ public class Shop extends javax.swing.JPanel {
         GlassPanePopup.showPopup(pWebCam, "pWebCam");
     }
 
-    public void showPopupWebcam2() {
+    public void showPopupScanQr() {
         PopupScan pWebCam = new PopupScan();
         pWebCam.setCodeListener((String code) -> {
             Invoices i = invoiceDAO.searchInvoiceByCodeResultModel(code);
@@ -324,7 +335,7 @@ public class Shop extends javax.swing.JPanel {
         cbbFilterProduct.addActionListener(e -> filterAndSortProductDetails());
     }
 
-    private void loadCbbSort() {
+    private void loadCbbSortProduct() {
         cbbSortProduct.removeAllItems();
         cbbSortProduct.addItem("Tất cả"); // Thêm tùy chọn "Tất cả"
         cbbSortProduct.addItem("Theo giá tăng dần");
@@ -501,9 +512,12 @@ public class Shop extends javax.swing.JPanel {
         tbInvoice.clearSelection();
         clearInvoiceDetailTable();
 
-        cbbFilterProduct.setSelectedIndex(-1);
-        cbbFilterTypePet.setSelectedIndex(-1);
-        cbbSortProduct.setSelectedIndex(-1);
+        cbbFilterProduct.setSelectedIndex(0);
+        cbbFilterTypePet.setSelectedIndex(0);
+        cbbSortProduct.setSelectedIndex(0);
+
+        cbbSortService.setSelectedIndex(0);
+        cbbFilterTypeService.setSelectedIndex(0);
     }
 
     public Invoices readFormInsert() {
@@ -647,6 +661,7 @@ public class Shop extends javax.swing.JPanel {
         if (invoiceDAO.updateInvoice(getIdSelectedInvoice(), readFormUpdate())) {
             Ultil.generateQRCodeImage(lbInvoiceCode.getText());
             List<InvoiceDetails> list = invoiceDetailDAO.getInvoiceDetails(getIdSelectedInvoice());
+            insertServiceCare(getIdSelectedInvoice());
             updateRemoveQuantityInProductDetail(list);
             showMessageSuccess("Thành công");
             getListInvoice(invoiceDAO.getListInvoice());
@@ -683,8 +698,30 @@ public class Shop extends javax.swing.JPanel {
 
         Ultil.generateInvoice(invoiceId, employeeName, customerName, employeeName, items, totalAmount);
     }
-    //</editor-fold>
 
+    private void insertServiceCare(int id) {
+        List<InvoiceDetails> list = invoiceDetailDAO.getServiceDetailsByInvoiceId(id);
+
+        for (InvoiceDetails detail : list) {
+            int serviceDuration = detail.getServiceDuration(); // Lấy số ngày từ invoice_details
+
+            PetCareServices service = new PetCareServices();
+
+            // Thiết lập dữ liệu
+            service.setPet(new Pets(detail.getPet().getId())); // ID thú cưng
+            service.setPetS(new PetServices(detail.getPetService().getId())); // ID dịch vụ
+            service.setInvoices(new Invoices(id)); // Hóa đơn liên kết
+            service.setDateStart(LocalDateTime.now()); // Ngày bắt đầu là hiện tại
+            service.setDateEnd(LocalDateTime.now().plusDays(serviceDuration)); // Ngày kết thúc = ngày bắt đầu + service_duration
+            service.setStatus(true); // Mặc định là true
+            service.setNote("Dịch vụ chăm sóc tự động");
+
+            // Thêm vào DB
+            petCareServiceDAO.insertPetCareService(service);
+        }
+    }
+
+    //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="{InvoiceDetail...">
     public void getListInvoiceDetail(List<InvoiceDetails> list) {
         int stt = 1;
@@ -692,12 +729,12 @@ public class Shop extends javax.swing.JPanel {
         for (InvoiceDetails i : list) {
             String name = (i.getProductDetail() != null && i.getProductDetail().getProductDetailName() != null)
                     ? i.getProductDetail().getProductDetailName()
-                    : (i.getPetService() != null ? i.getPetService().getServiceName() : "N/A");
+                    : (i.getPetService() != null ? i.getPetService().getServiceName() : "Không có");
 
             String code = (i.getProductDetail() != null && i.getProductDetail().getProductDetailCode() != null)
                     ? i.getProductDetail().getProductDetailCode()
-                    : (i.getPetService() != null ? i.getPetService().getServiceCode() : "N/A");
-            String petName = (i.getPet() != null) ? i.getPet().getPetName() : "N/A";
+                    : (i.getPetService() != null ? i.getPetService().getServiceCode() : "Không có");
+            String petName = (i.getPet() != null) ? i.getPet().getPetName() : "Không có";
 
             BigDecimal price = (i.getProductDetail() != null && i.getProductDetail().getPrice() != null)
                     ? i.getProductDetail().getPrice()
@@ -713,9 +750,10 @@ public class Shop extends javax.swing.JPanel {
                 code,
                 name,
                 i.getUsageOrQuantity(),
+                (i.isTypeInvoiceDetail() ? i.getServiceDuration() + " Ngày" : "Không có"),
                 Ultil.formatCurrency(price),
                 Ultil.formatCurrency(i.getTotalPrice()),
-                petName == null ? "N/A" : petName,
+                petName == null ? "Không có" : petName,
                 i.isTypeInvoiceDetail(),
                 new ModelAction<>(i, new EventAction<InvoiceDetails>() {
                     @Override
@@ -727,9 +765,15 @@ public class Shop extends javax.swing.JPanel {
 
                     @Override
                     public void update(InvoiceDetails i) {
-                        showInputDialog(1, inputAmount -> {
-                            updateQuantityInvoiceDetail(i, inputAmount);
-                        });
+                        if (i.isTypeInvoiceDetail()) {
+                            showInputDialog(i.getServiceDuration(), inputAmount -> {
+                                updateQuantityInvoiceDetail(i, i.getUsageOrQuantity(), inputAmount);
+                            });
+                        } else {
+                            showInputDialog(i.getUsageOrQuantity(), inputAmount -> {
+                                updateQuantityInvoiceDetail(i, inputAmount, 0);
+                            });
+                        }
                     }
 
                     @Override
@@ -754,28 +798,43 @@ public class Shop extends javax.swing.JPanel {
         return (Integer) tbInvoiceDetail.getValueAt(selectedRow, 0);
     }
 
-    public void updateQuantityInvoiceDetail(InvoiceDetails detail, int amount) {
+    public void updateQuantityInvoiceDetail(InvoiceDetails detail, int amount, int totalDate) {
         if (amount < 1) {
             showMessageFail("Số lượng không được nhỏ hơn 1");
             GlassPanePopup.closePopup("pInput");
             return;
         }
 
-        if (!productDetailDAO.isEnoughStock(getIdProductD(), amount) && !(boolean) tbInvoiceDetail.getValueAt(getSelectedInvoiceD(), 10)) {
-            showMessageFail("Số lượng nhập lớn hơn số lượng SP!!");
-            return;
-        }
-
         int id = detail.getId();
-        BigDecimal totalPrice = BigDecimal.ZERO; // Đặt giá trị mặc định là 0
-        if (detail.getProductDetail() != null && detail.getProductDetail().getPrice() != null) {
-            totalPrice = detail.getProductDetail().getPrice().multiply(BigDecimal.valueOf(amount));
-        } else if (detail.getPetService() != null && detail.getPetService().getPriceService() != null) {
-            totalPrice = detail.getPetService().getPriceService().multiply(BigDecimal.valueOf(amount));
+        BigDecimal totalPrice = BigDecimal.ZERO; // Giá trị mặc định là 0
+        int newServiceDuration = detail.getServiceDuration(); // Mặc định giữ nguyên
+
+        if (detail.isTypeInvoiceDetail()) {
+            // Nếu là dịch vụ -> Cập nhật số ngày sử dụng
+            newServiceDuration = totalDate;
+            totalPrice = detail.getPetService().getPriceService()
+                    .multiply(BigDecimal.valueOf(amount))
+                    .multiply(BigDecimal.valueOf(newServiceDuration));
+
+            // Cập nhật số ngày & tổng tiền
+            invoiceDetailDAO.updateUsageOrQuantityDurationAndTprice(id, amount, newServiceDuration, totalPrice);
+
+        } else {
+            // Nếu là sản phẩm -> Kiểm tra số lượng trong kho trước khi cập nhật
+            if (!productDetailDAO.isEnoughStock(getIdProductD(), amount) && !(boolean) tbInvoiceDetail.getValueAt(getSelectedInvoiceD(), 11)) {
+                showMessageFail("Số lượng nhập lớn hơn số lượng SP!!");
+                return;
+            }
+
+            if (detail.getProductDetail() != null && detail.getProductDetail().getPrice() != null) {
+                totalPrice = detail.getProductDetail().getPrice().multiply(BigDecimal.valueOf(amount));
+            }
+
+            // Cập nhật số lượng sản phẩm & tổng tiền
+            invoiceDetailDAO.updateUsageOrQuantityAndTprice(id, amount, totalPrice);
         }
 
-        invoiceDetailDAO.updateUsageOrQuantityAndTprice(id, amount, totalPrice);
-
+        // Cập nhật tổng tiền hóa đơn sau khi thay đổi
         this.updateToTalPriceInvoice(getIdSelectedInvoice());
 
         showInvoiceDetailByIdInvoice();
@@ -954,7 +1013,7 @@ public class Shop extends javax.swing.JPanel {
         }
     }
 
-    public void addServiceToInvoiceD(PetServices p, int inputAmount, String petCode) {
+    public void addServiceToInvoiceD(PetServices p, int inputAmount, String petCode, int totalDate) {
         if (getSelectedRowInvoice() == -1) {
             showMessageFail("Vui lòng chọn hóa đơn!!");
             GlassPanePopup.closePopup("pInput");
@@ -962,7 +1021,6 @@ public class Shop extends javax.swing.JPanel {
         }
 
         int id = getIdSelectedInvoice(); // Lấy ID hóa đơn
-
         Pets c = petDAO.getPetByCode(petCode);
 
         if (c == null) {
@@ -974,17 +1032,27 @@ public class Shop extends javax.swing.JPanel {
 
         boolean isUpdatedOrInserted = false;
 
+        // Tính tổng tiền dịch vụ dựa trên số ngày
+        BigDecimal totalPrice = p.getPriceService()
+                .multiply(BigDecimal.valueOf(totalDate)) // Nhân với số ngày
+                .multiply(BigDecimal.valueOf(inputAmount)); // Nhân với số lượng
+
         if (existingDetail != null) {
             int newQuantity = existingDetail.getUsageOrQuantity() + inputAmount;
-            BigDecimal totalPrice = p.getPriceService().multiply(BigDecimal.valueOf(newQuantity));
+            int updatedDuration = existingDetail.getServiceDuration() + totalDate; // Cập nhật thời gian sử dụng dịch vụ
+            BigDecimal updatedTotalPrice = p.getPriceService()
+                    .multiply(BigDecimal.valueOf(updatedDuration))
+                    .multiply(BigDecimal.valueOf(newQuantity));
 
-            // Cập nhật số lượng và tổng tiền trước
-            isUpdatedOrInserted = invoiceDetailDAO.updateUsageOrQuantityAndTprice(existingDetail.getId(), newQuantity, totalPrice);
+            // Cập nhật số lượng, thời gian sử dụng và tổng tiền
+            isUpdatedOrInserted = invoiceDetailDAO.updateUsageOrQuantityDurationAndTprice(
+                    existingDetail.getId(), newQuantity, updatedDuration, updatedTotalPrice);
 
         } else { // Nếu chưa tồn tại, thêm mới
             InvoiceDetails detail = new InvoiceDetails();
             detail.setInvoiceDetailCode("HDCT" + Ultil.generateRandomCode());
-            detail.setTotalPrice(p.getPriceService().multiply(BigDecimal.valueOf(inputAmount)));
+            detail.setTotalPrice(totalPrice); // Gán tổng tiền đã tính
+            detail.setServiceDuration(totalDate); // Gán thời gian sử dụng dịch vụ
 
             Invoices i = new Invoices();
             i.setId(id);
@@ -993,12 +1061,12 @@ public class Shop extends javax.swing.JPanel {
             detail.setPet(c);
             detail.setUsageOrQuantity(inputAmount);
 
-            // Chèn dữ liệu trước
+            // Chèn dữ liệu mới
             isUpdatedOrInserted = invoiceDetailDAO.insertInvoiceDetailService(detail);
         }
 
         if (isUpdatedOrInserted) {
-            // Sau khi cập nhật hoặc thêm sản phẩm, mới cập nhật tổng tiền
+            // Sau khi cập nhật hoặc thêm sản phẩm, mới cập nhật tổng tiền hóa đơn
             this.updateToTalPriceInvoice(id);
             showInvoiceDetailByIdInvoice();
             GlassPanePopup.closePopup("pPet");
@@ -1132,7 +1200,8 @@ public class Shop extends javax.swing.JPanel {
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
         jLabel1.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
-        jLabel1.setText("HÓA ĐƠN CHỜ");
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel1.setText("    HÓA ĐƠN CHỜ");
 
         tbInvoice.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -1180,13 +1249,13 @@ public class Shop extends javax.swing.JPanel {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 731, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(button12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(button12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 732, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -1397,21 +1466,22 @@ public class Shop extends javax.swing.JPanel {
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
 
         jLabel42.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
+        jLabel42.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel42.setText("HÓA ĐƠN CHI TIẾT");
 
         tbInvoiceDetail.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "", "STT", "Mã HDCT", "Mã SP or SV", "Tên SP or SV", "SL", "Giá bán or Giá SV", "Tổng giá", "Thông tin khác", "", "Thao tác"
+                "", "", "STT", "Mã HDCT", "Mã SP or SV", "Tên SP or SV", "SL", "Số ngày", "Giá bán or Giá SV", "Tổng giá", "Thông tin khác", "", "Thao tác"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false, true
+                false, false, false, false, false, false, false, false, false, false, false, false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -1434,8 +1504,8 @@ public class Shop extends javax.swing.JPanel {
             tbInvoiceDetail.getColumnModel().getColumn(5).setMaxWidth(200);
             tbInvoiceDetail.getColumnModel().getColumn(6).setMinWidth(40);
             tbInvoiceDetail.getColumnModel().getColumn(6).setMaxWidth(40);
-            tbInvoiceDetail.getColumnModel().getColumn(10).setMinWidth(0);
-            tbInvoiceDetail.getColumnModel().getColumn(10).setMaxWidth(0);
+            tbInvoiceDetail.getColumnModel().getColumn(11).setMinWidth(0);
+            tbInvoiceDetail.getColumnModel().getColumn(11).setMaxWidth(0);
         }
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
@@ -1445,8 +1515,8 @@ public class Shop extends javax.swing.JPanel {
             .addComponent(jScrollPane2)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel42)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jLabel42, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1696,12 +1766,12 @@ public class Shop extends javax.swing.JPanel {
 
     private void button12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button12ActionPerformed
         // TODO add your handling code here:
-        showPopupWebcam2();
+        showPopupScanQr();
     }//GEN-LAST:event_button12ActionPerformed
 
     private void btnScanBarcodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnScanBarcodeActionPerformed
         // TODO add your handling code here:
-        showPopupWebcam();
+        showPopupScanBarcode();
     }//GEN-LAST:event_btnScanBarcodeActionPerformed
 
 

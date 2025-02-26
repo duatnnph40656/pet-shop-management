@@ -6,8 +6,13 @@ package com.petshop.popup;
 
 import com.petshop.daos.InvoiceDAO;
 import com.petshop.daos.InvoiceDetailDAO;
+import com.petshop.event.ConfirmListener;
 import com.petshop.models.InvoiceDetails;
 import com.petshop.models.Invoices;
+import com.petshop.swing.message.DialogConfirm;
+import com.petshop.swing.message.DialogMessageError;
+import com.petshop.swing.message.DialogMessageFail;
+import com.petshop.swing.message.DialogMessageSuccess;
 import com.petshop.swing.popup.GlassPanePopup;
 import com.petshop.swing.table.EventAction;
 import com.petshop.swing.table.ModelAction;
@@ -45,16 +50,18 @@ public class PopupInvoice extends javax.swing.JPanel {
         txtCustomer.setEditable(false);
         txtEmployee.setEditable(false);
         txtTotalPrice.setEditable(false);
+        txtPaymentStatus.setEditable(false);
         tbInvoiceDetail.fixTable(jScrollPane1);
     }
 
     private void loadFormInvoice() {
         Invoices i = invoiceDAO.searchInvoiceByCodeResultModel(txtInvoiceCode.getText());
-        System.out.println(txtInvoiceCode.getText());
         txtCustomer.setText(i.getCustomer().getCustomerName() == null ? i.getCustomer().getPhoneNumber() : i.getCustomer().getCustomerName());
         txtEmployee.setText(i.getEmployee().getEmployeeName());
         txtTotalPrice.setText(Ultil.formatCurrency(i.getTotalPrice()));
-        txtActualPrice.setText(Ultil.formatCurrency(i.getCostsIncurred()));
+        txtCostsIncurred.setText(Ultil.formatCurrency(i.getCostsIncurred()));
+        txtPaymentStatus.setText(i.isPaymentStatus() ? "Đã thanh toán" : "Chưa thanh toán");
+        txtNotes.setText(i.getNote());
         List<InvoiceDetails> list = invoiceDetailDAO.getInvoiceDetailsByInvoiceId(i.getId());
         getListInvoiceDetail(list);
     }
@@ -86,10 +93,53 @@ public class PopupInvoice extends javax.swing.JPanel {
                 Ultil.formatCurrency(price),
                 Ultil.formatCurrency(i.getTotalPrice()),
                 petName == null ? "N/A" : petName,
-                i.isTypeInvoiceDetail()? "Dịch vụ" : "Sản phẩm"
+                i.isTypeInvoiceDetail() ? "Dịch vụ" : "Sản phẩm"
             });
             stt++;
         }
+    }
+
+    public void updateInvoice() {
+        // Tìm hóa đơn theo mã nhập vào từ txtInvoiceCode
+        Invoices i = invoiceDAO.searchInvoiceByCodeResultModel(txtInvoiceCode.getText());
+
+        if (i != null) {
+            try {
+                // Chuyển đổi chi phí phát sinh sang BigDecimal
+                BigDecimal costsIncurred = new BigDecimal(
+                        txtCostsIncurred.getText()
+                                .replace("₫", "")
+                                .replace(".", "")
+                                .replace("\u00A0", "")
+                                .replaceAll("\\s+", "")
+                                .trim()
+                );
+                String note = txtNotes.getText().trim();
+
+                // Lấy totalPrice hiện tại từ txtTotalPrice và chuyển đổi sang BigDecimal
+                BigDecimal totalPrice = new BigDecimal(
+                        txtTotalPrice.getText()
+                                .replace("₫", "")
+                                .replace(".", "")
+                                .replace("\u00A0", "")
+                                .replaceAll("\\s+", "")
+                                .trim()
+                );
+
+                // Cập nhật totalPrice bằng totalPrice + costsIncurred
+                BigDecimal newTotalPrice = totalPrice.add(costsIncurred);
+
+                // Cập nhật hóa đơn với chi phí phát sinh, totalPrice mới và ghi chú
+                invoiceDAO.updateInvoiceByCostsAndNote(i.getId(), costsIncurred, newTotalPrice, note);
+
+                showMessageSuccess("Cập nhật hóa đơn thành công!");
+            } catch (NumberFormatException | NullPointerException e) {
+                showMessageFail("Chi phí phát sinh phải là số hợp lệ!");
+            }
+        } else {
+            showMessageFail("Không tìm thấy hóa đơn!");
+        }
+        raven.glasspanepopup.GlassPanePopup.closePopup("pInvoice");
     }
 
     @Override
@@ -100,6 +150,40 @@ public class PopupInvoice extends javax.swing.JPanel {
         g2.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 15, 15));
         g2.dispose();
         super.paintComponent(grphcs);
+    }
+
+    private void showMessageSuccess(String message) {
+        DialogMessageSuccess success = new DialogMessageSuccess(message);
+        raven.glasspanepopup.GlassPanePopup.showPopup(success);
+    }
+
+    private void showMessageError(String message) {
+        DialogMessageError error = new DialogMessageError(message);
+        raven.glasspanepopup.GlassPanePopup.showPopup(error);
+    }
+
+    private void showMessageFail(String message) {
+        DialogMessageFail fail = new DialogMessageFail(message);
+        raven.glasspanepopup.GlassPanePopup.showPopup(fail);
+    }
+
+    public void showMessageConfirm(String message, Runnable onConfirmAction) {
+        DialogConfirm confirm = new DialogConfirm(message);
+        confirm.setConfirmListener(new ConfirmListener() {
+            @Override
+            public void onConfirm() {
+                if (onConfirmAction != null) {
+                    onConfirmAction.run(); // Thực hiện hành động truyền vào
+                }
+                raven.glasspanepopup.GlassPanePopup.closePopup("confirm");
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+        raven.glasspanepopup.GlassPanePopup.showPopup(confirm, "confirm"); // Hiển thị popup
     }
 
     /**
@@ -124,11 +208,13 @@ public class PopupInvoice extends javax.swing.JPanel {
         jLabel5 = new javax.swing.JLabel();
         txtTotalPrice = new com.petshop.swing.textfield.TextField1();
         jLabel6 = new javax.swing.JLabel();
-        txtActualPrice = new com.petshop.swing.textfield.TextField1();
+        txtCostsIncurred = new com.petshop.swing.textfield.TextField1();
         textAreaScroll1 = new com.petshop.swing.textarea.TextAreaScroll();
         txtNotes = new com.petshop.swing.textarea.TextArea();
         btnConfirm = new com.petshop.swing.Button1();
         btnCancel = new com.petshop.swing.Button1();
+        jLabel7 = new javax.swing.JLabel();
+        txtPaymentStatus = new com.petshop.swing.textfield.TextField1();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
@@ -184,8 +270,15 @@ public class PopupInvoice extends javax.swing.JPanel {
         txtNotes.setRows(5);
         textAreaScroll1.setViewportView(txtNotes);
 
+        btnConfirm.setBackground(new java.awt.Color(204, 255, 204));
         btnConfirm.setText("Cập nhập");
+        btnConfirm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConfirmActionPerformed(evt);
+            }
+        });
 
+        btnCancel.setBackground(new java.awt.Color(255, 204, 204));
         btnCancel.setText("Đóng");
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -193,35 +286,38 @@ public class PopupInvoice extends javax.swing.JPanel {
             }
         });
 
+        jLabel7.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
+        jLabel7.setText("Trạng thái thanh toán:");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtInvoiceCode, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(txtCustomer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(txtEmployee, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(txtTotalPrice, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(txtActualPrice, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel5)
-                                    .addComponent(jLabel6))
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(textAreaScroll1, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtInvoiceCode, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtCustomer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtEmployee, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtTotalPrice, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtCostsIncurred, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 3, Short.MAX_VALUE)
+                        .addComponent(textAreaScroll1, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel7))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(txtPaymentStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -246,13 +342,17 @@ public class PopupInvoice extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel6)
                 .addGap(0, 0, 0)
-                .addComponent(txtActualPrice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtCostsIncurred, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textAreaScroll1, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel7)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addComponent(txtPaymentStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5)
+                .addComponent(textAreaScroll1, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -264,7 +364,7 @@ public class PopupInvoice extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 824, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 821, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -275,10 +375,12 @@ public class PopupInvoice extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addGap(0, 0, 0)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 11, Short.MAX_VALUE))
                     .addComponent(jScrollPane1))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -286,6 +388,13 @@ public class PopupInvoice extends javax.swing.JPanel {
         // TODO add your handling code here:
         raven.glasspanepopup.GlassPanePopup.closePopup("pInvoice");
     }//GEN-LAST:event_btnCancelActionPerformed
+
+    private void btnConfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfirmActionPerformed
+        // TODO add your handling code here:
+        showMessageConfirm("Xác nhận cập nhập hóa đơn?", () -> {
+            updateInvoice();
+        });
+    }//GEN-LAST:event_btnConfirmActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -297,15 +406,17 @@ public class PopupInvoice extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private com.petshop.swing.table.Table tbInvoiceDetail;
     private com.petshop.swing.textarea.TextAreaScroll textAreaScroll1;
-    private com.petshop.swing.textfield.TextField1 txtActualPrice;
+    private com.petshop.swing.textfield.TextField1 txtCostsIncurred;
     private com.petshop.swing.textfield.TextField1 txtCustomer;
     private com.petshop.swing.textfield.TextField1 txtEmployee;
     private com.petshop.swing.textfield.TextField1 txtInvoiceCode;
     private com.petshop.swing.textarea.TextArea txtNotes;
+    private com.petshop.swing.textfield.TextField1 txtPaymentStatus;
     private com.petshop.swing.textfield.TextField1 txtTotalPrice;
     // End of variables declaration//GEN-END:variables
 }

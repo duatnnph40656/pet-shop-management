@@ -32,6 +32,10 @@ public class Invoices {
     public Invoices() {
     }
 
+    public Invoices(int id) {
+        this.id = id;
+    }
+
     
     public Invoices(String invoiceCode, Customers customer, Employees employee, boolean paymentMethod, BigDecimal totalPrice, boolean paymentStatus, String note, BigDecimal costsIncurred,boolean deleted, boolean status) {
         this.invoiceCode = invoiceCode;

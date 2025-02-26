@@ -46,7 +46,7 @@
                   <Component id="jPanel4" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="70" max="32767" attributes="0"/>
                       <Component id="jLabel11" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Component id="txtInvoiceCode" min="-2" pref="112" max="-2" attributes="0"/>
@@ -500,7 +500,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="1" attributes="0">
-                          <Component id="txtServiceCode" pref="168" max="32767" attributes="0"/>
+                          <Component id="txtServiceCode" pref="190" max="32767" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="txtServiceStart" min="-2" pref="164" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -511,10 +511,17 @@
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="textAreaScroll1" alignment="1" min="-2" pref="327" max="-2" attributes="0"/>
-                      <Component id="btnConfirm" alignment="1" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace min="-2" pref="129" max="-2" attributes="0"/>
+                          <Component id="btnConfirm" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                          <Component id="txtTotalDays" min="-2" pref="80" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                          <Component id="textAreaScroll1" max="32767" attributes="0"/>
+                      </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -533,6 +540,7 @@
                               <Component id="txtServiceCode" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="txtServiceStart" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="txtServiceEnd" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="txtTotalDays" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -588,6 +596,14 @@
               <Color blue="ff" green="ff" red="33" type="rgb"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Ho&#xe0;n t&#x1ea5;t"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnConfirmActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="com.petshop.swing.textfield.TextField" name="txtTotalDays">
+          <Properties>
+            <Property name="labelText" type="java.lang.String" value="T&#x1ed5;ng s&#x1ed1; ng&#xe0;y"/>
           </Properties>
         </Component>
       </SubComponents>

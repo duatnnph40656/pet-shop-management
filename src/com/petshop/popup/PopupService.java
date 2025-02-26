@@ -45,9 +45,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -67,10 +70,15 @@ public class PopupService extends javax.swing.JPanel {
     private final CustomerDAO customerDAO;
     private final InvoiceDAO invoiceDAO;
     private ConfirmListener listener;
+    private boolean serviceInserted = false;
 
     // Đăng ký ConfirmListener
     public void setConfirmListener(ConfirmListener listener) {
         this.listener = listener;
+    }
+
+    public boolean isServiceInserted() {
+        return serviceInserted; // Trả về kết quả để panel khác kiểm tra
     }
 
     public PopupService() {
@@ -90,10 +98,30 @@ public class PopupService extends javax.swing.JPanel {
             }
             raven.glasspanepopup.GlassPanePopup.closePopupLast();
         });
+        // Sự kiện nút xác nhận
         btnConfirm.addActionListener(evt -> {
             if (listener != null) {
+//                serviceInserted = insertPetCareService(); // Gọi insert và lưu kết quả
+//                if (serviceInserted) {
+//                    listener.onConfirm(); // Chỉ gọi nếu thành công
+//                }
                 listener.onConfirm();
-                insertPetCareService();
+            }
+        });
+        txtServiceEnd.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                calculateDays();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                calculateDays();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                calculateDays();
             }
         });
         txtServiceStart.setEditable(false);
@@ -107,6 +135,7 @@ public class PopupService extends javax.swing.JPanel {
         eventDateChooser();
         eventTable();
         eventSearch();
+        txtTotalDays.setEditable(false);
     }
 
     private void eventSearch() {
@@ -180,6 +209,15 @@ public class PopupService extends javax.swing.JPanel {
 
     public int getPetId() {
         return (int) tbPet.getValueAt(getSeletedRowTable(), 0);
+    }
+
+    public int getTotalDays() {
+        try {
+            String text = txtTotalDays.getText().replaceAll("[^0-9]", "").trim(); // Xóa tất cả ký tự không phải số
+            return Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     private void eventTable() {
@@ -420,6 +458,10 @@ public class PopupService extends javax.swing.JPanel {
         }
     }
 
+    public boolean isValidDateRange(LocalDateTime dateStart, LocalDateTime dateEnd) {
+        return !dateEnd.isBefore(dateStart); // Trả về false nếu ngày kết thúc nhỏ hơn ngày bắt đầu
+    }
+
     private PetCareServices readFormPetC() {
         PetCareServices c = new PetCareServices();
 
@@ -445,6 +487,11 @@ public class PopupService extends javax.swing.JPanel {
             }
         }
 
+        if (!isValidDateRange(dateStart, dateEnd)) {
+            showMessageFail("Ngày kết thúc không thể nhỏ hơn ngày bắt đầu!");
+            return null; // Trả về null nếu không hợp lệ
+        }
+
         c.setDateStart(dateStart);
         c.setDateEnd(dateEnd);
         c.setNote(txtNote.getText());
@@ -466,14 +513,22 @@ public class PopupService extends javax.swing.JPanel {
         return c;
     }
 
-    private void insertPetCareService() {
+    private boolean insertPetCareService() {
         if (getSeletedRowTable() == -1) {
-            return;
+            return false;
         }
-        if (careServices.insertPetCareService(readFormPetC())) {
+
+        PetCareServices petCareService = readFormPetC();
+        if (petCareService == null) {
+            return false; // Dừng luôn nếu ngày không hợp lệ
+        }
+
+        if (careServices.insertPetCareService(petCareService)) {
             showMessageSuccess("Đã lưu vào quản lý dịch vụ!");
+            return true;
         } else {
             showMessageFail("Lưu thất bại!!!");
+            return false;
         }
     }
 
@@ -497,6 +552,38 @@ public class PopupService extends javax.swing.JPanel {
     private void fillTableByCustomerCode(String customerCode) {
         List<Pets> list = petDAO.getListPetByCustomerCode(customerCode);
         getListPet(list);
+    }
+
+    // Phương thức tính số ngày
+    private void calculateDays() {
+        try {
+            // Lấy ngày hiện tại (ngày bắt đầu)
+            LocalDateTime dateStart = LocalDateTime.now();
+
+            // Lấy ngày kết thúc từ text field
+            String dateEndStr = txtServiceEnd.getText().trim();
+            if (!dateEndStr.isEmpty()) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                LocalDate parsedDate = LocalDate.parse(dateEndStr, formatter);
+                LocalDateTime dateEnd = parsedDate.atTime(23, 59, 59);
+
+                // Nếu ngày kết thúc nhỏ hơn ngày bắt đầu -> set "0 ngày"
+                if (dateEnd.isBefore(dateStart)) {
+                    txtTotalDays.setText("0 ngày");
+                    return;
+                }
+
+                // Tính số ngày
+                long totalDays = ChronoUnit.DAYS.between(dateStart.toLocalDate(), dateEnd.toLocalDate());
+
+                // Hiển thị số ngày lên giao diện
+                txtTotalDays.setText(totalDays + " ngày");
+            } else {
+                txtTotalDays.setText("0 ngày");
+            }
+        } catch (DateTimeParseException e) {
+            txtTotalDays.setText("Lỗi định dạng");
+        }
     }
 
     /**
@@ -546,6 +633,7 @@ public class PopupService extends javax.swing.JPanel {
         textAreaScroll1 = new com.petshop.swing.textarea.TextAreaScroll();
         txtNote = new com.petshop.swing.textarea.TextArea();
         btnConfirm = new com.petshop.swing.Button1();
+        txtTotalDays = new com.petshop.swing.textfield.TextField();
         txtSearch = new com.petshop.swing.textfield.TextFieldAnimation();
         txtInvoiceCode = new com.petshop.swing.textfield.TextField1();
         jLabel1 = new javax.swing.JLabel();
@@ -786,6 +874,13 @@ public class PopupService extends javax.swing.JPanel {
 
         btnConfirm.setBackground(new java.awt.Color(51, 255, 255));
         btnConfirm.setText("Hoàn tất");
+        btnConfirm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConfirmActionPerformed(evt);
+            }
+        });
+
+        txtTotalDays.setLabelText("Tổng số ngày");
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -795,7 +890,7 @@ public class PopupService extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                        .addComponent(txtServiceCode, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
+                        .addComponent(txtServiceCode, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(txtServiceStart, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -803,10 +898,15 @@ public class PopupService extends javax.swing.JPanel {
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addComponent(jLabel8)
                         .addGap(0, 0, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(textAreaScroll1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 327, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnConfirm, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(129, 129, 129)
+                        .addComponent(btnConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(txtTotalDays, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(12, 12, 12)
+                        .addComponent(textAreaScroll1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -821,7 +921,8 @@ public class PopupService extends javax.swing.JPanel {
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(txtServiceCode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtServiceStart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtServiceEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(txtServiceEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtTotalDays, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -855,7 +956,7 @@ public class PopupService extends javax.swing.JPanel {
                     .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
                         .addComponent(jLabel11)
                         .addGap(0, 0, 0)
                         .addComponent(txtInvoiceCode, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -918,6 +1019,10 @@ public class PopupService extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnCancelActionPerformed
 
+    private void btnConfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfirmActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnConfirmActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.Button1 btnAddPet;
@@ -962,6 +1067,7 @@ public class PopupService extends javax.swing.JPanel {
     private com.petshop.swing.textfield.TextField txtServiceCode;
     private com.petshop.swing.textfield.TextField txtServiceEnd;
     private com.petshop.swing.textfield.TextField txtServiceStart;
+    private com.petshop.swing.textfield.TextField txtTotalDays;
     private com.petshop.swing.textfield.TextField1 txtWeight;
     // End of variables declaration//GEN-END:variables
 }

@@ -172,7 +172,8 @@ public class InvoiceManagement extends javax.swing.JPanel {
     }
 
     private void resetForm() {
-        cbbFilter.setSelectedIndex(-1);
+        cbbFilter.setSelectedIndex(0);
+        cbbFilterPaymentStatus.setSelectedIndex(0);
         getListInvoice(invoiceDAO.getListInvoiceAll());
         tbInvoice.clearSelection();
         getListInvoiceDetail(new ArrayList<>());
@@ -196,12 +197,12 @@ public class InvoiceManagement extends javax.swing.JPanel {
         for (InvoiceDetails i : list) {
             String name = (i.getProductDetail() != null && i.getProductDetail().getProductDetailName() != null)
                     ? i.getProductDetail().getProductDetailName()
-                    : (i.getPetService() != null ? i.getPetService().getServiceName() : "N/A");
+                    : (i.getPetService() != null ? i.getPetService().getServiceName() : "Chưa có thông tin");
 
             String code = (i.getProductDetail() != null && i.getProductDetail().getProductDetailCode() != null)
                     ? i.getProductDetail().getProductDetailCode()
-                    : (i.getPetService() != null ? i.getPetService().getServiceCode() : "N/A");
-            String petName = (i.getPet() != null) ? i.getPet().getPetName() : "N/A";
+                    : (i.getPetService() != null ? i.getPetService().getServiceCode() : "Chưa có thông tin");
+            String petName = (i.getPet() != null) ? i.getPet().getPetName() : "Không có thông tin";
 
             BigDecimal price = (i.getProductDetail() != null && i.getProductDetail().getPrice() != null)
                     ? i.getProductDetail().getPrice()
@@ -217,7 +218,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
                 i.getUsageOrQuantity(),
                 Ultil.formatCurrency(price),
                 Ultil.formatCurrency(i.getTotalPrice()),
-                petName == null ? "N/A" : petName,
+                petName == null ? "Không có thông tin" : petName,
                 i.getFormattedCreatedAt()
             });
             stt++;
@@ -541,6 +542,8 @@ public class InvoiceManagement extends javax.swing.JPanel {
         if (tbInvoiceDetail.getColumnModel().getColumnCount() > 0) {
             tbInvoiceDetail.getColumnModel().getColumn(0).setMinWidth(40);
             tbInvoiceDetail.getColumnModel().getColumn(0).setMaxWidth(40);
+            tbInvoiceDetail.getColumnModel().getColumn(1).setMinWidth(80);
+            tbInvoiceDetail.getColumnModel().getColumn(1).setMaxWidth(80);
             tbInvoiceDetail.getColumnModel().getColumn(3).setMinWidth(230);
             tbInvoiceDetail.getColumnModel().getColumn(3).setMaxWidth(230);
             tbInvoiceDetail.getColumnModel().getColumn(4).setMinWidth(40);

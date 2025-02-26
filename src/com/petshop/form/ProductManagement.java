@@ -317,10 +317,12 @@ public class ProductManagement extends javax.swing.JPanel {
                     
                     @Override
                     public void update(Products product) {
+                        
                     }
                     
                     @Override
                     public void add(Products model) {
+                        
                     }
                 })
             });

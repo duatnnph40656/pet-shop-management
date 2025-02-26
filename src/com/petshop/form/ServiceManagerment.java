@@ -52,7 +52,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
     public void init() {
         txtServiceCode.setText("SV" + Ultil.generateRandomCode());
-//        getListService(petServiceDAO.getListServiceAll());
+        getListService(petServiceDAO.getListServiceAll());
         loadCBBTypeService(typeServiceDAO.getListTypeS());
         loadComboBoxes(typeServiceDAO.getListTypeS());
         loadCBBTimeUnit();
@@ -341,7 +341,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         cbbTimeUnit.addItem("Ngày");
         cbbTimeUnit.addItem("Tháng");
         cbbTimeUnit.addItem("Năm");
-        cbbFilterStatus.setSelectedIndex(-1);
+        cbbTimeUnit.setSelectedIndex(-1);
     }
     //</editor-fold>
 
@@ -351,7 +351,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         int stt = 1;
         for (PetServices p : list) {
             tbService.addRow(new Object[]{
-                getSafeValue(p.getId()),
+                p.getId(),
                 stt,
                 getSafeValue(p.getServiceCode()),
                 getSafeValue(p.getServiceName()),

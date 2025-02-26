@@ -53,6 +53,10 @@ public class PetServices {
         this.status = status;
     }
 
+    public PetServices(int id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }

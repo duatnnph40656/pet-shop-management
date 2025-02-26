@@ -26,6 +26,7 @@ public class InvoiceDetails {
     private boolean deleted;
     private boolean status;
     private boolean typeInvoiceDetail;
+    private int serviceDuration;
 
     public InvoiceDetails() {
     }
@@ -47,6 +48,14 @@ public class InvoiceDetails {
     public InvoiceDetails(ProductDetails productDetail, int usageOrQuantity) {
         this.productDetail = productDetail;
         this.usageOrQuantity = usageOrQuantity;
+    }
+
+    public int getServiceDuration() {
+        return serviceDuration;
+    }
+
+    public void setServiceDuration(int serviceDuration) {
+        this.serviceDuration = serviceDuration;
     }
 
     

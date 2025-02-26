@@ -89,11 +89,11 @@ public class DialogInput extends javax.swing.JPanel {
         textField11 = new com.petshop.swing.textfield.TextField1();
 
         jLabel1.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
-        jLabel1.setText("Nhập số lượng");
+        jLabel1.setText("Nhập số lượng hoặc số ngày");
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-input-35.png"))); // NOI18N
 
-        btnCancel.setBackground(new java.awt.Color(242, 242, 242));
+        btnCancel.setBackground(new java.awt.Color(255, 204, 204));
         btnCancel.setText("Hủy bỏ");
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -114,8 +114,7 @@ public class DialogInput extends javax.swing.JPanel {
                         .addContainerGap()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(textField11, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
-                        .addGap(9, 9, 9))
+                        .addComponent(textField11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)

@@ -55,6 +55,11 @@ import raven.glasspanepopup.GlassPanePopup;
  */
 public class Ultil {
 
+    public static LocalDateTime calculateEndDate(int days) {
+        LocalDateTime startDate = LocalDateTime.now(); // Lấy ngày hiện tại
+        return startDate.plusDays(days); // Cộng thêm số ngày
+    }
+
     public static String getFormatted(LocalDateTime localDateTime) {
         if (localDateTime == null) {
             return "N/A";

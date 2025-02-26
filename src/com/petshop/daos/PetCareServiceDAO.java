@@ -9,6 +9,7 @@ import com.petshop.models.TypePets;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PetCareServiceDAO {
@@ -65,6 +66,34 @@ public class PetCareServiceDAO {
         }
     }
 
+    public boolean insertPetCareServicesBatch(List<PetCareServices> services) {
+        String sql = """
+        INSERT INTO pet_care_services 
+        (pet_id, service_id, service_start, service_end, notes, is_deleted, is_status, id_invoice) 
+        VALUES (?, ?, ?, ?, ?, 0, ?, ?)
+    """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (PetCareServices service : services) {
+                ps.setInt(1, service.getPet().getId());
+                ps.setInt(2, service.getPetS().getId());
+                ps.setTimestamp(3, service.getDateStart() != null ? Timestamp.valueOf(service.getDateStart()) : null);
+                ps.setTimestamp(4, service.getDateEnd() != null ? Timestamp.valueOf(service.getDateEnd()) : null);
+                ps.setString(5, service.getNote());
+                ps.setBoolean(6, service.isStatus());
+                ps.setInt(7, service.getInvoices().getId());
+
+                ps.addBatch(); // Thêm vào batch
+            }
+
+            int[] results = ps.executeBatch(); // Thực thi batch
+            return Arrays.stream(results).allMatch(result -> result > 0); // Kiểm tra tất cả đều thành công
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public boolean updateActualEndAndNote(int id, LocalDateTime actualEnd, String note) {
         String sql = "UPDATE pet_care_services "
                 + "SET actual_end = ?, notes = ?, is_status = 0"
@@ -80,6 +109,106 @@ public class PetCareServiceDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public List<PetCareServices> getListPetCareServiceByInvoiceCode(String invoiceCode) {
+        List<PetCareServices> list = new ArrayList<>();
+        String sql = """
+        SELECT pcs.id, pcs.pet_id, pcs.service_id, pcs.service_start, pcs.service_end, 
+               pcs.actual_end, pcs.notes, pcs.created_at, pcs.is_status, pcs.id_invoice, 
+               p.pet_name, p.pet_code, p.breed, p.owner, p.id_type_pet, p.color, p.weight, 
+               p.vaccinated, p.age, p.gender, 
+               t.type_pet_name, 
+               s.service_code, s.service_name, 
+               i.id AS invoice_id, i.invoice_code
+        FROM pet_care_services pcs
+        JOIN pets p ON pcs.pet_id = p.id
+        JOIN type_pets t ON p.id_type_pet = t.id  
+        JOIN service_details s ON pcs.service_id = s.id
+        JOIN invoices i ON pcs.id_invoice = i.id
+        WHERE i.is_deleted = 0 AND i.invoice_code = ?;
+    """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, invoiceCode);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResult(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public List<PetCareServices> getListPetCareServiceByOwner(String owner) {
+        List<PetCareServices> list = new ArrayList<>();
+        String sql = """
+        SELECT pcs.id, pcs.pet_id, pcs.service_id, pcs.service_start, pcs.service_end, 
+               pcs.actual_end, pcs.notes, pcs.created_at, pcs.is_status, pcs.id_invoice, 
+               p.pet_name, p.pet_code, p.breed, p.owner, p.id_type_pet, p.color, p.weight, 
+               p.vaccinated, p.age, p.gender, 
+               t.type_pet_name, 
+               s.service_code, s.service_name, 
+               i.id AS invoice_id, i.invoice_code
+        FROM pet_care_services pcs
+        JOIN pets p ON pcs.pet_id = p.id
+        JOIN type_pets t ON p.id_type_pet = t.id  
+        JOIN service_details s ON pcs.service_id = s.id
+        JOIN invoices i ON pcs.id_invoice = i.id
+        WHERE i.is_deleted = 0 AND p.owner LIKE ?;
+    """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "%" + owner + "%"); // Tìm kiếm gần đúng theo tên chủ sở hữu
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResult(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public List<PetCareServices> searchPetCareServices(String keyword) {
+        List<PetCareServices> list = new ArrayList<>();
+        String sql = """
+        SELECT pcs.id, pcs.pet_id, pcs.service_id, pcs.service_start, pcs.service_end, 
+               pcs.actual_end, pcs.notes, pcs.created_at, pcs.is_status, pcs.id_invoice, 
+               p.pet_name, p.pet_code, p.breed, p.owner, p.id_type_pet, p.color, p.weight, 
+               p.vaccinated, p.age, p.gender, 
+               t.type_pet_name, 
+               s.service_code, s.service_name, 
+               i.id AS invoice_id, i.invoice_code
+        FROM pet_care_services pcs
+        JOIN pets p ON pcs.pet_id = p.id
+        JOIN type_pets t ON p.id_type_pet = t.id  
+        JOIN service_details s ON pcs.service_id = s.id
+        JOIN invoices i ON pcs.id_invoice = i.id
+        WHERE i.is_deleted = 0 
+          AND (i.invoice_code LIKE ? OR p.owner LIKE ?);
+    """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            String searchPattern = "%" + keyword + "%";
+            ps.setString(1, searchPattern); // Tìm theo invoice_code
+            ps.setString(2, searchPattern); // Tìm theo owner
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResult(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 
     public PetCareServices mapResult(ResultSet rs) throws Exception {

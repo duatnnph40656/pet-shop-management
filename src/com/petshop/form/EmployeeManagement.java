@@ -79,6 +79,7 @@ public class EmployeeManagement extends javax.swing.JPanel {
         resetFields();
         txtMaNhanVien.setEditable(false);
     }
+    
 
     //<editor-fold defaultstate="collapsed" desc="{Message...">
     private void showMessageSuccess(String message) {

@@ -685,6 +685,20 @@ public class InvoiceDAO {
         return false;
     }
 
+    public boolean updateInvoiceByCostsAndNote(int id, BigDecimal costsIncurred, BigDecimal totalPrice, String note) {
+        String sql = "UPDATE invoices SET costs_incurred = ?, note = ?, payment_status = 1 , total_price = ?WHERE id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBigDecimal(1, costsIncurred);
+            ps.setString(2, note);
+            ps.setBigDecimal(3, totalPrice);
+            ps.setInt(4, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public Invoices mapInvoice(ResultSet rs) throws SQLException {
         Invoices i = new Invoices();
         i.setId(rs.getInt("id"));
