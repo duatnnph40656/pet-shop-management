@@ -16,18 +16,18 @@ import java.util.List;
  * @author duat
  */
 public class EmployeeDAO {
-    
+
     private Connection conn;
-    
+
     public EmployeeDAO() {
         conn = DBConnect.getConnection();
     }
-    
+
     public List<Employees> getListEmployee() {
         List<Employees> employeesList = new ArrayList<>();
         String sql = "SELECT id, employee_code, employee_name, phone_number, email, id_role, address, created_at, is_deleted, is_status, gender "
                 + "FROM employees WHERE is_deleted = 0";
-        
+
         try (PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 employeesList.add(mapEmployee(rs));
@@ -37,12 +37,12 @@ public class EmployeeDAO {
         }
         return employeesList;
     }
-    
+
     public List<Employees> getListEmployeeByGender(boolean gender) {
         List<Employees> employeesList = new ArrayList<>();
         String sql = "SELECT id, employee_code, employee_name, phone_number, email, id_role, address, created_at, is_deleted, is_status, gender "
                 + "FROM employees WHERE is_deleted = 0 AND gender = ?";
-        
+
         try (PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
             stmt.setBoolean(1, gender);
             while (rs.next()) {
@@ -53,12 +53,12 @@ public class EmployeeDAO {
         }
         return employeesList;
     }
-    
+
     public List<Employees> getListEmployeeDeleted() {
         List<Employees> employeesList = new ArrayList<>();
         String sql = "SELECT id, employee_code, employee_name, phone_number, email, id_role, address, created_at, is_deleted, is_status, gender "
-                + "FROM employees WHERE is_deleted = 0";
-        
+                + "FROM employees WHERE is_deleted = 1";
+
         try (PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 employeesList.add(mapEmployee(rs));
@@ -68,7 +68,7 @@ public class EmployeeDAO {
         }
         return employeesList;
     }
-    
+
     public boolean insertEmployee(Employees employee) {
         String sql = "INSERT INTO employees(employee_code, employee_name, gender, phone_number, email, address, id_role, is_deleted, is_status) VALUES (?,?,?,?,?,?,?,0,1)";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -83,10 +83,10 @@ public class EmployeeDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         return false;
     }
-    
+
     public Employees findEmployeeByName(String keyword) {
         String sql = "  SELECT id, employee_code, employee_name, phone_number, email, id_role, address, created_at, is_deleted, is_status, gender \n"
                 + "              FROM employees \n"
@@ -119,7 +119,7 @@ public class EmployeeDAO {
         }
         return null; // Trả về null nếu không tìm thấy nhân viên
     }
-    
+
     public List<Employees> searchEmployeeByName(String keyword) {
         List<Employees> employeesList = new ArrayList<>();
         String sql = "SELECT id, employee_code, employee_name, phone_number, email, id_role, address, created_at, is_deleted, is_status, gender "
@@ -139,7 +139,7 @@ public class EmployeeDAO {
         }
         return employeesList;
     }
-    
+
     public List<Employees> searchEmployee(String keyword) {
         List<Employees> employeesList = new ArrayList<>();
         String sql = "SELECT id, employee_code, employee_name, phone_number, email, id_role, address, created_at, is_deleted, is_status, gender "
@@ -160,7 +160,7 @@ public class EmployeeDAO {
         }
         return employeesList;
     }
-    
+
     public List<Employees> getSortedEmployeesByName(boolean ascending) {
         List<Employees> employeesList = new ArrayList<>();
         String order = ascending ? "ASC" : "DESC"; // Xác định thứ tự sắp xếp
@@ -177,10 +177,10 @@ public class EmployeeDAO {
         }
         return employeesList;
     }
-    
+
     public boolean updateEmployee(int id, Employees e) {
         String sql = "UPDATE employees SET employee_name = ?, phone_number = ?, email = ?, address = ?, gender = ? WHERE id = ?";
-        
+
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, e.getEmployeeName());
             ps.setString(2, e.getPhoneNumber());
@@ -195,17 +195,17 @@ public class EmployeeDAO {
         }
         return false;
     }
-    
+
     public boolean restoreEmployee(int id) {
         String sql = "UPDATE employees SET is_deleted = 0 WHERE id = ?";
-        
+
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
         } catch (Exception e) {
         }
         return false;
     }
-    
+
     public boolean deletedEmployee(int id) {
         String sql = "UPDATE employees SET is_deleted = 1 WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -216,12 +216,12 @@ public class EmployeeDAO {
         }
         return false;
     }
-    
+
     public Employees findEmployeeById(int id) {
         String sql = "SELECT id, employee_code, employee_name, phone_number, email, id_role, address, created_at, is_deleted, is_status, gender "
                 + "FROM employees "
                 + "WHERE id = ?";
-        
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id); // Đặt giá trị cho tham số ID
 
@@ -250,7 +250,7 @@ public class EmployeeDAO {
         }
         return null; // Trả về null nếu không tìm thấy nhân viên
     }
-    
+
     private Employees mapEmployee(ResultSet rs) throws SQLException {
         Employees i = new Employees();
         i.setId(rs.getInt("id"));
@@ -266,8 +266,31 @@ public class EmployeeDAO {
         i.setCreatedAt(rs.getTimestamp("created_at"));
         i.setDeleted(rs.getBoolean("is_deleted"));
         i.setStatus(rs.getBoolean("is_status"));
-        
+
         return i;
     }
-    
+
+    public List<Employees> getEmployeesByGender(Boolean gender) {
+        List<Employees> employeesList = new ArrayList<>();
+        String sql = "SELECT id, employee_code, employee_name, phone_number, email, id_role, address, created_at, is_deleted, is_status, gender FROM employees WHERE is_deleted = 0";
+
+        if (gender != null) {
+            sql += " AND gender = ?"; // Chỉ lọc khi có giá trị giới tính
+        }
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            if (gender != null) {
+                stmt.setBoolean(1, gender);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    employeesList.add(mapEmployee(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return employeesList;
+    }
+
 }

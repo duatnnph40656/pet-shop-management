@@ -560,7 +560,6 @@
                     </Component>
                     <Component class="com.petshop.swing.textfield.TextField" name="txtMaThuCung">
                       <Properties>
-                        <Property name="enabled" type="boolean" value="false"/>
                         <Property name="labelText" type="java.lang.String" value="M&#xe3; Pet"/>
                       </Properties>
                     </Component>
@@ -689,7 +688,7 @@
                                 <Column editable="true" title="M&#xe0;u s&#x1eaf;c " type="java.lang.Object"/>
                                 <Column editable="true" title="Gi&#x1edb;i t&#xed;nh" type="java.lang.Object"/>
                                 <Column editable="true" title="Vaccine" type="java.lang.Object"/>
-                                <Column editable="true" title="T&#xea;n kh&#xe1;ch" type="java.lang.Object"/>
+                                <Column editable="true" title="Th&#xf4;ng tin KH" type="java.lang.Object"/>
                                 <Column editable="true" title="Ng&#xe0;y t&#x1ea1;o" type="java.lang.Object"/>
                               </Table>
                             </Property>
@@ -700,7 +699,7 @@
                                   <Editor/>
                                   <Renderer/>
                                 </Column>
-                                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                                <Column maxWidth="35" minWidth="35" prefWidth="-1" resizable="true">
                                   <Title/>
                                   <Editor/>
                                   <Renderer/>
@@ -827,32 +826,36 @@
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="btnThem" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="btnCapNhat" alignment="0" max="32767" attributes="0"/>
-                                  <Component id="btnLichSuaXoa" alignment="0" pref="220" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
-                                      <Component id="btnXoa" min="-2" pref="86" max="-2" attributes="0"/>
-                                      <EmptySpace max="32767" attributes="0"/>
-                                      <Component id="btnLamMoi" min="-2" pref="89" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="67" max="-2" attributes="0"/>
+                                      <Component id="button9" min="-2" pref="89" max="-2" attributes="0"/>
+                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="btnThem" alignment="0" max="32767" attributes="0"/>
+                                          <Component id="btnCapNhat" alignment="0" max="32767" attributes="0"/>
+                                          <Group type="102" attributes="0">
+                                              <Component id="btnXoa" min="-2" pref="86" max="-2" attributes="0"/>
+                                              <EmptySpace pref="45" max="32767" attributes="0"/>
+                                              <Component id="btnLamMoi" min="-2" pref="89" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Component id="btnLichSuaXoa" alignment="0" max="32767" attributes="0"/>
+                                      </Group>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="67" max="-2" attributes="0"/>
-                              <Component id="button9" min="-2" pref="89" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="btnLichSuaXoa" min="-2" pref="33" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+                              <Component id="btnLichSuaXoa" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="btnCapNhat" min="-2" pref="36" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                               <Component id="button9" min="-2" pref="35" max="-2" attributes="0"/>
@@ -913,17 +916,6 @@
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnXoaActionPerformed"/>
                       </Events>
                     </Component>
-                    <Component class="com.petshop.swing.Button" name="btnLichSuaXoa">
-                      <Properties>
-                        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                          <Color blue="ff" green="cc" red="cc" type="rgb"/>
-                        </Property>
-                        <Property name="text" type="java.lang.String" value="L&#x1ecb;ch s&#x1eed; &#x111;&#xe3; x&#xf3;a"/>
-                      </Properties>
-                      <Events>
-                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnLichSuaXoaActionPerformed"/>
-                      </Events>
-                    </Component>
                     <Component class="com.petshop.swing.Button" name="button9">
                       <Properties>
                         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
@@ -933,6 +925,17 @@
                       </Properties>
                       <Events>
                         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="button9ActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="com.petshop.swing.Button" name="btnLichSuaXoa">
+                      <Properties>
+                        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                          <Color blue="ff" green="cc" red="ff" type="rgb"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Danh s&#xe1;ch x&#xf3;a"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnLichSuaXoaActionPerformed"/>
                       </Events>
                     </Component>
                   </SubComponents>

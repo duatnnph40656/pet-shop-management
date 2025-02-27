@@ -202,7 +202,7 @@
                                       <Group type="102" attributes="0">
                                           <Component id="txtProductCode" min="-2" pref="146" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="txtProductName" pref="297" max="32767" attributes="0"/>
+                                          <Component id="txtProductName" pref="266" max="32767" attributes="0"/>
                                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                           <Component id="txtPriceProduct" min="-2" pref="303" max="-2" attributes="0"/>
                                       </Group>
@@ -666,32 +666,35 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="cbbTypePet" max="32767" attributes="0"/>
-                                  <Component id="txtPriceProductDetail" pref="143" max="32767" attributes="0"/>
+                                  <Component id="cbbTypePet" pref="143" max="32767" attributes="0"/>
                                   <Component id="cbbProduct" max="32767" attributes="0"/>
+                                  <Component id="txtPriceProductDetail" alignment="0" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
-                                      <Component id="txtWeightProductDetail" min="-2" pref="178" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <Component id="btnPopupTypePet" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                              <Component id="txtExpiry" min="-2" pref="80" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Component id="txtWeightProductDetail" max="32767" attributes="0"/>
+                                      </Group>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="txtFlavor" min="-2" pref="109" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <Component id="txtFlavor" pref="79" max="32767" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="txtQuantityInStock" min="-2" pref="70" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Component id="txtProductDate" max="32767" attributes="0"/>
+                                      </Group>
                                   </Group>
-                                  <Group type="102" attributes="0">
-                                      <Component id="btnPopupTypePet" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="txtExpiry" min="-2" pref="80" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="txtProductDate" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="txtProductDetailName" min="-2" pref="217" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="txtQuantityInStock" min="-2" pref="70" max="-2" attributes="0"/>
-                                  </Group>
+                                  <Component id="txtProductDetailName" min="-2" pref="293" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                              <Component id="textAreaScroll1" pref="258" max="32767" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="textAreaScroll1" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="btnSelectImage" min="-2" max="-2" attributes="0"/>
@@ -717,7 +720,6 @@
                                           <Group type="102" alignment="0" attributes="0">
                                               <Group type="103" groupAlignment="3" attributes="0">
                                                   <Component id="txtProductDetailName" alignment="3" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="txtQuantityInStock" alignment="3" min="-2" max="-2" attributes="0"/>
                                                   <Component id="cbbProduct" max="32767" attributes="0"/>
                                               </Group>
                                               <Group type="103" groupAlignment="0" attributes="0">
@@ -727,6 +729,7 @@
                                                           <Component id="txtWeightProductDetail" alignment="3" min="-2" max="-2" attributes="0"/>
                                                           <Component id="txtPriceProductDetail" alignment="3" min="-2" max="-2" attributes="0"/>
                                                           <Component id="txtFlavor" alignment="3" min="-2" max="-2" attributes="0"/>
+                                                          <Component id="txtQuantityInStock" alignment="3" min="-2" max="-2" attributes="0"/>
                                                       </Group>
                                                       <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                                                       <Component id="btnPopupTypePet" min="-2" max="-2" attributes="0"/>
@@ -1046,7 +1049,7 @@
                               <Group type="102" attributes="0">
                                   <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
                                   <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="32767" attributes="0"/>
+                                  <EmptySpace pref="118" max="32767" attributes="0"/>
                                   <Component id="cbbFilterProduct" min="-2" pref="139" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="cbbFilterTypePet" min="-2" pref="175" max="-2" attributes="0"/>

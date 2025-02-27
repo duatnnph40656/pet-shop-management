@@ -345,7 +345,6 @@ public class InvoiceManagement extends javax.swing.JPanel {
         btnDeleteHistory = new com.petshop.swing.Button();
         jScrollPane1 = new javax.swing.JScrollPane();
         tbInvoice = new com.petshop.swing.table.Table();
-        btnDeleteHistory1 = new com.petshop.swing.Button();
         txtDateStart = new com.petshop.swing.textfield.TextField1();
         txtDateEnd = new com.petshop.swing.textfield.TextField1();
         cbbFilterPaymentStatus = new com.petshop.swing.combobox.Combobox();
@@ -366,7 +365,6 @@ public class InvoiceManagement extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(1058, 741));
 
         jPanel7.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel7.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         lblKhachHang.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         lblKhachHang.setText("Tìm kiếm hoá đơn: ");
@@ -424,14 +422,6 @@ public class InvoiceManagement extends javax.swing.JPanel {
             tbInvoice.getColumnModel().getColumn(9).setResizable(false);
         }
 
-        btnDeleteHistory1.setBackground(new java.awt.Color(204, 204, 255));
-        btnDeleteHistory1.setText("In hoá đơn");
-        btnDeleteHistory1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDeleteHistory1ActionPerformed(evt);
-            }
-        });
-
         cbbFilterPaymentStatus.setLabeText("Trạng thái thanh toán");
 
         cbbFilter.setLabeText("Lọc theo thời gian");
@@ -461,7 +451,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
                         .addComponent(cbbFilter, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbbFilterPaymentStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 138, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 142, Short.MAX_VALUE)
                         .addComponent(lblKhachHang3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtDateStart, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -479,9 +469,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
                         .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnDeleteHistory1, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel7Layout.setVerticalGroup(
@@ -504,16 +492,13 @@ public class InvoiceManagement extends javax.swing.JPanel {
                         .addComponent(txtDateStart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(lblKhachHang3, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnDeleteHistory1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
         jPanel9.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel9.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         tbInvoiceDetail.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -604,10 +589,6 @@ public class InvoiceManagement extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_tbInvoiceDetailMouseClicked
 
-    private void btnDeleteHistory1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteHistory1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnDeleteHistory1ActionPerformed
-
     private void tbInvoiceMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbInvoiceMouseClicked
         showInvoiceDetailByIdInvoice();
     }//GEN-LAST:event_tbInvoiceMouseClicked
@@ -628,7 +609,6 @@ public class InvoiceManagement extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.Button btnDeleteHistory;
-    private com.petshop.swing.Button btnDeleteHistory1;
     private com.petshop.swing.Button button1;
     private com.petshop.swing.combobox.Combobox cbbFilter;
     private com.petshop.swing.combobox.Combobox cbbFilterPaymentStatus;

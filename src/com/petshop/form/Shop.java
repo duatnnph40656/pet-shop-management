@@ -49,6 +49,7 @@ import com.petshop.ultils.Ultil;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -658,12 +659,38 @@ public class Shop extends javax.swing.JPanel {
             showMessageFail("Không thể hoàn thành hóa đơn 0đ");
             return;
         }
-        if (invoiceDAO.updateInvoice(getIdSelectedInvoice(), readFormUpdate())) {
+
+        // Lấy thông tin hóa đơn trước khi cập nhật
+        int invoiceId = getIdSelectedInvoice();
+        Invoices invoice = invoiceDAO.getInvoiceById(invoiceId); // Phương thức lấy thông tin hóa đơn từ DB
+        if (invoice == null) {
+            showMessageFail("Không tìm thấy hóa đơn!");
+            return;
+        }
+
+        if (invoiceDAO.updateInvoice(invoiceId, readFormUpdate())) {
             Ultil.generateQRCodeImage(lbInvoiceCode.getText());
-            List<InvoiceDetails> list = invoiceDetailDAO.getInvoiceDetails(getIdSelectedInvoice());
-            insertServiceCare(getIdSelectedInvoice());
+            List<InvoiceDetails> list = invoiceDetailDAO.getInvoiceDetails(invoiceId);
+            insertServiceCare(invoiceId);
             updateRemoveQuantityInProductDetail(list);
             showMessageSuccess("Thành công");
+
+            // Lấy thông tin nhân viên và khách hàng từ hóa đơn
+            String employeeName = invoice.getEmployee().getEmployeeName();
+            String customerName = (invoice.getCustomer() != null) ? invoice.getCustomer().getCustomerName() : "Khách lẻ";
+            LocalDateTime createdAt = invoice.getCreatedAt();
+
+            // Định dạng lại ngày tạo theo yyyy-MM-dd HH:mm:ss
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedCreatedAt = createdAt.format(formatter);
+
+// Định dạng lại tổng tiền và bỏ hai số 0
+            BigDecimal formattedTotalAmount = invoice.getTotalPrice().divide(BigDecimal.valueOf(1));
+            String totalAmount1 = String.format("%,.0f", formattedTotalAmount.doubleValue());
+
+            // Gọi hàm in hóa đơn với thông tin mới cập nhật
+            printInvoice(invoice.getInvoiceCode(), employeeName, customerName, totalAmount1, formattedCreatedAt);
+
             getListInvoice(invoiceDAO.getListInvoice());
             clearInvoiceDetailTable();
             resetForm();
@@ -677,7 +704,7 @@ public class Shop extends javax.swing.JPanel {
         getListProductDetail(productDetailDAO.getListProductDetail());
     }
 
-    private void printInvoice(String invoiceId, String employeeName, String customerName, String totalAmount) {
+    private void printInvoice(String invoiceId, String employeeName, String customerName, String totalAmount, String createdAt) {
         List<InvoiceDetails> list = invoiceDetailDAO.getInvoiceDetailsByInvoiceId(getIdSelectedInvoice());
         List<String[]> items = new ArrayList<>();
 
@@ -686,17 +713,20 @@ public class Shop extends javax.swing.JPanel {
                     ? i.getProductDetail().getProductDetailName()
                     : (i.getPetService() != null ? i.getPetService().getServiceName() : "N/A");
 
-            String price = (i.getProductDetail() != null && i.getProductDetail().getPrice() != null)
-                    ? i.getProductDetail().getPrice().toString()
-                    : (i.getPetService() != null ? i.getPetService().getPriceService().toString() : "0");
+            BigDecimal priceValue = (i.getProductDetail() != null && i.getProductDetail().getPrice() != null)
+                    ? i.getProductDetail().getPrice().divide(BigDecimal.valueOf(1))
+                    : (i.getPetService() != null ? i.getPetService().getPriceService().divide(BigDecimal.valueOf(1)) : BigDecimal.ZERO);
 
+            BigDecimal totalValue = i.getTotalPrice().divide(BigDecimal.valueOf(1));
+
+            String price = String.format("%,.0f", priceValue);
+            String total = String.format("%,.0f", totalValue);
             String quantity = String.valueOf(i.getUsageOrQuantity());
-            String total = String.valueOf(i.getTotalPrice());
 
             items.add(new String[]{itemName, quantity, price, total});
         }
 
-        Ultil.generateInvoice(invoiceId, employeeName, customerName, employeeName, items, totalAmount);
+        Ultil.generateInvoice1(invoiceId, employeeName, customerName, items, totalAmount, createdAt);
     }
 
     private void insertServiceCare(int id) {
@@ -720,8 +750,8 @@ public class Shop extends javax.swing.JPanel {
             petCareServiceDAO.insertPetCareService(service);
         }
     }
-
     //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="{InvoiceDetail...">
     public void getListInvoiceDetail(List<InvoiceDetails> list) {
         int stt = 1;
@@ -1569,6 +1599,12 @@ public class Shop extends javax.swing.JPanel {
             tbProductDetail.getColumnModel().getColumn(0).setMaxWidth(0);
             tbProductDetail.getColumnModel().getColumn(1).setMinWidth(35);
             tbProductDetail.getColumnModel().getColumn(1).setMaxWidth(35);
+            tbProductDetail.getColumnModel().getColumn(2).setMinWidth(250);
+            tbProductDetail.getColumnModel().getColumn(2).setMaxWidth(250);
+            tbProductDetail.getColumnModel().getColumn(7).setMinWidth(35);
+            tbProductDetail.getColumnModel().getColumn(7).setMaxWidth(35);
+            tbProductDetail.getColumnModel().getColumn(10).setMinWidth(40);
+            tbProductDetail.getColumnModel().getColumn(10).setMaxWidth(40);
         }
 
         cbbFilterProduct.setLabeText("Sản phẩm");
@@ -1610,9 +1646,8 @@ public class Shop extends javax.swing.JPanel {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(txtSearchProductDetail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(0, 0, 0)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
-                .addGap(0, 0, 0))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE))
         );
 
         materialTabbed1.addTab("Sản phẩm", jPanel2);
@@ -1687,7 +1722,7 @@ public class Shop extends javax.swing.JPanel {
                         .addComponent(cbbSortService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(txtSearchService, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1720,7 +1755,7 @@ public class Shop extends javax.swing.JPanel {
                         .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(materialTabbed1, javax.swing.GroupLayout.PREFERRED_SIZE, 326, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(materialTabbed1, javax.swing.GroupLayout.PREFERRED_SIZE, 336, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

@@ -165,6 +165,7 @@ public class PopupTypeService extends javax.swing.JPanel {
             return;
         }
         if(tDao.insertTypeService(readForm())){
+            txtCode.setText("LDV" + Ultil.generateRandomCode());
             showMessageSuccess("Thêm thành công!!");
             getListTypeService(tDao.getListTypeS());
         } else {

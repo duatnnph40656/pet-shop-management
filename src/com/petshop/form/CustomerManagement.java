@@ -978,12 +978,12 @@ public class CustomerManagement extends javax.swing.JPanel {
             Object[] row = {
                 customer.getId(),
                 stt++,
-                customer.getCustomerCode(),
-                customer.getCustomerName(),
-                customer.getAddress(),
-                customer.getPhoneNumber(),
-                customer.getCreatedAt(),
-                customer.getEmail(),
+                checkEmpty(customer.getCustomerCode()),
+                checkEmpty(customer.getCustomerName()),
+                checkEmpty(customer.getAddress()),
+                checkEmpty(customer.getPhoneNumber()),
+                checkEmpty(customer.getCreatedAt() != null ? customer.getCreatedAt().toString() : null),
+                checkEmpty(customer.getEmail()),
                 customer.isStatus() ? "Đã kích hoạt" : "Chưa kích hoạt",
                 customer.isGender() ? "Nam" : "Nữ"
             };
@@ -992,6 +992,10 @@ public class CustomerManagement extends javax.swing.JPanel {
 
         lblPage.setText("Trang " + currentPage + " / " + totalPages);
         updatePaginationButtons();
+    }
+
+    private String checkEmpty(String value) {
+        return (value == null || value.trim().isEmpty()) ? "Chưa có thông tin" : value;
     }
 
     private void updatePaginationButtons() {
@@ -1488,8 +1492,7 @@ public class CustomerManagement extends javax.swing.JPanel {
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
 
-            try (FileInputStream fis = new FileInputStream(selectedFile);
-                    Workbook workbook = new XSSFWorkbook(fis)) {
+            try (FileInputStream fis = new FileInputStream(selectedFile); Workbook workbook = new XSSFWorkbook(fis)) {
 
                 Sheet sheet = workbook.getSheetAt(0);
                 List<Customers> customersList = new ArrayList<>();
@@ -1544,8 +1547,7 @@ public class CustomerManagement extends javax.swing.JPanel {
             String filePath = directory.getAbsolutePath() + File.separator + "DanhSachKhachHang.xlsx";
             File outputFile = new File(filePath);
 
-            try (Workbook workbook = new XSSFWorkbook();
-                    FileOutputStream fileOut = new FileOutputStream(outputFile)) {
+            try (Workbook workbook = new XSSFWorkbook(); FileOutputStream fileOut = new FileOutputStream(outputFile)) {
 
                 Sheet sheet = workbook.createSheet("Danh sách khách hàng");
 

@@ -79,8 +79,8 @@ public class Dashboard extends javax.swing.JPanel {
     }
 
     public void onFloatingButtonClick() {
-         PopupExport pEx = new PopupExport();
-         GlassPanePopup.showPopup(pEx,"pExport");
+        PopupExport pEx = new PopupExport();
+        GlassPanePopup.showPopup(pEx, "pExport");
     }
 
     private void init() {
@@ -323,14 +323,14 @@ public class Dashboard extends javax.swing.JPanel {
 
     private void getListMostServiceUsed() {
         try {
-            // Ngày hiện tại
-            LocalDate endDate = LocalDate.now();
+            // Lấy thời điểm hiện tại (LocalDateTime)
+            LocalDateTime endDateTime = LocalDateTime.now();
 
-            // Ngày cách đây 7 ngày
-            LocalDate startDate = endDate.minusDays(7);
+            // Lấy thời điểm cách đây 7 ngày
+            LocalDateTime startDateTime = endDateTime.minusDays(7);
 
             // Gọi DAO lấy danh sách dịch vụ được sử dụng nhiều nhất trong 7 ngày gần nhất
-            List<MostUsedService> list = petServiceDAO.getMostUsedServices(startDate, endDate, 10);
+            List<MostUsedService> list = petServiceDAO.getMostUsedServices(startDateTime, endDateTime, 10);
 
             // Hiển thị danh sách trên giao diện
             loadMostServiceUsed(list);
@@ -346,23 +346,33 @@ public class Dashboard extends javax.swing.JPanel {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
             // Lấy ngày từ ô nhập liệu
-            String startDateStr = txtDateStartService.getText();
-            String endDateStr = txtDateEndService.getText();
+            String startDateStr = txtDateStartService.getText().trim();
+            String endDateStr = txtDateEndService.getText().trim();
 
-            // Chuyển đổi chuỗi ngày sang LocalDate
-            LocalDate startDate = null;
-            LocalDate endDate = null;
+            // Kiểm tra nếu ô nhập liệu rỗng
+            if (startDateStr.isEmpty() || endDateStr.isEmpty()) {
+                showMessageFail("Vui lòng nhập đầy đủ ngày bắt đầu và ngày kết thúc!");
+                return;
+            }
+
+            // Chuyển đổi chuỗi ngày sang LocalDateTime
+            LocalDateTime startDateTime;
+            LocalDateTime endDateTime;
 
             try {
-                startDate = LocalDate.parse(startDateStr, formatter);
-                endDate = LocalDate.parse(endDateStr, formatter);
+                LocalDate startDate = LocalDate.parse(startDateStr, formatter);
+                LocalDate endDate = LocalDate.parse(endDateStr, formatter);
+
+                // Gán giờ mặc định: Bắt đầu từ 00:00:00 và kết thúc 23:59:59
+                startDateTime = startDate.atStartOfDay();
+                endDateTime = endDate.atTime(23, 59, 59);
             } catch (DateTimeParseException e) {
                 showMessageFail("Định dạng ngày không hợp lệ! Vui lòng nhập theo định dạng dd/MM/yyyy.");
                 return;
             }
 
-            // Gọi DAO lấy danh sách dịch vụ sử dụng nhiều nhất
-            List<MostUsedService> list = petServiceDAO.getMostUsedServices(startDate, endDate, 10);
+            // Gọi DAO lấy danh sách dịch vụ sử dụng nhiều nhất trong khoảng thời gian đã chọn
+            List<MostUsedService> list = petServiceDAO.getMostUsedServices(startDateTime, endDateTime, 10);
             loadMostServiceUsed(list);
 
         } catch (Exception e) {

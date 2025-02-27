@@ -15,6 +15,7 @@ import com.petshop.models.Customers;
 import com.petshop.models.PetCareServices;
 import com.petshop.models.Pets;
 import com.petshop.models.ProductDetails;
+import com.petshop.models.Products;
 import com.petshop.models.TypePets;
 import com.petshop.popup.PopupCategoryPet;
 import com.petshop.popup.PopupCustomer;
@@ -86,6 +87,7 @@ public class PetManagement extends javax.swing.JPanel {
         getListPetCareS(careServiceDAO.getListPetCareService());
         loadCombobox();
         eventSearch();
+        txtMaThuCung.setEditable(false);
     }
 
     //<editor-fold defaultstate="collapsed" desc="{Pets...">
@@ -172,25 +174,117 @@ public class PetManagement extends javax.swing.JPanel {
         }
     }
 
-//    private void showPopDeleteHistory() {
-//        PopupDeleteHistory deleteHistory = new PopupDeleteHistory();
-//        deleteHistory.setConfirmListener(new com.petshop.event.ConfirmListener() {
-//            @Override
-//            public void onConfirm() {
-//                fillToTable(petDao.getList());
-//                fillFilterBreedPet(petDao.getList());
-//            }
-//
-//            @Override
-//            public void onCancel() {
-//                fillToTable(petDao.getList());
-//                fillFilterBreedPet(petDao.getList());
-//            }
-//        });
-//        GlassPanePopup.showPopup(deleteHistory, "pdeleteHistory");
-//
-//    }
-//
+    public void showPopUpHistoryDeletedPets() {
+        int stt = 1;
+        PopupShowHistoryDeleted popup = new PopupShowHistoryDeleted();
+        List<Pets> list = petDao.getListHistoryDelete();
+        // Chuyển đổi danh sách sản phẩm thành List<Object[]>
+        List<Object[]> data = new ArrayList<>();
+        for (Pets pet : list) {
+            data.add(new Object[]{
+                stt,
+                checkNull(pet.getPetCode()),
+                checkNull(pet.getTypePet() != null ? pet.getTypePet().getTypePetName() : null),
+                checkNull(pet.getBreed()),
+                checkNull(pet.getPetName()),
+                pet.getAge() != null ? pet.getAge() : "Chưa có thông tin",
+                pet.getWeight() != null ? pet.getWeight() : "Chưa có thông tin",
+                checkNull(pet.getColor()),
+                pet.isGender() ? "Đực" : "Cái",
+                pet.isVaccinated() ? "Đã tiêm" : "Chưa tiêm",
+                checkNull(pet.getCustomer() != null ? pet.getCustomer().getCustomerName() : null),
+                new ModelAction<>(pet, new EventAction<Pets>() {
+                    @Override
+                    public void delete(Pets pet) {
+                        showMessageConfirm("Xác nhận khôi phục pet này", () -> {
+                            restorePets(pet);
+                            reloadTablePets(popup);
+                        });
+                    }
+
+                    @Override
+                    public void update(Pets pet) {
+
+                    }
+
+                    @Override
+                    public void add(Pets pet) {
+
+                    }
+                })
+            });
+            stt++;
+        }
+
+        // Định nghĩa tiêu đề cột
+        String[] columnNames = {"STT", "Mã PET", "Loài", "Giống", "Tên thú cưng", "Tuổi", "Cân nặng", "Màu sắc", "Giới tính", "Vaccin", "Thông tin KH", "Thao tác"};
+
+        // Hiển thị popup
+        popup.setLbText("Danh sách sản phẩm đã xóa");
+        popup.fillTable(data, columnNames); // Đảm bảo bảng có dữ liệu trước khi hiển thị
+
+        popup.setConfirmListener(new ConfirmListener() {
+            @Override
+            public void onConfirm() {
+
+            }
+
+            @Override
+            public void onCancel() {
+                fillToTable(petDao.getList());
+            }
+        });
+        GlassPanePopup.showPopup(popup);
+    }
+
+    private void reloadTablePets(PopupShowHistoryDeleted popup) {
+        int stt = 1;
+        List<Pets> list = petDao.getListHistoryDelete();
+        List<Object[]> data = new ArrayList<>();
+        for (Pets pet : list) {
+            data.add(new Object[]{
+                stt,
+                checkNull(pet.getPetCode()),
+                checkNull(pet.getTypePet() != null ? pet.getTypePet().getTypePetName() : null),
+                checkNull(pet.getBreed()),
+                checkNull(pet.getPetName()),
+                pet.getAge() != null ? pet.getAge() : "Chưa có thông tin",
+                pet.getWeight() != null ? pet.getWeight() : "Chưa có thông tin",
+                checkNull(pet.getColor()),
+                pet.isGender() ? "Đực" : "Cái",
+                pet.isVaccinated() ? "Đã tiêm" : "Chưa tiêm",
+                checkNull(pet.getCustomer() != null ? pet.getCustomer().getCustomerName() : null),
+                new ModelAction<>(pet, new EventAction<Pets>() {
+                    @Override
+                    public void delete(Pets pet) {
+                        showMessageConfirm("Xác nhận khôi phục pet này", () -> {
+                            restorePets(pet);
+                            reloadTablePets(popup);
+                        });
+                    }
+
+                    @Override
+                    public void update(Pets pet) {
+
+                    }
+
+                    @Override
+                    public void add(Pets pet) {
+
+                    }
+                })
+            });
+            stt++;
+        }
+
+        // Cập nhật lại bảng
+        popup.fillTable(data, new String[]{"STT", "Mã PET", "Loài", "Giống", "Tên thú cưng", "Tuổi", "Cân nặng", "Màu sắc", "Giới tính", "Vaccin", "Thông tin KH", "Thao tác"});
+    }
+
+    private void restorePets(Pets p) {
+        petDao.restore(p.getPetCode());
+    }
+
     private void showPopInsertCustomers() {
         PopupCustomer popupCustomer = new PopupCustomer();
         popupCustomer.setConfirmListener(new com.petshop.event.ConfirmListener() {
@@ -317,7 +411,6 @@ public class PetManagement extends javax.swing.JPanel {
 
     }
 
-    // load table
     private void fillToTable(List<Pets> list) {
         int index = 1;
         tblPet.setRowCount(0);
@@ -325,21 +418,26 @@ public class PetManagement extends javax.swing.JPanel {
             tblPet.addRow(new Object[]{
                 pet.getId(),
                 index,
-                pet.getPetCode(),
-                pet.getTypePet().getTypePetName(),
-                pet.getBreed(),
-                pet.getPetName(),
-                pet.getAge(),
-                pet.getWeight(),
-                pet.getColor(),
+                checkNull(pet.getPetCode()),
+                checkNull(pet.getTypePet() != null ? pet.getTypePet().getTypePetName() : null),
+                checkNull(pet.getBreed()),
+                checkNull(pet.getPetName()),
+                pet.getAge() != null ? pet.getAge() : "Chưa có thông tin",
+                pet.getWeight() != null ? pet.getWeight() : "Chưa có thông tin",
+                checkNull(pet.getColor()),
                 pet.isGender() ? "Đực" : "Cái",
                 pet.isVaccinated() ? "Đã tiêm" : "Chưa tiêm",
-                pet.getCustomer().getCustomerName(),
-                pet.getCreatedAt(),
+                checkNull(pet.getCustomer() != null ? pet.getCustomer().getCustomerName() : null),
+                pet.getCreatedAt() != null ? pet.getCreatedAt() : "Chưa có thông tin",
                 pet.isStatus() ? "Đang hoạt động" : "Không hoạt động"
             });
             index++;
         }
+    }
+
+// Hàm kiểm tra null hoặc chuỗi rỗng
+    private String checkNull(String value) {
+        return (value == null || value.trim().isEmpty()) ? "Chưa có thông tin" : value;
     }
 
     // inser data pet
@@ -829,8 +927,8 @@ public class PetManagement extends javax.swing.JPanel {
         btnCapNhat = new com.petshop.swing.Button();
         btnLamMoi = new com.petshop.swing.Button();
         btnXoa = new com.petshop.swing.Button();
-        btnLichSuaXoa = new com.petshop.swing.Button();
         button9 = new com.petshop.swing.Button();
+        btnLichSuaXoa = new com.petshop.swing.Button();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setPreferredSize(new java.awt.Dimension(1058, 741));
@@ -994,7 +1092,6 @@ public class PetManagement extends javax.swing.JPanel {
         txtSearchCustomer.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         txtSearchCustomer.setLabelText("Thông tin chủ sở hữu");
 
-        txtMaThuCung.setEnabled(false);
         txtMaThuCung.setLabelText("Mã Pet");
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -1111,7 +1208,7 @@ public class PetManagement extends javax.swing.JPanel {
                 {null, null, null, null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "STT", "Mã ", "Loài ", "Giống", "Tên thú cưng", "Tuổi", "Cân nặng", "Màu sắc ", "Giới tính", "Vaccine", "Tên khách", "Ngày tạo"
+                "", "STT", "Mã ", "Loài ", "Giống", "Tên thú cưng", "Tuổi", "Cân nặng", "Màu sắc ", "Giới tính", "Vaccine", "Thông tin KH", "Ngày tạo"
             }
         ));
         tblPet.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1127,6 +1224,8 @@ public class PetManagement extends javax.swing.JPanel {
             tblPet.getColumnModel().getColumn(0).setMinWidth(0);
             tblPet.getColumnModel().getColumn(0).setPreferredWidth(0);
             tblPet.getColumnModel().getColumn(0).setMaxWidth(0);
+            tblPet.getColumnModel().getColumn(1).setMinWidth(35);
+            tblPet.getColumnModel().getColumn(1).setMaxWidth(35);
         }
 
         jLabel43.setFont(new java.awt.Font("SansSerif", 1, 15)); // NOI18N
@@ -1228,14 +1327,6 @@ public class PetManagement extends javax.swing.JPanel {
             }
         });
 
-        btnLichSuaXoa.setBackground(new java.awt.Color(204, 204, 255));
-        btnLichSuaXoa.setText("Lịch sử đã xóa");
-        btnLichSuaXoa.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnLichSuaXoaActionPerformed(evt);
-            }
-        });
-
         button9.setBackground(new java.awt.Color(51, 153, 255));
         button9.setText("Export Excel");
         button9.addActionListener(new java.awt.event.ActionListener() {
@@ -1244,32 +1335,42 @@ public class PetManagement extends javax.swing.JPanel {
             }
         });
 
+        btnLichSuaXoa.setBackground(new java.awt.Color(255, 204, 255));
+        btnLichSuaXoa.setText("Danh sách xóa");
+        btnLichSuaXoa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLichSuaXoaActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
         jPanel11.setLayout(jPanel11Layout);
         jPanel11Layout.setHorizontalGroup(
             jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel11Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnThem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnCapNhat, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnLichSuaXoa, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
                     .addGroup(jPanel11Layout.createSequentialGroup()
-                        .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnLamMoi, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(67, 67, 67)
+                        .addComponent(button9, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel11Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnThem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnCapNhat, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(jPanel11Layout.createSequentialGroup()
+                                .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
+                                .addComponent(btnLamMoi, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btnLichSuaXoa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
-            .addGroup(jPanel11Layout.createSequentialGroup()
-                .addGap(67, 67, 67)
-                .addComponent(button9, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel11Layout.setVerticalGroup(
             jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel11Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(btnLichSuaXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(7, 7, 7)
+                .addComponent(btnLichSuaXoa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(btnCapNhat, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(9, 9, 9)
                 .addComponent(button9, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1406,9 +1507,6 @@ public class PetManagement extends javax.swing.JPanel {
         });
     }//GEN-LAST:event_btnXoaActionPerformed
 
-    private void btnLichSuaXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLichSuaXoaActionPerformed
-    }//GEN-LAST:event_btnLichSuaXoaActionPerformed
-
     private void cboLocLoaiThuCungActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboLocLoaiThuCungActionPerformed
         filterType();
     }//GEN-LAST:event_cboLocLoaiThuCungActionPerformed
@@ -1432,6 +1530,11 @@ public class PetManagement extends javax.swing.JPanel {
     private void button9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button9ActionPerformed
         exportToExcel();
     }//GEN-LAST:event_button9ActionPerformed
+
+    private void btnLichSuaXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLichSuaXoaActionPerformed
+        // TODO add your handling code here:
+        showPopUpHistoryDeletedPets();
+    }//GEN-LAST:event_btnLichSuaXoaActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

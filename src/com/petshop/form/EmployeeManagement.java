@@ -22,6 +22,11 @@ import com.petshop.swing.table.EventAction;
 import com.petshop.swing.table.ModelAction;
 import com.petshop.ultils.Ultil;
 import java.awt.event.ActionEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,8 +36,16 @@ import java.util.List;
 import javax.management.relation.Role;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import raven.glasspanepopup.GlassPanePopup;
 
 /**
@@ -79,7 +92,6 @@ public class EmployeeManagement extends javax.swing.JPanel {
         resetFields();
         txtMaNhanVien.setEditable(false);
     }
-    
 
     //<editor-fold defaultstate="collapsed" desc="{Message...">
     private void showMessageSuccess(String message) {
@@ -368,7 +380,6 @@ public class EmployeeManagement extends javax.swing.JPanel {
                 customer.getEmail(),
                 customer.getPhoneNumber(),
                 customer.isGender() ? "Nam" : "Nữ",
-                customer.isGender() ? "Nam" : "Nu",
                 customer.getAddress(),
                 customer.getCreatedAt(),
                 customer.isStatus() ? "Đã kích hoạt" : "Chưa kích hoạt",
@@ -525,7 +536,129 @@ public class EmployeeManagement extends javax.swing.JPanel {
         showMessageSuccess("Xóa thành công!");
     }
     
-    
+    private void importFile() {
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setFileFilter(new FileNameExtensionFilter("CSV & Excel Files", "csv", "xlsx"));
+
+    int returnValue = fileChooser.showOpenDialog(null);
+    if (returnValue == JFileChooser.APPROVE_OPTION) {
+        File file = fileChooser.getSelectedFile();
+        String fileName = file.getName();
+
+        if (fileName.endsWith(".csv")) {
+            importCSV(file);
+        } else if (fileName.endsWith(".xlsx")) {
+            importExcel(file);
+        } else {
+            JOptionPane.showMessageDialog(null, "Định dạng tệp không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}
+
+// Đọc file CSV
+private void importCSV(File file) {
+    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
+        model.setRowCount(0); // Xóa dữ liệu cũ
+
+        String line;
+        boolean isFirstLine = true;
+
+        while ((line = reader.readLine()) != null) {
+            String[] rowData = line.split(",");
+            if (isFirstLine) {
+                isFirstLine = false; // Bỏ qua tiêu đề cột
+                continue;
+            }
+            model.addRow(rowData);
+        }
+
+        JOptionPane.showMessageDialog(null, "Nhập CSV thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(null, "Lỗi khi nhập CSV: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+// Đọc file Excel (.xlsx)
+private void importExcel(File file) {
+    try (FileInputStream fis = new FileInputStream(file);
+         Workbook workbook = new XSSFWorkbook(fis)) {
+
+        Sheet sheet = workbook.getSheetAt(0);
+        DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
+        model.setRowCount(0); // Xóa dữ liệu cũ
+
+        boolean isFirstRow = true;
+        for (Row row : sheet) {
+            if (isFirstRow) {
+                isFirstRow = false; // Bỏ qua tiêu đề cột
+                continue;
+            }
+
+            int columnCount = row.getLastCellNum();
+            String[] rowData = new String[columnCount];
+
+            for (int i = 0; i < columnCount; i++) {
+                Cell cell = row.getCell(i, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                rowData[i] = cell.toString();
+            }
+            model.addRow(rowData);
+        }
+
+        JOptionPane.showMessageDialog(null, "Nhập Excel thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(null, "Lỗi khi nhập Excel: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+
+private void exportToExcel() {
+    // Kiểm tra bảng có dữ liệu không
+    if (tblnhanvien.getRowCount() == 0) {
+        JOptionPane.showMessageDialog(null, "Bảng không có dữ liệu để xuất!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+    fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Excel Files", "xlsx"));
+
+    int userSelection = fileChooser.showSaveDialog(null);
+    if (userSelection == JFileChooser.APPROVE_OPTION) {
+        File fileToSave = new File(fileChooser.getSelectedFile().getAbsolutePath() + ".xlsx");
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("NhanVien");
+            TableModel model = tblnhanvien.getModel();
+
+            // Ghi tiêu đề cột
+            Row headerRow = sheet.createRow(0);
+            for (int col = 0; col < model.getColumnCount(); col++) {
+                Cell cell = headerRow.createCell(col);
+                cell.setCellValue(model.getColumnName(col));
+            }
+
+            // Ghi dữ liệu từ bảng
+            for (int row = 0; row < model.getRowCount(); row++) {
+                Row dataRow = sheet.createRow(row + 1);
+                for (int col = 0; col < model.getColumnCount(); col++) {
+                    Cell cell = dataRow.createCell(col);
+                    Object value = model.getValueAt(row, col);
+                    cell.setCellValue(value != null ? value.toString() : ""); // Xử lý giá trị null
+                }
+            }
+
+            // Ghi file
+            try (FileOutputStream fileOut = new FileOutputStream(fileToSave)) {
+                workbook.write(fileOut);
+            }
+
+            JOptionPane.showMessageDialog(null, "Xuất Excel thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Lỗi khi xuất Excel: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -562,6 +695,7 @@ public class EmployeeManagement extends javax.swing.JPanel {
         btnReset = new com.petshop.swing.Button();
         button69 = new com.petshop.swing.Button();
         btnRestore = new com.petshop.swing.Button();
+        btnRestore1 = new com.petshop.swing.Button();
 
         setPreferredSize(new java.awt.Dimension(1058, 741));
 
@@ -798,10 +932,18 @@ public class EmployeeManagement extends javax.swing.JPanel {
         });
 
         btnRestore.setBackground(new java.awt.Color(255, 255, 204));
-        btnRestore.setText("Restore");
+        btnRestore.setText("Import excel");
         btnRestore.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnRestoreActionPerformed(evt);
+            }
+        });
+
+        btnRestore1.setBackground(new java.awt.Color(255, 255, 204));
+        btnRestore1.setText("Export excel");
+        btnRestore1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRestore1ActionPerformed(evt);
             }
         });
 
@@ -812,14 +954,18 @@ public class EmployeeManagement extends javax.swing.JPanel {
             .addGroup(jPanel21Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnRestore, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel21Layout.createSequentialGroup()
+                        .addComponent(btnRestore1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnRestore, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(button69, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnAdd, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnUpdate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel21Layout.createSequentialGroup()
-                        .addComponent(btnReset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                    .addComponent(btnUpdate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
+            .addGroup(jPanel21Layout.createSequentialGroup()
+                .addGap(53, 53, 53)
+                .addComponent(btnReset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel21Layout.setVerticalGroup(
             jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -829,12 +975,13 @@ public class EmployeeManagement extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnRestore, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnRestore, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnRestore1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnReset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -905,32 +1052,60 @@ public class EmployeeManagement extends javax.swing.JPanel {
 
     private void btnRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRestoreActionPerformed
         // TODO add your handling code here:
-        restoreEmployees();
+        importFile();
+    
     }//GEN-LAST:event_btnRestoreActionPerformed
 
     private void combobox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_combobox3ActionPerformed
         // TODO add your handling code here:
-        EmployeeDAO employeeDAO = new EmployeeDAO();
-        List<Employees> sortedEmployees = employeeDAO.getSortedEmployeesByName(true); // Sắp xếp từ bé đến lớn
-        int stt = 1;
-        // Cập nhật dữ liệu lên bảng (ví dụ JTable)
-        DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
-        model.setRowCount(0); // Xóa dữ liệu cũ
-        for (Employees emp : sortedEmployees) {
-            model.addRow(new Object[]{
-                emp.getId(),
-                stt, // 0 - ID
-                emp.getEmployeeCode() == null ? "Chua co thong tin" : emp.getEmployeeCode(), // 1 - Mã nhân viên
-                emp.getEmployeeName() == null ? "Chua co thong tin" : emp.getEmployeeName(), // 2 - Tên nhân viên
-                emp.getEmail() == null ? "Chua co thong tin" : emp.getEmail(), // 4 - Email
-                emp.isGender() ? "Nam" : "Nu", // 7 - Giới tính (Nam/Nữ)
-                emp.getPhoneNumber() == null ? "Chua co thong tin" : emp.getPhoneNumber(), // 3 - Số điện thoại
-                emp.getRole().getId() == 2 ? "Nhan Vien" : "Quan Ly", // 8 - Chức vụ (Nhân viên/Quản lý)
-                emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(), // 6 - Ngày tạo
-                emp.getAddress() == null ? "Chua co thong tin" : emp.getAddress(), // 5 - Địa chỉ         
-                emp.isStatus() ? "Hoat dong" : "Ngung hoat dong",});
-        }
+      EmployeeDAO employeeDAO = new EmployeeDAO();
+
+    // Lấy giá trị từ ComboBox
+    String selectedValue = combobox3.getSelectedItem().toString(); 
+
+    // Xác định sắp xếp tăng dần hay giảm dần
+    boolean ascending = selectedValue.equals("A-Z"); // Nếu chọn "Từ A-Z" thì true, ngược lại false
+
+    // Lấy danh sách nhân viên sắp xếp theo thứ tự đã chọn
+    List<Employees> sortedEmployees = employeeDAO.getSortedEmployeesByName(ascending);
+
+    // Cập nhật dữ liệu lên bảng (JTable)
+    DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
+    model.setRowCount(0); // Xóa dữ liệu cũ
+
+    int stt = 1;
+    for (Employees emp : sortedEmployees) {
+        model.addRow(new Object[]{
+            emp.getId(),
+            stt, 
+            emp.getEmployeeCode() == null ? "Chua co thong tin" : emp.getEmployeeCode(), 
+            emp.getEmployeeName() == null ? "Chua co thong tin" : emp.getEmployeeName(),
+            emp.getEmail() == null ? "Chua co thong tin" : emp.getEmail(),
+            emp.isGender() ? "Nam" : "Nu", 
+            emp.getPhoneNumber() == null ? "Chua co thong tin" : emp.getPhoneNumber(),
+            emp.getRole().getId() == 2 ? "Nhan Vien" : "Quan Ly",
+            emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(),
+            emp.getAddress() == null ? "Chua co thong tin" : emp.getAddress(),
+            emp.isStatus() ? "Hoat dong" : "Ngung hoat dong",
+            new ModelAction<>(emp, new EventAction<Employees>() {
+                @Override
+                public void delete(Employees e) {
+                    showMessageConfirm("Xác nhận xóa nhân viên?", () -> {
+                        deleteEmployee();
+                    });
+                }
+
+                @Override
+                public void update(Employees e) {}
+
+                @Override
+                public void add(Employees e) {}
+            })
+        });
         stt++;
+    
+        }
+    
     }//GEN-LAST:event_combobox3ActionPerformed
 
     private void combobox4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_combobox4ActionPerformed
@@ -945,7 +1120,7 @@ public class EmployeeManagement extends javax.swing.JPanel {
             gender = false;
         }
 
-        List<Employees> filteredEmployees = employeeDAO.getListEmployeeByGender(gender);
+        List<Employees> filteredEmployees = employeeDAO.getEmployeesByGender(gender);
         int stt = 1;
         // Cập nhật dữ liệu lên bảng (JTable)
         DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
@@ -964,15 +1139,41 @@ public class EmployeeManagement extends javax.swing.JPanel {
                 emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(), // 6 - Ngày tạo
                 emp.getAddress() == null ? "Chua co thong tin" : emp.getAddress(), // 5 - Địa chỉ         
                 emp.isStatus() ? "Hoat dong" : "Ngung hoat dong",});
+     new ModelAction<>(emp, new EventAction<Employees>() {
+                    @Override
+                    public void delete(Employees e) {
+                        showMessageConfirm("Xác nhận xóa nhân viên?", () -> {
+                            deleteEmployee();
+                        });
+                    }
+
+                    @Override
+                    public void update(Employees e) {
+
+                    }
+
+                    @Override
+                    public void add(Employees e) {
+                    }
+                
+            });
+           
+        
         }
-        stt++;
+         stt++;
     }//GEN-LAST:event_combobox4ActionPerformed
+
+    private void btnRestore1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRestore1ActionPerformed
+        // TODO add your handling code here:
+        exportToExcel();
+    }//GEN-LAST:event_btnRestore1ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.Button btnAdd;
     private com.petshop.swing.Button btnReset;
     private com.petshop.swing.Button btnRestore;
+    private com.petshop.swing.Button btnRestore1;
     private com.petshop.swing.Button btnUpdate;
     private com.petshop.swing.Button button69;
     private javax.swing.ButtonGroup buttonGroup1;

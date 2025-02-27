@@ -61,7 +61,7 @@ public class PopupInvoice extends javax.swing.JPanel {
         txtTotalPrice.setText(Ultil.formatCurrency(i.getTotalPrice()));
         txtCostsIncurred.setText(Ultil.formatCurrency(i.getCostsIncurred()));
         txtPaymentStatus.setText(i.isPaymentStatus() ? "Đã thanh toán" : "Chưa thanh toán");
-        txtNotes.setText(i.getNote());
+        txtNotes.setText(i.getNote() == null ? "" : i.getNote());
         List<InvoiceDetails> list = invoiceDetailDAO.getInvoiceDetailsByInvoiceId(i.getId());
         getListInvoiceDetail(list);
     }

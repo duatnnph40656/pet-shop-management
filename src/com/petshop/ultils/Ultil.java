@@ -208,7 +208,7 @@ public class Ultil {
         return normalized.replaceAll("\\p{M}", ""); // Loại bỏ dấu
     }
 
-    public static void generateInvoice(String invoiceId, String employee, String customerName, String phoneNumber, List<String[]> items, String totalAmount) {
+    public static void generateInvoice(String invoiceId, String employee, String customerName, List<String[]> items, String totalAmount, LocalDateTime createdAt) {
         try {
             // Đường dẫn thư mục lưu hóa đơn và QR Code
             Path invoiceDir = Paths.get("src/com/resources/invoices");
@@ -230,18 +230,33 @@ public class Ultil {
 
             // Tiêu đề hóa đơn
             PdfFont vietnameseFont = PdfFontFactory.createFont(fontPath, "Identity-H", true);
-            document.add(new Paragraph("HÓA ĐƠN BÁN HÀNG").setFont(vietnameseFont).setFontSize(16).setTextAlignment(TextAlignment.CENTER).setBold());
+            // Tiêu đề hóa đơn
+            document.add(new Paragraph("HÓA ĐƠN BÁN HÀNG")
+                    .setFont(vietnameseFont)
+                    .setFontSize(16)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setBold());
 
-            // Thông tin nhân viên
-//            Table infoTable = new Table(new float[]{10, 10}).useAllAvailableWidth();
-//            infoTable.addCell(new Cell().add(new Paragraph("HD: " + invoiceId)).setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.LEFT).setFontSize(9));
-//            infoTable.addCell(new Cell().add(new Paragraph("Ngày bán: " + employee)).setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT).setFontSize(9));
-//            document.add(infoTable);
-            document.add(new Paragraph("Ngày bán: " + phoneNumber).setFontSize(9).setMultipliedLeading(0.0f).setTextAlignment(TextAlignment.RIGHT));
-            document.add(new Paragraph("HD: " + invoiceId).setFontSize(9).setMultipliedLeading(0.5f));
-            document.add(new Paragraph("Nhân viên : " + phoneNumber).setFontSize(9).setMultipliedLeading(0.5f));
-            document.add(new Paragraph("Khách hàng: " + phoneNumber).setFontSize(9).setMultipliedLeading(0.5f));
-            document.add(new Paragraph("Phone: " + phoneNumber).setFontSize(9).setMultipliedLeading(0.5f));
+            document.add(new Paragraph("Ngày bán: " + createdAt)
+                    .setFont(vietnameseFont)
+                    .setFontSize(9)
+                    .setMultipliedLeading(0.0f)
+                    .setTextAlignment(TextAlignment.RIGHT));
+
+            document.add(new Paragraph("HD: " + invoiceId)
+                    .setFont(vietnameseFont)
+                    .setFontSize(9)
+                    .setMultipliedLeading(0.5f));
+
+            document.add(new Paragraph("Nhân viên : " + employee)
+                    .setFont(vietnameseFont)
+                    .setFontSize(9)
+                    .setMultipliedLeading(0.5f));
+
+            document.add(new Paragraph("Khách hàng: " + customerName)
+                    .setFont(vietnameseFont)
+                    .setFontSize(9)
+                    .setMultipliedLeading(0.5f));
 
             document.add(new Paragraph("---------------------------------------------------------------------"));
 
@@ -255,16 +270,6 @@ public class Ultil {
             document.setMargins(5, 5, 5, 5); // Giảm lề để có thêm không gian
             table.setFontSize(8); // Giảm kích thước font chữ
 
-//            // 👉 Header của bảng
-//            String[] headers = {"Name", "Qty", "Price", "Total"};
-//            for (String header : headers) {
-//                table.addHeaderCell(new Cell()
-//                        .add(new Paragraph(header))
-//                        .setBackgroundColor(ColorConstants.LIGHT_GRAY)
-//                        .setBold()
-//                        .setTextAlignment(TextAlignment.CENTER)
-//                        .setPadding(5)); // Giảm padding để tiết kiệm không gian
-//            }
             // 👉 Dữ liệu sản phẩm
             for (String[] item : items) {
                 table.addCell(new Paragraph(item[0]));
@@ -277,6 +282,108 @@ public class Ultil {
 
             // Tổng tiền
             document.add(new Paragraph("Total: " + totalAmount + "₫").setBold().setTextAlignment(TextAlignment.RIGHT));
+
+            // Tạo QR Code
+            Path qrCodePath = qrCodeDir.resolve(invoiceId + ".png");
+            generateQRCode(invoiceId, qrCodePath.toString());
+
+            // Thêm QR Code vào hóa đơn
+            Image qrImage = new Image(ImageDataFactory.create(qrCodePath.toString()));
+            qrImage.scaleAbsolute(100, 100);
+            qrImage.setHorizontalAlignment(HorizontalAlignment.CENTER);
+            document.add(qrImage);
+
+            document.close();
+            System.out.println("✅ Hóa đơn đã tạo: " + invoicePath.toAbsolutePath());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void generateInvoice1(String invoiceId, String employee, String customerName, List<String[]> items, String totalAmount, String createdAt) {
+        try {
+            // Đường dẫn thư mục lưu hóa đơn và QR Code
+            Path invoiceDir = Paths.get("src/com/resources/invoices");
+            Path qrCodeDir = Paths.get("src/com/resources/qrcodes");
+
+            // Tạo thư mục nếu chưa tồn tại
+            Files.createDirectories(invoiceDir);
+            Files.createDirectories(qrCodeDir);
+
+            // Đường dẫn file hóa đơn PDF
+            Path invoicePath = invoiceDir.resolve("Invoice_" + invoiceId + ".pdf");
+
+            // Tạo PDF
+            String fontPath = "src/com/resources/fonts/NotoSans-Regular.ttf";
+            PdfFont vietnameseFont = PdfFontFactory.createFont(fontPath, "Identity-H", true);
+
+            PdfDocument pdfDoc = new PdfDocument(new PdfWriter(invoicePath.toString()));
+            Document document = new Document(pdfDoc, PageSize.A6);
+            document.setMargins(10, 10, 10, 10);
+
+            // Tiêu đề hóa đơn
+            document.add(new Paragraph("HÓA ĐƠN BÁN HÀNG")
+                    .setFont(vietnameseFont)
+                    .setFontSize(16)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setBold());
+
+            // Thông tin hóa đơn
+            document.add(new Paragraph("Ngày bán: " + createdAt)
+                    .setFont(vietnameseFont)
+                    .setFontSize(9)
+                    .setMultipliedLeading(0.0f)
+                    .setTextAlignment(TextAlignment.RIGHT));
+
+            document.add(new Paragraph("HD: " + invoiceId)
+                    .setFont(vietnameseFont)
+                    .setFontSize(9)
+                    .setMultipliedLeading(0.5f));
+
+            document.add(new Paragraph("Nhân viên: " + employee)
+                    .setFont(vietnameseFont)
+                    .setFontSize(9)
+                    .setMultipliedLeading(0.5f));
+
+            document.add(new Paragraph("Khách hàng: " + customerName)
+                    .setFont(vietnameseFont)
+                    .setFontSize(9)
+                    .setMultipliedLeading(0.5f));
+
+            document.add(new Paragraph("---------------------------------------------------------------------"));
+
+            // Bảng sản phẩm
+            Table table = new Table(UnitValue.createPercentArray(new float[]{6, 1, 2, 2})).useAllAvailableWidth();
+            table.setFont(vietnameseFont); // Đặt font cho bảng
+
+            table.addHeaderCell(new Cell().add(new Paragraph("Tên SP hoặc DV").setFont(vietnameseFont))
+                    .setBackgroundColor(com.itextpdf.kernel.colors.ColorConstants.LIGHT_GRAY));
+            table.addHeaderCell(new Cell().add(new Paragraph("SL").setFont(vietnameseFont))
+                    .setBackgroundColor(com.itextpdf.kernel.colors.ColorConstants.LIGHT_GRAY));
+            table.addHeaderCell(new Cell().add(new Paragraph("Giá").setFont(vietnameseFont))
+                    .setBackgroundColor(com.itextpdf.kernel.colors.ColorConstants.LIGHT_GRAY));
+            table.addHeaderCell(new Cell().add(new Paragraph("Tổng").setFont(vietnameseFont))
+                    .setBackgroundColor(com.itextpdf.kernel.colors.ColorConstants.LIGHT_GRAY));
+
+            document.setMargins(5, 5, 5, 5); // Giảm lề để có thêm không gian
+            table.setFontSize(8); // Giảm kích thước font chữ
+
+            // 👉 Dữ liệu sản phẩm
+            for (String[] item : items) {
+                table.addCell(new Paragraph(item[0]).setFont(vietnameseFont)); // Tên sản phẩm
+                table.addCell(new Paragraph(item[1]).setFont(vietnameseFont)); // Số lượng
+                table.addCell(new Paragraph(item[2] + "₫").setFont(vietnameseFont)); // Giá
+                table.addCell(new Paragraph(item[3] + "₫").setFont(vietnameseFont)); // Tổng tiền
+            }
+
+            document.add(table);
+            document.add(new Paragraph("---------------------------------------------------------------------"));
+
+            // Tổng tiền
+            document.add(new Paragraph("Tổng tiền: " + totalAmount + "₫")
+                    .setFont(vietnameseFont)
+                    .setBold()
+                    .setTextAlignment(TextAlignment.RIGHT));
 
             // Tạo QR Code
             Path qrCodePath = qrCodeDir.resolve(invoiceId + ".png");

@@ -75,8 +75,8 @@ public class PetDAO {
 
     public boolean insertPetNew(Pets p) {
         String sql = """
-        INSERT INTO pets (pet_code, pet_name, breed, color,gender, id_customer,owner, id_type_pet,vaccinated, is_deleted,is_status,weight)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?,?, 0, 1,?)
+        INSERT INTO pets (pet_code, pet_name, breed, color,gender, id_customer,owner, id_type_pet,vaccinated, is_deleted,is_status,weight,age)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?,?, 0, 1,?,?)
     """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -90,6 +90,7 @@ public class PetDAO {
             ps.setInt(8, p.getTypePet().getId());
             ps.setBoolean(9, p.isVaccinated());
             ps.setBigDecimal(10, p.getWeight());
+            ps.setString(11, p.getAge());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace(); // Hoặc log lỗi
@@ -165,7 +166,7 @@ public class PetDAO {
                     FROM pets p
                     INNER JOIN type_pets tp ON tp.id = p.id_type_pet
                     INNER JOIN customers c ON c.id = p.id_customer 
-                    WHERE p.is_deleted = 1;
+                    WHERE p.is_deleted = 0;
                 """;
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -227,7 +228,7 @@ public class PetDAO {
                     FROM pets p
                     INNER JOIN type_pets tp ON tp.id = p.id_type_pet
                     INNER JOIN customers c ON c.id = p.id_customer 
-                    WHERE p.is_deleted = 0;
+                    WHERE p.is_deleted = 1;
                 """;
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -284,7 +285,7 @@ public class PetDAO {
                         id_customer
                      )
                      VALUES 
-                        (?,?,?,?,?,?,?,?,?,GETDATE(),1,1,?)
+                        (?,?,?,?,?,?,?,?,?,GETDATE(),0,1,?)
                      """;
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, pet.getPetCode());
@@ -392,7 +393,7 @@ public class PetDAO {
 
     // Khoi phuc
     public boolean restore(String ma) {
-        String sql = "UPDATE pets SET is_deleted = 1  WHERE pet_code = ?";
+        String sql = "UPDATE pets SET is_deleted = 0  WHERE pet_code = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, ma);
             return ps.executeUpdate() > 0;
@@ -405,7 +406,7 @@ public class PetDAO {
     // Delete
     public boolean delete(String ma) {
 
-        String sql = "UPDATE pets SET is_deleted = 0 ,created_at = GETDATE() WHERE pet_code = ?";
+        String sql = "UPDATE pets SET is_deleted = 1 ,created_at = GETDATE() WHERE pet_code = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, ma);
             return ps.executeUpdate() > 0;

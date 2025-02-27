@@ -433,11 +433,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
         cbbTypeService.setSelectedIndex(-1);
         cbbTimeUnit.setSelectedIndex(-1);
-        cbbFilterStatus.setSelectedIndex(-1);
-        cbbFilterTypeService.setSelectedIndex(-1);
-        cbbSort.setSelectedIndex(-1);
         tbService.clearSelection();
-
     }
 
     private void showData() {
@@ -613,7 +609,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
         }
         if (petServiceDAO.insertPetService(readForm())) {
             showMessageSuccess("Thêm thành công!!");
-            getListService(petServiceDAO.getListService());
+            getListService(petServiceDAO.getListServiceAll());
             resetFormService();
         } else {
             showMessageFail("Thêm thất bại!!");

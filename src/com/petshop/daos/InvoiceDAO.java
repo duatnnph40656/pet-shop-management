@@ -201,11 +201,12 @@ public class InvoiceDAO {
 
     public Invoices getInvoiceById(int invoiceId) {
         String sql = "SELECT i.id, i.invoice_code, i.total_price, i.costs_incurred, "
-                + "i.payment_method, i.payment_status, i.note, "
-                + "c.customer_name, e.employee_name "
+                + "i.payment_method, i.payment_status, i.note, i.created_at, "
+                + "c.id AS customer_id, c.customer_code, c.customer_name, c.phone_number, "
+                + "e.id AS employee_id, e.employee_code, e.employee_name "
                 + "FROM invoices i "
-                + "JOIN customers c ON i.id_customer = c.id "
-                + "JOIN employees e ON i.id_employee = e.id "
+                + "LEFT JOIN customers c ON i.id_customer = c.id "
+                + "LEFT JOIN employees e ON i.id_employee = e.id "
                 + "WHERE i.id = ?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -213,7 +214,7 @@ public class InvoiceDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapInvoice(rs); // Chuyển đổi kết quả thành object Invoices
+                    return mapInvoice(rs); // Chuyển đổi dữ liệu từ ResultSet thành đối tượng Invoices
                 }
             }
         } catch (SQLException e) {
