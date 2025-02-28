@@ -94,6 +94,40 @@ public class InvoiceDAO {
         return list;
     }
 
+    public List<Invoices> getListInvoiceWithDetails() {
+        String sql = "SELECT DISTINCT \n"
+                + "    i.id, \n"
+                + "    i.invoice_code, \n"
+                + "    i.total_price, \n"
+                + "    i.costs_incurred, \n"
+                + "    i.payment_method, \n"
+                + "    i.payment_status, \n"
+                + "    i.note, \n"
+                + "    i.created_at, \n"
+                + "    c.customer_code, \n"
+                + "    c.customer_name, \n"
+                + "    c.phone_number, \n"
+                + "    e.employee_name \n"
+                + "FROM invoices i\n"
+                + "JOIN customers c ON i.id_customer = c.id\n"
+                + "JOIN employees e ON i.id_employee = e.id\n"
+                + "JOIN invoice_details idt ON i.id = idt.id_invoice\n"
+                + "WHERE i.is_deleted = 0 \n"
+                + "AND i.is_status = 0 \n"
+                + "AND idt.type_invoice_detail = 0 \n"
+                + "ORDER BY i.id DESC";
+
+        List<Invoices> list = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapInvoice(rs));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public boolean createPendingInvoice(Invoices invoice) {
         String sql = "INSERT INTO invoices (invoice_code, id_customer, id_employee, total_price,costs_incurred,is_status, is_deleted) "
                 + "VALUES (?, ?, ?, ?, ?,?,0)";
@@ -214,7 +248,7 @@ public class InvoiceDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapInvoice(rs); // Chuyển đổi dữ liệu từ ResultSet thành đối tượng Invoices
+                    return mapInvoice1(rs); // Chuyển đổi dữ liệu từ ResultSet thành đối tượng Invoices
                 }
             }
         } catch (SQLException e) {
@@ -222,6 +256,35 @@ public class InvoiceDAO {
         }
 
         return null; // Trả về null nếu không tìm thấy hóa đơn
+    }
+
+    public Invoices mapInvoice1(ResultSet rs) throws SQLException {
+        Invoices i = new Invoices();
+        i.setId(rs.getInt("id"));
+        i.setInvoiceCode(rs.getString("invoice_code"));
+
+        // Lấy thông tin khách hàng
+        Customers c = new Customers();
+        c.setId(rs.getInt("customer_id")); // Sửa lỗi: Dùng đúng alias của customer
+        c.setCustomerCode(rs.getString("customer_code"));
+        c.setCustomerName(rs.getString("customer_name"));
+        c.setPhoneNumber(rs.getString("phone_number"));
+        i.setCustomer(c);
+
+        // Lấy thông tin nhân viên
+        Employees e = new Employees();
+        e.setId(rs.getInt("employee_id")); // Sửa lỗi: Dùng đúng alias của employee
+        e.setEmployeeName(rs.getString("employee_name"));
+        i.setEmployee(e);
+
+        i.setTotalPrice(rs.getBigDecimal("total_price"));
+        i.setCostsIncurred(rs.getBigDecimal("costs_incurred"));
+        i.setPaymentMethod(rs.getBoolean("payment_method"));
+        i.setPaymentStatus(rs.getBoolean("payment_status"));
+        i.setNote(rs.getString("note"));
+        i.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+
+        return i;
     }
 
     public Invoices getInvoiceByCode(String invoiceCode) {
@@ -390,6 +453,49 @@ public class InvoiceDAO {
                 if (paymentStatus != null) {
                     ps.setBoolean(3, paymentStatus);
                 }
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        list.add(mapInvoice(rs));
+                    }
+                }
+            }
+        } catch (DateTimeParseException e) {
+            System.out.println("Lỗi định dạng ngày: " + e.getMessage());
+        } catch (SQLException e) {
+            System.out.println("Lỗi truy vấn SQL: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public List<Invoices> searchInvoiceByDate(String startDateStr, String endDateStr) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT i.id, i.invoice_code, i.total_price, i.costs_incurred, "
+                + "i.payment_method, i.payment_status, i.note, i.created_at, "
+                + "c.customer_code, c.customer_name, c.phone_number, e.employee_name "
+                + "FROM invoices i "
+                + "JOIN customers c ON i.id_customer = c.id "
+                + "JOIN employees e ON i.id_employee = e.id "
+                + "WHERE i.is_deleted = 0 AND i.is_status = 0 "
+                + "AND i.created_at BETWEEN ? AND ?"
+        );
+
+        List<Invoices> list = new ArrayList<>();
+
+        try {
+            // Chuyển đổi ngày từ String sang LocalDateTime
+            LocalDate startDate = LocalDate.parse(startDateStr);
+            LocalDate endDate = LocalDate.parse(endDateStr);
+
+            // Thời gian bắt đầu là 00:00:00, thời gian kết thúc là 23:59:59
+            Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());
+            Timestamp endTimestamp = Timestamp.valueOf(endDate.atTime(23, 59, 59));
+
+            try (PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                ps.setTimestamp(1, startTimestamp);
+                ps.setTimestamp(2, endTimestamp);
 
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
@@ -761,7 +867,19 @@ public class InvoiceDAO {
     }
 
     public int getTodayRevenue() {
-        String sql = "SELECT COALESCE(SUM(total_price), 0) FROM invoices WHERE CAST(created_at AS DATE) = CAST(GETDATE() AS DATE)";
+        String sql = """
+        SELECT 
+            (SELECT COALESCE(SUM(total_price), 0) FROM invoices 
+             WHERE CAST(created_at AS DATE) = CAST(GETDATE() AS DATE))
+            +
+            (SELECT COALESCE(SUM(total_price), 0) FROM return_invoices 
+             WHERE CAST(created_at AS DATE) = CAST(GETDATE() AS DATE))
+            -
+            (SELECT COALESCE(SUM(total_price_return), 0) FROM return_invoices 
+             WHERE CAST(created_at AS DATE) = CAST(GETDATE() AS DATE))
+            AS total_revenue_today;
+        """;
+
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
@@ -773,7 +891,19 @@ public class InvoiceDAO {
     }
 
     public int getYesterdayRevenue() {
-        String sql = "SELECT COALESCE(SUM(total_price), 0) FROM invoices WHERE CAST(created_at AS DATE) = CAST(DATEADD(DAY, -1, GETDATE()) AS DATE)";
+        String sql = """
+        SELECT 
+            (SELECT COALESCE(SUM(total_price), 0) FROM invoices 
+             WHERE CAST(created_at AS DATE) = CAST(DATEADD(DAY, -1, GETDATE()) AS DATE))
+            +
+            (SELECT COALESCE(SUM(total_price), 0) FROM return_invoices 
+             WHERE CAST(created_at AS DATE) = CAST(DATEADD(DAY, -1, GETDATE()) AS DATE))
+            -
+            (SELECT COALESCE(SUM(total_price_return), 0) FROM return_invoices 
+             WHERE CAST(created_at AS DATE) = CAST(DATEADD(DAY, -1, GETDATE()) AS DATE))
+            AS total_revenue_yesterday;
+        """;
+
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
@@ -785,7 +915,19 @@ public class InvoiceDAO {
     }
 
     public int getCurrentMonthRevenue() {
-        String sql = "SELECT COALESCE(SUM(total_price), 0) FROM invoices WHERE MONTH(created_at) = MONTH(GETDATE()) AND YEAR(created_at) = YEAR(GETDATE())";
+        String sql = """
+        SELECT 
+            (SELECT COALESCE(SUM(total_price), 0) FROM invoices 
+             WHERE MONTH(created_at) = MONTH(GETDATE()) AND YEAR(created_at) = YEAR(GETDATE()))
+            +
+            (SELECT COALESCE(SUM(total_price), 0) FROM return_invoices 
+             WHERE MONTH(created_at) = MONTH(GETDATE()) AND YEAR(created_at) = YEAR(GETDATE()))
+            -
+            (SELECT COALESCE(SUM(total_price_return), 0) FROM return_invoices 
+             WHERE MONTH(created_at) = MONTH(GETDATE()) AND YEAR(created_at) = YEAR(GETDATE()))
+            AS total_revenue_current_month;
+        """;
+
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
@@ -797,7 +939,22 @@ public class InvoiceDAO {
     }
 
     public int getLastMonthRevenue() {
-        String sql = "SELECT COALESCE(SUM(total_price), 0) FROM invoices WHERE MONTH(created_at) = MONTH(DATEADD(MONTH, -1, GETDATE())) AND YEAR(created_at) = YEAR(DATEADD(MONTH, -1, GETDATE()))";
+        String sql = """
+        SELECT 
+            (SELECT COALESCE(SUM(total_price), 0) FROM invoices 
+             WHERE MONTH(created_at) = MONTH(DATEADD(MONTH, -1, GETDATE())) 
+             AND YEAR(created_at) = YEAR(DATEADD(MONTH, -1, GETDATE())))
+            +
+            (SELECT COALESCE(SUM(total_price), 0) FROM return_invoices 
+             WHERE MONTH(created_at) = MONTH(DATEADD(MONTH, -1, GETDATE())) 
+             AND YEAR(created_at) = YEAR(DATEADD(MONTH, -1, GETDATE())))
+            -
+            (SELECT COALESCE(SUM(total_price_return), 0) FROM return_invoices 
+             WHERE MONTH(created_at) = MONTH(DATEADD(MONTH, -1, GETDATE())) 
+             AND YEAR(created_at) = YEAR(DATEADD(MONTH, -1, GETDATE())))
+            AS total_revenue_last_month;
+        """;
+
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);

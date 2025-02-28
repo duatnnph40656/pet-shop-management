@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.*;
 import java.text.Normalizer;
 import java.text.NumberFormat;
@@ -54,6 +55,42 @@ import raven.glasspanepopup.GlassPanePopup;
  * @author duat
  */
 public class Ultil {
+
+    public static BigDecimal convertWeightToKg(String weightStr) {
+        if (weightStr == null || weightStr.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        // Xóa khoảng trắng và ký tự không hợp lệ (chỉ giữ số và dấu chấm)
+        String cleanWeight = weightStr.replaceAll("[^0-9.]", "").trim();
+
+        if (cleanWeight.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal weight = new BigDecimal(cleanWeight);
+
+        // Nếu input có chứa "kg" thì giữ nguyên, ngược lại coi là gram
+        if (weightStr.toLowerCase().contains("kg")) {
+            return weight.setScale(2, RoundingMode.HALF_UP);
+        } else {
+            return weight.divide(BigDecimal.valueOf(1000), 2, RoundingMode.HALF_UP);
+        }
+    }
+
+    public static String formatWeight(BigDecimal weight) {
+        if (weight == null) {
+            return "N/A";
+        }
+
+        // Nếu trọng lượng < 1 kg, chuyển thành gram (g)
+        if (weight.compareTo(BigDecimal.ONE) < 0) {
+            return String.format("%.0f g", weight.multiply(BigDecimal.valueOf(1000)));
+        }
+
+        // Nếu trọng lượng ≥ 1 kg, hiển thị theo kg
+        return String.format("%.2f kg", weight);
+    }
 
     public static LocalDateTime calculateEndDate(int days) {
         LocalDateTime startDate = LocalDateTime.now(); // Lấy ngày hiện tại
@@ -164,6 +201,10 @@ public class Ultil {
             int width = 300;
             int height = 300;
 
+            if (qrText.equals("N/A")) {
+                System.out.println("Lỗi mã hóa đơn");
+                return;
+            }
             // Tạo ma trận QR Code từ đoạn mã đầu vào
             BitMatrix bitMatrix = new MultiFormatWriter().encode(qrText, BarcodeFormat.QR_CODE, width, height);
 
@@ -321,6 +362,19 @@ public class Ultil {
             Document document = new Document(pdfDoc, PageSize.A6);
             document.setMargins(10, 10, 10, 10);
 
+            // ✅ **THÊM LOGO** ✅
+            try {
+                String logoPath = "src/com/petshop/icon/logo1.png"; // Đường dẫn logo
+                Image logo = new Image(ImageDataFactory.create(logoPath));
+                logo.scaleAbsolute(50, 50); // Kích thước logo
+                logo.setFixedPosition(10, pdfDoc.getDefaultPageSize().getTop() - 60); // Góc trái trên
+                document.add(logo);
+
+                document.add(new Paragraph("\n")); // Mỗi '\n' khoảng 10px
+            } catch (Exception e) {
+                System.out.println("⚠ Không tìm thấy logo!");
+            }
+
             // Tiêu đề hóa đơn
             document.add(new Paragraph("HÓA ĐƠN BÁN HÀNG")
                     .setFont(vietnameseFont)
@@ -372,8 +426,8 @@ public class Ultil {
             for (String[] item : items) {
                 table.addCell(new Paragraph(item[0]).setFont(vietnameseFont)); // Tên sản phẩm
                 table.addCell(new Paragraph(item[1]).setFont(vietnameseFont)); // Số lượng
-                table.addCell(new Paragraph(item[2] + "₫").setFont(vietnameseFont)); // Giá
-                table.addCell(new Paragraph(item[3] + "₫").setFont(vietnameseFont)); // Tổng tiền
+                table.addCell(new Paragraph(item[2]).setFont(vietnameseFont)); // Giá
+                table.addCell(new Paragraph(item[3]).setFont(vietnameseFont)); // Tổng tiền
             }
 
             document.add(table);
@@ -469,4 +523,9 @@ public class Ultil {
         }
 
     }
+
+    public static String formatCurrency(double amount) {
+        return formatCurrency(BigDecimal.valueOf(amount)); // Gọi phương thức đã có
+    }
+
 }

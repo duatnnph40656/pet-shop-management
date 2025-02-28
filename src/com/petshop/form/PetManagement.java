@@ -735,7 +735,6 @@ public class PetManagement extends javax.swing.JPanel {
                 stt,
                 (p.getPetS() != null) ? checkNullOrEmpty(p.getPetS().getServiceCode()) : "Chưa có thông tin",
                 (p.getPetS() != null) ? checkNullOrEmpty(p.getPetS().getServiceName()) : "Chưa có thông tin",
-                (p.getPet() != null) ? checkNullOrEmpty(p.getPet().getPetCode()) : "Chưa có thông tin",
                 (p.getPet() != null) ? checkNullOrEmpty(p.getPet().getPetName()) : "Chưa có thông tin",
                 (p.getPet() != null) ? checkNullOrEmpty(p.getPet().getBreed()) : "Chưa có thông tin",
                 (p.getDateStart() != null) ? Ultil.getFormatted(p.getDateStart()) : "Chưa có thông tin",
@@ -800,9 +799,9 @@ public class PetManagement extends javax.swing.JPanel {
         // Xác định trạng thái dựa trên cbbStatus
         Boolean isStatus = null; // Mặc định là null (không lọc)
         String selectedStatus = (String) cbbStatus.getSelectedItem();
-        if ("Hoàn thành".equals(selectedStatus)) {
+        if ("Đang thực hiện".equals(selectedStatus)) {
             isStatus = true;
-        } else if ("Chưa hoàn thành".equals(selectedStatus)) {
+        } else if ("Đã hoàn thành".equals(selectedStatus)) {
             isStatus = false;
         }
 
@@ -948,13 +947,13 @@ public class PetManagement extends javax.swing.JPanel {
 
         tbPetCareService.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Title 1", "STT", "Mã DV", "Tên DV", "Mã Pet", "Tên Pet", "Giống loài", "Ngày bắt đầu", "Ngày kết thúc", "Ngày kết thúc thực tế", "Ghi chú", "Trạng thái", "Thao tác"
+                "Title 1", "STT", "Mã DV", "Tên DV", "Tên Pet", "Giống loài", "Ngày bắt đầu", "Ngày kết thúc(dự kiến)", "Ngày kết thúc thực tế", "Ghi chú", "Trạng thái", "Thao tác"
             }
         ));
         jScrollPane5.setViewportView(tbPetCareService);

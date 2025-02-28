@@ -92,6 +92,75 @@ public class InvoiceDetailDAO {
         }
     }
 
+    public boolean isValidProductQuantity(int idInvoice, int idProduct, int quantity) {
+        String sql = """
+        SELECT id.usage_or_quantity AS invoice_quantity
+        FROM invoice_details id
+        WHERE id.id_invoice = ? 
+              AND id.id_product_detail = ? 
+              AND id.type_invoice_detail = 0 
+              AND id.is_deleted = 0;
+    """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idInvoice);
+            ps.setInt(2, idProduct);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int invoiceQuantity = rs.getInt("invoice_quantity");
+                    return quantity <= invoiceQuantity; // Nếu số lượng nhập vào lớn hơn số lượng tồn => false
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false; // Trả về false nếu không tìm thấy dữ liệu
+    }
+    
+    
+    public boolean isValidProductQuantityOfRinvoiceD(int idInvoice, int idProduct, int quantity) {
+        String sql = """
+        SELECT id.usage_or_quantity AS invoice_quantity
+        FROM return_invoice_details id
+        WHERE id.return_id_invoice = ? 
+              AND id.id_product_detail = ? 
+              AND id.type_invoice_detail = 0 
+              AND id.is_deleted = 0;
+    """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idInvoice);
+            ps.setInt(2, idProduct);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int invoiceQuantity = rs.getInt("invoice_quantity");
+                    return quantity <= invoiceQuantity; // Nếu số lượng nhập vào lớn hơn số lượng tồn => false
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false; // Trả về false nếu không tìm thấy dữ liệu
+    }
+    // 
+    //
+
+    public int getPurchasedQuantityById(int idInvoiceDetail) {
+        String sql = "SELECT usage_or_quantity FROM invoice_details WHERE id = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idInvoiceDetail);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("usage_or_quantity");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi truy vấn getPurchasedQuantityById: " + e.getMessage());
+        }
+        return 0; // Trả về 0 nếu không tìm thấy dữ liệu
+    }
+
     public boolean updateUsageOrQuantityAndTprice(int id, int newQuantity, BigDecimal totalPrice) {
         String sql = "UPDATE invoice_details SET usage_or_quantity = ?, total_price = ? WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -249,9 +318,12 @@ public class InvoiceDetailDAO {
             pd.product_detail_code,
             pd.product_detail_name,
             pd.price AS product_price,
+            pd.weight,
             ps.service_code,
             ps.service_name,
             ps.price_service AS service_price,
+            ps.duration,
+            ps.time_unit,
             pet.pet_name
         FROM invoice_details id
         LEFT JOIN invoices iv ON id.id_invoice = iv.id
@@ -278,15 +350,18 @@ public class InvoiceDetailDAO {
 
     public List<InvoiceDetails> getServiceDetailsByInvoiceId(int invoiceId) {
         String sql = """
-    SELECT 
-        id.id, 
-        id.service_duration,
-        id.id_service_detail,
-        id.id_pet
-    FROM invoice_details id
-    WHERE id.id_invoice = ? 
-        AND id.is_deleted = 0
-        AND id.type_invoice_detail = 1;
+        SELECT 
+            id.id, 
+            id.service_duration,
+            id.id_service_detail,
+            id.id_pet,
+            sd.duration, 
+            sd.time_unit 
+        FROM invoice_details id
+        JOIN service_details sd ON id.id_service_detail = sd.id 
+        WHERE id.id_invoice = ? 
+            AND id.is_deleted = 0
+            AND id.type_invoice_detail = 1;
     """;
 
         List<InvoiceDetails> list = new ArrayList<>();
@@ -298,9 +373,11 @@ public class InvoiceDetailDAO {
                     i.setId(rs.getInt("id")); // ID của invoice_detail
                     i.setServiceDuration(rs.getInt("service_duration"));
 
-                    // Lấy ID dịch vụ
+                    // Lấy thông tin dịch vụ
                     PetServices psObj = new PetServices();
                     psObj.setId(rs.getInt("id_service_detail"));
+                    psObj.setDuration(rs.getInt("duration")); // Lấy duration từ service_details
+                    psObj.setTimeUnit(rs.getString("time_unit")); // Lấy time_unit từ service_details
                     i.setPetService(psObj);
 
                     // Lấy ID thú cưng
@@ -326,6 +403,7 @@ public class InvoiceDetailDAO {
         i.setCreatedAt(rs.getDate("created_at"));
         i.setStatus(rs.getBoolean("is_status"));
         i.setTypeInvoiceDetail(rs.getBoolean("type_invoice_detail"));
+        i.setServiceDuration(rs.getInt("service_duration"));
 
         // Set Invoice
         Invoices ic = new Invoices();
@@ -346,6 +424,9 @@ public class InvoiceDetailDAO {
         if (hasColumn(rs, "product_price")) {
             p.setPrice(rs.getBigDecimal("product_price"));
         }
+        if (hasColumn(rs, "weight")) {
+            p.setWeight(rs.getBigDecimal("weight"));
+        }
         i.setProductDetail(p);
 
         // Set PetServices (nếu có)
@@ -358,6 +439,12 @@ public class InvoiceDetailDAO {
         }
         if (hasColumn(rs, "service_price")) {
             ps.setPriceService(rs.getBigDecimal("service_price"));
+        }
+        if (hasColumn(rs, "duration")) {
+            ps.setDuration(rs.getInt("duration"));
+        }
+        if (hasColumn(rs, "time_unit")) {
+            ps.setTimeUnit(rs.getString("time_unit"));
         }
         i.setPetService(ps);
 

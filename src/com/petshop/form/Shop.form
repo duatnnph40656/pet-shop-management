@@ -582,7 +582,7 @@
                     <Column editable="false" title="M&#xe3; SP or SV" type="java.lang.Object"/>
                     <Column editable="false" title="T&#xea;n SP or SV" type="java.lang.Object"/>
                     <Column editable="false" title="SL" type="java.lang.Object"/>
-                    <Column editable="false" title="S&#x1ed1; ng&#xe0;y" type="java.lang.Object"/>
+                    <Column editable="false" title="Th&#x1edd;i gian" type="java.lang.Object"/>
                     <Column editable="false" title="Gi&#xe1; b&#xe1;n or Gi&#xe1; SV" type="java.lang.Object"/>
                     <Column editable="false" title="T&#x1ed5;ng gi&#xe1;" type="java.lang.Object"/>
                     <Column editable="false" title="Th&#xf4;ng tin kh&#xe1;c" type="java.lang.Object"/>
@@ -990,12 +990,12 @@
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="230" minWidth="230" prefWidth="-1" resizable="true">
+                        <Column maxWidth="180" minWidth="180" prefWidth="-1" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>
                         </Column>
-                        <Column maxWidth="170" minWidth="170" prefWidth="-1" resizable="true">
+                        <Column maxWidth="250" minWidth="250" prefWidth="-1" resizable="true">
                           <Title/>
                           <Editor/>
                           <Renderer/>

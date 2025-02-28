@@ -24,17 +24,17 @@ public class PetCareServiceDAO {
         List<PetCareServices> list = new ArrayList<>();
         String sql = "  SELECT pcs.id, pcs.pet_id, pcs.service_id, pcs.service_start, pcs.service_end, "
                 + "       pcs.actual_end, pcs.notes, pcs.created_at, pcs.is_status, pcs.id_invoice, "
-                + "       p.pet_name, p.pet_code, p.breed, p.owner, p.id_type_pet, p.color, p.weight, p.vaccinated, p.age, p.gender, " // Sửa dấu phẩy
-                + "       t.type_pet_name, " // Đưa lên cùng dòng
+                + "       p.pet_name, p.pet_code, p.breed, p.owner, p.id_type_pet, p.color, p.weight, p.vaccinated, p.age, p.gender, "
+                + "       t.type_pet_name, "
                 + "       s.service_code, s.service_name, "
                 + "       i.id AS invoice_id "
                 + "FROM pet_care_services pcs "
                 + "JOIN pets p ON pcs.pet_id = p.id "
-                + "JOIN type_pets t ON p.id_type_pet = t.id  " // Không cần comment ở đây
+                + "JOIN type_pets t ON p.id_type_pet = t.id "
                 + "JOIN service_details s ON pcs.service_id = s.id "
                 + "JOIN invoices i ON pcs.id_invoice = i.id "
-                + "WHERE i.is_deleted = 0;";
-        // Thêm điều kiện is_deleted = 0
+                + "WHERE i.is_deleted = 0 "
+                + "ORDER BY pcs.id DESC;"; // Sắp xếp theo id tăng dần
 
         try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -350,6 +350,22 @@ public class PetCareServiceDAO {
         }
 
         return list;
+    }
+
+    public void updateStatusIfServiceEndToday() {
+        String sql = """
+        UPDATE pet_care_services 
+        SET actual_end = ?, is_status = 0 
+        WHERE DATE(service_end) = CURDATE() AND is_status = 1
+    """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+            int affectedRows = ps.executeUpdate();
+            System.out.println("Updated " + affectedRows + " records.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 }

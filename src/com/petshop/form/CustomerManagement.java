@@ -1033,40 +1033,7 @@ public class CustomerManagement extends javax.swing.JPanel {
         }
     }
 
-    private void loadTable_deleteHistory() {
-        lblKhachHang.setText("Lịch sử KH đã xóa");
-        this.rdoActive.setSelected(true);
-        this.rdoNam.setSelected(true);
-//        String keyword = this.txtSearch.getText().trim();
-//        int trangThai = this.rdoActiveSearch.isSelected() ? 1 : 0;
-        int stt = 1;
-        ArrayList<Customers> ds = (ArrayList<Customers>) this.customerRepo.delete_history();
-        DefaultTableModel dtm = (DefaultTableModel) this.tblKhachHang.getModel();
-        dtm.setRowCount(0);
-        for (Customers customer : ds) {
-            Object[] row = {
-                customer.getId(),
-                stt,
-                customer.getCustomerCode(),
-                customer.getCustomerName(),
-                customer.getAddress(),
-                customer.getPhoneNumber(),
-                customer.getCreatedAt(),
-                customer.getEmail(),
-                customer.isStatus() ? "Đã kích hoạt" : "Chưa kích hoạt",
-                customer.isGender() ? "Nam" : "Nữ"
-            };
-            stt++;
-            dtm.addRow(row);
-        }
-        // Ẩn cột ID
-        tblKhachHang.getColumnModel()
-                .getColumn(0).setMinWidth(0); // Giả sử cột ID là cột 1
-        tblKhachHang.getColumnModel()
-                .getColumn(0).setMaxWidth(0);
-        tblKhachHang.getColumnModel()
-                .getColumn(0).setWidth(0);
-    }
+    
 
     private void clearForm() {
         this.txtHoten.setText("");

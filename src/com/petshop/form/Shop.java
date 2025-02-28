@@ -396,7 +396,7 @@ public class Shop extends javax.swing.JPanel {
                     p.getTypePet().getTypePetName(),
                     p.getFlavor(),
                     p.getQuantityInStock(),
-                    p.getWeight() + "KG",
+                    Ultil.formatWeight(p.getWeight()),
                     p.getFormattedProductionDate(),
                     p.getExpirydate() + " Tháng",
                     Ultil.formatCurrency(p.getPrice()),
@@ -684,11 +684,9 @@ public class Shop extends javax.swing.JPanel {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String formattedCreatedAt = createdAt.format(formatter);
 
-// Định dạng lại tổng tiền và bỏ hai số 0
             BigDecimal formattedTotalAmount = invoice.getTotalPrice().divide(BigDecimal.valueOf(1));
-            String totalAmount1 = String.format("%,.0f", formattedTotalAmount.doubleValue());
+            String totalAmount1 = String.format("%,.0f", formattedTotalAmount);
 
-            // Gọi hàm in hóa đơn với thông tin mới cập nhật
             printInvoice(invoice.getInvoiceCode(), employeeName, customerName, totalAmount1, formattedCreatedAt);
 
             getListInvoice(invoiceDAO.getListInvoice());
@@ -709,21 +707,60 @@ public class Shop extends javax.swing.JPanel {
         List<String[]> items = new ArrayList<>();
 
         for (InvoiceDetails i : list) {
-            String itemName = (i.getProductDetail() != null && i.getProductDetail().getProductDetailName() != null)
-                    ? i.getProductDetail().getProductDetailName()
-                    : (i.getPetService() != null ? i.getPetService().getServiceName() : "N/A");
+            String itemName;
+            String price;
+            BigDecimal priceValue;
 
-            BigDecimal priceValue = (i.getProductDetail() != null && i.getProductDetail().getPrice() != null)
-                    ? i.getProductDetail().getPrice().divide(BigDecimal.valueOf(1))
-                    : (i.getPetService() != null ? i.getPetService().getPriceService().divide(BigDecimal.valueOf(1)) : BigDecimal.ZERO);
+            if (!i.isTypeInvoiceDetail()) { // Sản phẩm
+                itemName = (i.getProductDetail() != null && i.getProductDetail().getProductDetailName() != null)
+                        ? i.getProductDetail().getProductDetailName()
+                        : "N/A";
 
-            BigDecimal totalValue = i.getTotalPrice().divide(BigDecimal.valueOf(1));
+                priceValue = (i.getProductDetail() != null && i.getProductDetail().getPrice() != null)
+                        ? i.getProductDetail().getPrice()
+                        : BigDecimal.ZERO;
 
-            String price = String.format("%,.0f", priceValue);
-            String total = String.format("%,.0f", totalValue);
+                // Lấy trọng lượng sản phẩm (nếu có)
+                BigDecimal weight = (i.getProductDetail() != null && i.getProductDetail().getWeight() != null)
+                        ? i.getProductDetail().getWeight()
+                        : BigDecimal.ZERO;
+
+                // Định dạng trọng lượng: Nếu < 1 thì hiển thị gram (g), nếu >= 1 thì hiển thị KG
+                if (weight.compareTo(BigDecimal.ONE) < 0) {
+                    // Chuyển sang gram: 0.5 kg -> 500g
+                    itemName += String.format(" (%.0f g)", weight.multiply(BigDecimal.valueOf(1000)));
+                } else {
+                    itemName += String.format(" (%.2f kg)", weight);
+                }
+
+                // Định dạng giá sản phẩm
+                price = String.format("%,.0f₫", priceValue);
+            } else { // Dịch vụ
+                itemName = (i.getPetService() != null) ? i.getPetService().getServiceName() : "N/A";
+
+                if (i.getServiceDuration() > 0) {
+                    itemName += " (" + i.getServiceDuration() + " ngày)";
+                }
+
+                priceValue = (i.getPetService() != null) ? i.getPetService().getPriceService() : BigDecimal.ZERO;
+
+                if (i.getServiceDuration() > 0) {
+                    price = String.format("%,.0f", priceValue) + "₫ /ngày";
+                } else {
+                    price = String.format("%,.0f", priceValue) + "₫ /lần";
+                }
+            }
+
+            BigDecimal totalValue = i.getTotalPrice();
+            String total = String.format("%,.0f₫", totalValue);
             String quantity = String.valueOf(i.getUsageOrQuantity());
 
-            items.add(new String[]{itemName, quantity, price, total});
+            items.add(new String[]{
+                itemName != null ? itemName : "Không xác định",
+                quantity,
+                price,
+                total
+            });
         }
 
         Ultil.generateInvoice1(invoiceId, employeeName, customerName, items, totalAmount, createdAt);
@@ -734,15 +771,39 @@ public class Shop extends javax.swing.JPanel {
 
         for (InvoiceDetails detail : list) {
             int serviceDuration = detail.getServiceDuration(); // Lấy số ngày từ invoice_details
+            LocalDateTime startTime = LocalDateTime.now(); // Thời gian bắt đầu
+            LocalDateTime endTime;
 
+            // Nếu serviceDuration <= 0, lấy từ PetService
+            if (serviceDuration <= 0) {
+                String timeUnit = detail.getPetService().getTimeUnit().toLowerCase();
+                int duration = detail.getPetService().getDuration();
+
+                switch (timeUnit) {
+                    case "phút":
+                        endTime = startTime.plusMinutes(duration);
+                        break;
+                    case "giờ":
+                        endTime = startTime.plusHours(duration);
+                        break;
+                    case "ngày":
+                        endTime = startTime.plusDays(duration);
+                        break;
+                    default:
+                        endTime = startTime.plusDays(1); // Mặc định cộng 1 ngày nếu đơn vị không hợp lệ
+                        break;
+                }
+            } else {
+                endTime = startTime.plusDays(serviceDuration); // Sử dụng serviceDuration có sẵn
+            }
+
+            // Khởi tạo dịch vụ chăm sóc thú cưng
             PetCareServices service = new PetCareServices();
-
-            // Thiết lập dữ liệu
             service.setPet(new Pets(detail.getPet().getId())); // ID thú cưng
             service.setPetS(new PetServices(detail.getPetService().getId())); // ID dịch vụ
             service.setInvoices(new Invoices(id)); // Hóa đơn liên kết
-            service.setDateStart(LocalDateTime.now()); // Ngày bắt đầu là hiện tại
-            service.setDateEnd(LocalDateTime.now().plusDays(serviceDuration)); // Ngày kết thúc = ngày bắt đầu + service_duration
+            service.setDateStart(startTime); // Ngày bắt đầu
+            service.setDateEnd(endTime); // Ngày kết thúc (đã tính toán ở trên)
             service.setStatus(true); // Mặc định là true
             service.setNote("Dịch vụ chăm sóc tự động");
 
@@ -780,7 +841,11 @@ public class Shop extends javax.swing.JPanel {
                 code,
                 name,
                 i.getUsageOrQuantity(),
-                (i.isTypeInvoiceDetail() ? i.getServiceDuration() + " Ngày" : "Không có"),
+                (i.isTypeInvoiceDetail()
+                ? (i.getServiceDuration() > 0
+                ? i.getServiceDuration() + " Ngày"
+                : "~" + i.getPetService().getDuration() + " " + i.getPetService().getTimeUnit())
+                : "Không có"),
                 Ultil.formatCurrency(price),
                 Ultil.formatCurrency(i.getTotalPrice()),
                 petName == null ? "Không có" : petName,
@@ -1018,7 +1083,7 @@ public class Shop extends javax.swing.JPanel {
                 p.getServiceCode(),
                 p.getServiceName(),
                 p.getTypeService().getTypeServiceName(),
-                ">= " + p.getDuration(),
+                "~" + p.getDuration(),
                 p.getTimeUnit(),
                 Ultil.formatCurrency(p.getPriceService()) + "/1",
                 p.isStatus() ? "Hoạt động" : "Ngưng nhận",
@@ -1062,17 +1127,19 @@ public class Shop extends javax.swing.JPanel {
 
         boolean isUpdatedOrInserted = false;
 
-        // Tính tổng tiền dịch vụ dựa trên số ngày
-        BigDecimal totalPrice = p.getPriceService()
-                .multiply(BigDecimal.valueOf(totalDate)) // Nhân với số ngày
-                .multiply(BigDecimal.valueOf(inputAmount)); // Nhân với số lượng
+        // Nếu số ngày <= 0, chỉ nhân với số lượng
+        BigDecimal totalPrice = (totalDate > 0)
+                ? p.getPriceService().multiply(BigDecimal.valueOf(totalDate)).multiply(BigDecimal.valueOf(inputAmount))
+                : p.getPriceService().multiply(BigDecimal.valueOf(inputAmount));
 
         if (existingDetail != null) {
             int newQuantity = existingDetail.getUsageOrQuantity() + inputAmount;
             int updatedDuration = existingDetail.getServiceDuration() + totalDate; // Cập nhật thời gian sử dụng dịch vụ
-            BigDecimal updatedTotalPrice = p.getPriceService()
-                    .multiply(BigDecimal.valueOf(updatedDuration))
-                    .multiply(BigDecimal.valueOf(newQuantity));
+
+            // Nếu updatedDuration <= 0, chỉ lấy giá dịch vụ * số lượng
+            BigDecimal updatedTotalPrice = (updatedDuration > 0)
+                    ? p.getPriceService().multiply(BigDecimal.valueOf(updatedDuration)).multiply(BigDecimal.valueOf(newQuantity))
+                    : p.getPriceService().multiply(BigDecimal.valueOf(newQuantity));
 
             // Cập nhật số lượng, thời gian sử dụng và tổng tiền
             isUpdatedOrInserted = invoiceDetailDAO.updateUsageOrQuantityDurationAndTprice(
@@ -1507,7 +1574,7 @@ public class Shop extends javax.swing.JPanel {
                 {null, null, null, null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "", "", "STT", "Mã HDCT", "Mã SP or SV", "Tên SP or SV", "SL", "Số ngày", "Giá bán or Giá SV", "Tổng giá", "Thông tin khác", "", "Thao tác"
+                "", "", "STT", "Mã HDCT", "Mã SP or SV", "Tên SP or SV", "SL", "Thời gian", "Giá bán or Giá SV", "Tổng giá", "Thông tin khác", "", "Thao tác"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -1686,10 +1753,10 @@ public class Shop extends javax.swing.JPanel {
             tbService.getColumnModel().getColumn(1).setMaxWidth(35);
             tbService.getColumnModel().getColumn(2).setMinWidth(80);
             tbService.getColumnModel().getColumn(2).setMaxWidth(80);
-            tbService.getColumnModel().getColumn(3).setMinWidth(230);
-            tbService.getColumnModel().getColumn(3).setMaxWidth(230);
-            tbService.getColumnModel().getColumn(4).setMinWidth(170);
-            tbService.getColumnModel().getColumn(4).setMaxWidth(170);
+            tbService.getColumnModel().getColumn(3).setMinWidth(180);
+            tbService.getColumnModel().getColumn(3).setMaxWidth(180);
+            tbService.getColumnModel().getColumn(4).setMinWidth(250);
+            tbService.getColumnModel().getColumn(4).setMaxWidth(250);
         }
 
         cbbFilterTypeService.setLabeText("Loại dịch vụ");

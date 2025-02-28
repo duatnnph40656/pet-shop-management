@@ -6,6 +6,8 @@ package com.petshop.form;
 
 import com.petshop.daos.InvoiceDAO;
 import com.petshop.daos.InvoiceDetailDAO;
+import com.petshop.daos.ReturnInvoiceDAO;
+import com.petshop.daos.ReturnInvoiceDetailDAO;
 import com.petshop.event.ConfirmListener;
 import com.petshop.event.ConfirmListenerInput;
 import com.petshop.event.EventCallBack;
@@ -13,6 +15,7 @@ import com.petshop.event.EventTextField;
 import com.petshop.models.Customers;
 import com.petshop.models.InvoiceDetails;
 import com.petshop.models.Invoices;
+import com.petshop.models.ReturnInvoices;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogInput;
 import com.petshop.swing.message.DialogMessageError;
@@ -43,13 +46,19 @@ public class InvoiceManagement extends javax.swing.JPanel {
 
     private InvoiceDAO invoiceDAO;
     private InvoiceDetailDAO invoiceDetailDAO;
+    private ReturnInvoiceDAO returnInvoicesDAO;
+    private ReturnInvoiceDetailDAO returnInvoiceDetailDAO;
 
     public InvoiceManagement() {
         initComponents();
         tbInvoice.fixTable(jScrollPane1);
         tbInvoiceDetail.fixTable(jScrollPane3);
+        tbInvoiceReturn.fixTable(jScrollPane2);
+        tblInvoiceReturnDetail.fixTable(jScrollPane4);
         this.invoiceDAO = new InvoiceDAO();
         this.invoiceDetailDAO = new InvoiceDetailDAO();
+        returnInvoicesDAO = new ReturnInvoiceDAO();
+        returnInvoiceDetailDAO = new ReturnInvoiceDetailDAO();
         init();
     }
 
@@ -59,6 +68,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
         searchEvent();
         txtDateStart.setText("Chọn ngày");
         txtDateEnd.setText("Chọn ngày");
+        getListReturnInvoice(returnInvoicesDAO.getListReturnInvoice());
     }
 
     private void searchEvent() {
@@ -136,6 +146,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
     }
     //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="{invoices...">
     private void getListInvoice(List<Invoices> list) {
         int stt = 1;
         tbInvoice.setRowCount(0);
@@ -216,6 +227,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
                 code,
                 name,
                 i.getUsageOrQuantity(),
+                (i.isTypeInvoiceDetail() ? i.getServiceDuration() + " Ngày" : "Không có"),
                 Ultil.formatCurrency(price),
                 Ultil.formatCurrency(i.getTotalPrice()),
                 petName == null ? "Không có thông tin" : petName,
@@ -246,8 +258,6 @@ public class InvoiceManagement extends javax.swing.JPanel {
                 paymentStatus = false;
             }
 
-            
-            
             List<Invoices> list = invoiceDAO.searchInvoiceByDateRange(formattedStartDate, formattedEndDate, paymentStatus);
             getListInvoice(list);
         } catch (DateTimeParseException e) {
@@ -323,9 +333,35 @@ public class InvoiceManagement extends javax.swing.JPanel {
         List<Invoices> list = invoiceDAO.searchInvoiceByCode(keyword);
         getListInvoice(list);
     }
+    //</editor-fold>
 
-    
-    
+    //<editor-fold defaultstate="collapsed" desc="{returnInvoices...">
+    private void getListReturnInvoice(List<ReturnInvoices> list) {
+        int stt = 1;
+        tbInvoiceReturn.setRowCount(0);
+        for (ReturnInvoices returnInvoices : list) {
+            tbInvoiceReturn.addRow(new Object[]{
+                returnInvoices.getId(),
+                stt,
+                returnInvoices.getReturnInvoiceCode() != null && !returnInvoices.getReturnInvoiceCode().isEmpty()
+                ? returnInvoices.getReturnInvoiceCode() : "Chưa có thông tin",
+                returnInvoices.getCreatedAt() != null ? Ultil.getFormatted(returnInvoices.getCreatedAt()) : "Chưa có thông tin",
+                returnInvoices.getTotalPrice() != null ? Ultil.formatCurrency(returnInvoices.getTotalPrice()) : "Chưa có thông tin",
+                returnInvoices.getTotalPriceReturn() != null ? Ultil.formatCurrency(returnInvoices.getTotalPriceReturn()) : "Chưa có thông tin",
+                returnInvoices.getEmployees() != null && returnInvoices.getEmployees().getEmployeeName() != null
+                ? returnInvoices.getEmployees().getEmployeeName() : "Chưa có thông tin",
+                returnInvoices.getCustomers() != null && returnInvoices.getCustomers().getCustomerName() != null
+                ? returnInvoices.getCustomers().getCustomerName() : "Chưa có thông tin",
+                returnInvoices.isPaymentMethod() ? "Tiền mặt" : "Thanh toán qua banking",
+                returnInvoices.getCostsIncurred() != null ? Ultil.formatCurrency(returnInvoices.getCostsIncurred()) : "Chưa có thông tin",
+                returnInvoices.getNote() != null && !returnInvoices.getNote().isEmpty()
+                ? returnInvoices.getNote() : "Chưa có thông tin"
+            });
+            stt++;
+        }
+    }
+
+    //</editor-fold>
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -337,6 +373,8 @@ public class InvoiceManagement extends javax.swing.JPanel {
 
         dateChooser1 = new com.petshop.swing.datechooser.DateChooser();
         dateChooser2 = new com.petshop.swing.datechooser.DateChooser();
+        materialTabbed1 = new com.petshop.swing.tabbed.MaterialTabbed();
+        jPanel1 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         lblKhachHang = new javax.swing.JLabel();
         txtSearch = new com.petshop.swing.textfield.TextFieldAnimation();
@@ -355,6 +393,25 @@ public class InvoiceManagement extends javax.swing.JPanel {
         jScrollPane3 = new javax.swing.JScrollPane();
         tbInvoiceDetail = new com.petshop.swing.table.Table();
         jLabel2 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jPanel8 = new javax.swing.JPanel();
+        lblKhachHang1 = new javax.swing.JLabel();
+        txtSearchReturn = new com.petshop.swing.textfield.TextFieldAnimation();
+        lblKhachHang5 = new javax.swing.JLabel();
+        lblKhachHang6 = new javax.swing.JLabel();
+        btnFitterReturn = new com.petshop.swing.Button();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tbInvoiceReturn = new com.petshop.swing.table.Table();
+        txtDateStartReturn = new com.petshop.swing.textfield.TextField1();
+        txtDateEndReturn = new com.petshop.swing.textfield.TextField1();
+        cbbFilterPaymentStatusReturn = new com.petshop.swing.combobox.Combobox();
+        cbbFilterReturn = new com.petshop.swing.combobox.Combobox();
+        jLabel3 = new javax.swing.JLabel();
+        button2 = new com.petshop.swing.Button();
+        jPanel10 = new javax.swing.JPanel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        tblInvoiceReturnDetail = new com.petshop.swing.table.Table();
+        jLabel4 = new javax.swing.JLabel();
 
         dateChooser1.setTextRefernce(txtDateStart);
 
@@ -363,6 +420,8 @@ public class InvoiceManagement extends javax.swing.JPanel {
         setBackground(new java.awt.Color(255, 255, 255));
         setForeground(new java.awt.Color(204, 255, 255));
         setPreferredSize(new java.awt.Dimension(1058, 741));
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
         jPanel7.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -414,13 +473,6 @@ public class InvoiceManagement extends javax.swing.JPanel {
             }
         });
         jScrollPane1.setViewportView(tbInvoice);
-        if (tbInvoice.getColumnModel().getColumnCount() > 0) {
-            tbInvoice.getColumnModel().getColumn(0).setMinWidth(0);
-            tbInvoice.getColumnModel().getColumn(0).setMaxWidth(0);
-            tbInvoice.getColumnModel().getColumn(1).setMinWidth(35);
-            tbInvoice.getColumnModel().getColumn(1).setMaxWidth(35);
-            tbInvoice.getColumnModel().getColumn(9).setResizable(false);
-        }
 
         cbbFilterPaymentStatus.setLabeText("Trạng thái thanh toán");
 
@@ -444,33 +496,35 @@ public class InvoiceManagement extends javax.swing.JPanel {
         jPanel7Layout.setHorizontalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel7Layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1)
                     .addGroup(jPanel7Layout.createSequentialGroup()
-                        .addComponent(cbbFilter, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbbFilterPaymentStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 142, Short.MAX_VALUE)
-                        .addComponent(lblKhachHang3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtDateStart, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblKhachHang4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtDateEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(27, 27, 27)
-                        .addComponent(btnDeleteHistory, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(lblKhachHang)
-                        .addGap(5, 5, 5)
-                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel7Layout.createSequentialGroup()
+                                .addComponent(cbbFilter, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cbbFilterPaymentStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 155, Short.MAX_VALUE)
+                                .addComponent(lblKhachHang3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtDateStart, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblKhachHang4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtDateEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(27, 27, 27)
+                                .addComponent(btnDeleteHistory, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(lblKhachHang)
+                                .addGap(5, 5, 5)
+                                .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel7Layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap())))
         );
         jPanel7Layout.setVerticalGroup(
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -492,7 +546,7 @@ public class InvoiceManagement extends javax.swing.JPanel {
                         .addComponent(txtDateStart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(lblKhachHang3, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(button1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -502,16 +556,16 @@ public class InvoiceManagement extends javax.swing.JPanel {
 
         tbInvoiceDetail.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "STT", "Mã HDCT", "Mã SP/DV", "Tên SP/DV", "SL", "Giá bán/giá DV", "Tổng tiền", "Thông tin khác", "Ngày tạo"
+                "STT", "Mã HDCT", "Mã SP/DV", "Tên SP/DV", "SL", "Số ngày", "Giá bán/giá DV", "Tổng tiền", "Thông tin khác", "Ngày tạo"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, true, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -524,16 +578,6 @@ public class InvoiceManagement extends javax.swing.JPanel {
             }
         });
         jScrollPane3.setViewportView(tbInvoiceDetail);
-        if (tbInvoiceDetail.getColumnModel().getColumnCount() > 0) {
-            tbInvoiceDetail.getColumnModel().getColumn(0).setMinWidth(40);
-            tbInvoiceDetail.getColumnModel().getColumn(0).setMaxWidth(40);
-            tbInvoiceDetail.getColumnModel().getColumn(1).setMinWidth(80);
-            tbInvoiceDetail.getColumnModel().getColumn(1).setMaxWidth(80);
-            tbInvoiceDetail.getColumnModel().getColumn(3).setMinWidth(230);
-            tbInvoiceDetail.getColumnModel().getColumn(3).setMaxWidth(230);
-            tbInvoiceDetail.getColumnModel().getColumn(4).setMinWidth(40);
-            tbInvoiceDetail.getColumnModel().getColumn(4).setMaxWidth(40);
-        }
 
         jLabel2.setBackground(new java.awt.Color(255, 255, 255));
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -547,47 +591,279 @@ public class InvoiceManagement extends javax.swing.JPanel {
             .addGroup(jPanel9Layout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel9Layout.createSequentialGroup()
                         .addComponent(jLabel2)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addGap(0, 0, 0))
+                        .addContainerGap(902, Short.MAX_VALUE))))
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel9Layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(25, 25, 25))
+        );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 1053, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addGap(3, 3, 3)
+                    .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGap(4, 4, 4))
+                .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 694, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap()))
+        );
+
+        materialTabbed1.addTab("Hóa đơn", jPanel1);
+
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+
+        jPanel8.setBackground(new java.awt.Color(255, 255, 255));
+
+        lblKhachHang1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang1.setText("Tìm kiếm hoá đơn: ");
+
+        txtSearchReturn.setBackground(new java.awt.Color(250, 250, 250));
+        txtSearchReturn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSearchReturnActionPerformed(evt);
+            }
+        });
+
+        lblKhachHang5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang5.setText("Từ:");
+
+        lblKhachHang6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblKhachHang6.setText("Đến:");
+
+        btnFitterReturn.setBackground(new java.awt.Color(204, 204, 255));
+        btnFitterReturn.setText("Lọc");
+        btnFitterReturn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFitterReturnActionPerformed(evt);
+            }
+        });
+
+        tbInvoiceReturn.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null, null, null}
+            },
+            new String [] {
+                "", "STT", "Mã HDTH", "Ngày Tạo ", "T. tiền hàng đổi", "T. tiền hàng trả", "Thông tin NV", "Thông tin KH", "Hình thức TT", "Phí phát sinh", "Ghi chú"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, true, false, true, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tbInvoiceReturn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbInvoiceReturnMouseClicked(evt);
+            }
+        });
+        jScrollPane2.setViewportView(tbInvoiceReturn);
+        if (tbInvoiceReturn.getColumnModel().getColumnCount() > 0) {
+            tbInvoiceReturn.getColumnModel().getColumn(0).setMinWidth(0);
+            tbInvoiceReturn.getColumnModel().getColumn(0).setMaxWidth(0);
+            tbInvoiceReturn.getColumnModel().getColumn(1).setMinWidth(34);
+            tbInvoiceReturn.getColumnModel().getColumn(1).setMaxWidth(34);
+            tbInvoiceReturn.getColumnModel().getColumn(3).setMinWidth(150);
+            tbInvoiceReturn.getColumnModel().getColumn(3).setMaxWidth(150);
+        }
+
+        cbbFilterPaymentStatusReturn.setLabeText("Trạng thái thanh toán");
+
+        cbbFilterReturn.setLabeText("Lọc theo thời gian");
+
+        jLabel3.setBackground(new java.awt.Color(255, 255, 255));
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel3.setText("Hoá đơn đổi trả");
+
+        button2.setBackground(new java.awt.Color(204, 204, 204));
+        button2.setText("Làm mới");
+        button2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                button2ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
+        jPanel8.setLayout(jPanel8Layout);
+        jPanel8Layout.setHorizontalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel8Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel8Layout.createSequentialGroup()
+                        .addComponent(cbbFilterReturn, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbbFilterPaymentStatusReturn, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 149, Short.MAX_VALUE)
+                        .addComponent(lblKhachHang5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtDateStartReturn, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblKhachHang6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtDateEndReturn, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(27, 27, 27)
+                        .addComponent(btnFitterReturn, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 498, Short.MAX_VALUE)
+                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
+                                .addComponent(lblKhachHang1)
+                                .addGap(5, 5, 5)
+                                .addComponent(txtSearchReturn, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(button2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap())
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
+        );
+        jPanel8Layout.setVerticalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel8Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(txtSearchReturn, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
+                    .addComponent(lblKhachHang1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel3))
+                .addGap(5, 5, 5)
+                .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(cbbFilterReturn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbbFilterPaymentStatusReturn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txtDateEndReturn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnFitterReturn, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(lblKhachHang6, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtDateStartReturn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(lblKhachHang5, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(button2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        jPanel10.setBackground(new java.awt.Color(255, 255, 255));
+
+        tblInvoiceReturnDetail.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null}
+            },
+            new String [] {
+                "STT", "Mã HDTHCT", "Mã HDTH", "Mã SP", "Tên SP", "SL", "Giá bán", "Tổng tiền", "Ngày tạo"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, true, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tblInvoiceReturnDetail.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblInvoiceReturnDetailMouseClicked(evt);
+            }
+        });
+        jScrollPane4.setViewportView(tblInvoiceReturnDetail);
+
+        jLabel4.setBackground(new java.awt.Color(255, 255, 255));
+        jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel4.setText("Hoá đơn chi tiết ");
+
+        javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
+        jPanel10.setLayout(jPanel10Layout);
+        jPanel10Layout.setHorizontalGroup(
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel10Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane4)
+                    .addGroup(jPanel10Layout.createSequentialGroup()
+                        .addComponent(jLabel4)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addGap(0, 0, 0))
         );
+        jPanel10Layout.setVerticalGroup(
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel10Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(3, 3, 3)
+                .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(4, 4, 4))
+            .addComponent(jPanel8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 49, Short.MAX_VALUE))
+        );
+
+        materialTabbed1.addTab("Hóa đơn đổi trả", jPanel2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+            .addComponent(materialTabbed1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+            .addComponent(materialTabbed1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void tbInvoiceDetailMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbInvoiceDetailMouseClicked
         // TODO add your handling code here:
     }//GEN-LAST:event_tbInvoiceDetailMouseClicked
+
+    private void button1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button1ActionPerformed
+        // TODO add your handling code here:
+        resetForm();
+    }//GEN-LAST:event_button1ActionPerformed
 
     private void tbInvoiceMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbInvoiceMouseClicked
         showInvoiceDetailByIdInvoice();
@@ -601,33 +877,69 @@ public class InvoiceManagement extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtSearchActionPerformed
 
-    private void button1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button1ActionPerformed
+    private void txtSearchReturnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchReturnActionPerformed
         // TODO add your handling code here:
-        resetForm();
-    }//GEN-LAST:event_button1ActionPerformed
+    }//GEN-LAST:event_txtSearchReturnActionPerformed
+
+    private void btnFitterReturnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFitterReturnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnFitterReturnActionPerformed
+
+    private void tbInvoiceReturnMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbInvoiceReturnMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tbInvoiceReturnMouseClicked
+
+    private void button2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button2ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_button2ActionPerformed
+
+    private void tblInvoiceReturnDetailMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblInvoiceReturnDetailMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tblInvoiceReturnDetailMouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.petshop.swing.Button btnDeleteHistory;
+    private com.petshop.swing.Button btnFitterReturn;
     private com.petshop.swing.Button button1;
+    private com.petshop.swing.Button button2;
     private com.petshop.swing.combobox.Combobox cbbFilter;
     private com.petshop.swing.combobox.Combobox cbbFilterPaymentStatus;
+    private com.petshop.swing.combobox.Combobox cbbFilterPaymentStatusReturn;
+    private com.petshop.swing.combobox.Combobox cbbFilterReturn;
     private com.petshop.swing.datechooser.DateChooser dateChooser1;
     private com.petshop.swing.datechooser.DateChooser dateChooser2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JLabel lblKhachHang;
+    private javax.swing.JLabel lblKhachHang1;
     private javax.swing.JLabel lblKhachHang3;
     private javax.swing.JLabel lblKhachHang4;
+    private javax.swing.JLabel lblKhachHang5;
+    private javax.swing.JLabel lblKhachHang6;
+    private com.petshop.swing.tabbed.MaterialTabbed materialTabbed1;
     private com.petshop.swing.table.Table tbInvoice;
     private com.petshop.swing.table.Table tbInvoiceDetail;
+    private com.petshop.swing.table.Table tbInvoiceReturn;
+    private com.petshop.swing.table.Table tblInvoiceReturnDetail;
     private com.petshop.swing.textfield.TextField1 txtDateEnd;
+    private com.petshop.swing.textfield.TextField1 txtDateEndReturn;
     private com.petshop.swing.textfield.TextField1 txtDateStart;
+    private com.petshop.swing.textfield.TextField1 txtDateStartReturn;
     private com.petshop.swing.textfield.TextFieldAnimation txtSearch;
+    private com.petshop.swing.textfield.TextFieldAnimation txtSearchReturn;
     // End of variables declaration//GEN-END:variables
 
 }

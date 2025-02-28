@@ -15,6 +15,7 @@ import com.petshop.models.Products;
 import com.petshop.models.TypeServices;
 import com.petshop.popup.PopupShowHistoryDeleted;
 import com.petshop.popup.PopupTypeService;
+import com.petshop.services.RememberMeService;
 import com.petshop.swing.message.DialogConfirm;
 import com.petshop.swing.message.DialogInput;
 import com.petshop.swing.message.DialogMessageError;
@@ -41,16 +42,19 @@ public class ServiceManagerment extends javax.swing.JPanel {
      */
     private final PetServiceDAO petServiceDAO;
     private final TypeServiceDAO typeServiceDAO;
+    private RememberMeService rememberMeService;
 
     public ServiceManagerment() {
         initComponents();
         tbService.fixTable(jScrollPane4);
         petServiceDAO = new PetServiceDAO();
         typeServiceDAO = new TypeServiceDAO();
+        rememberMeService = new RememberMeService();
         init();
     }
 
     public void init() {
+        checkPermission();
         txtServiceCode.setText("SV" + Ultil.generateRandomCode());
         getListService(petServiceDAO.getListServiceAll());
         loadCBBTypeService(typeServiceDAO.getListTypeS());
@@ -60,6 +64,13 @@ public class ServiceManagerment extends javax.swing.JPanel {
         txtServiceCode.setEditable(false);
     }
 
+    private void checkPermission(){
+        if(rememberMeService.getEmployeeId()!=1){
+            btnEdit.setEnabled(false);
+            btnAdd.setEnabled(false);
+        }
+    }
+    
     private void searchEvent() {
         txtSearchService.addEvent(new EventTextField() { // là tên của cái search
             @Override
@@ -389,7 +400,7 @@ public class ServiceManagerment extends javax.swing.JPanel {
 
     private PetServices readForm() {
         PetServices p = new PetServices();
-        p.setServiceCode(txtServiceCode.getText());
+        p.setServiceCode("SV"+Ultil.generateRandomCode());
         p.setServiceName(txtServiceName.getText());
         p.setDescribeService(txtDescribeService.getText());
         p.setDuration(Integer.parseInt(txtDuration.getText()));
@@ -617,6 +628,10 @@ public class ServiceManagerment extends javax.swing.JPanel {
     }
 
     public void deleteService(PetServices p) {
+        if (rememberMeService.getEmployeeId() != 1) {
+            showMessageFail("Bạn không có quyền xóa!!!");
+            return;
+        }
         int selectedRow = tbService.getSelectedRow();
         if (selectedRow != -1) {
             int id = p.getId();

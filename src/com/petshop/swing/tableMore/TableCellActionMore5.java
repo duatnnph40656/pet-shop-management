@@ -9,6 +9,7 @@ import com.petshop.swing.table.ActionMore;
 import com.petshop.swing.table.ActionMore2;
 import com.petshop.swing.table.ActionMore3;
 import com.petshop.swing.table.ActionMore4;
+import com.petshop.swing.table.ActionMore5;
 import com.petshop.swing.table.ModelAction;
 import java.awt.Color;
 import java.awt.Component;
@@ -20,17 +21,17 @@ import javax.swing.JTable;
  *
  * @author duat
  */
-public class TableCellActionMore4 extends DefaultCellEditor{
+public class TableCellActionMore5 extends DefaultCellEditor{
     private ModelAction data;
 
-    public TableCellActionMore4() {
+    public TableCellActionMore5() {
         super(new JCheckBox());
     }
 
     @Override
     public Component getTableCellEditorComponent(JTable jtable, Object o, boolean bln, int i, int i1) {
         data = (ModelAction) o;
-        ActionMore4 cell = new ActionMore4(data);
+        ActionMore5 cell = new ActionMore5(data);
         cell.setBackground(new Color(239, 244, 255));
         return cell;
     }

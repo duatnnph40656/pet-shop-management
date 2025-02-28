@@ -154,38 +154,39 @@ public class EmployeeManagement extends javax.swing.JPanel {
         tblnhanvien.setRowCount(0);
         // Lấy danh sách nhân viên từ DB
         for (Employees emp : list) {
+            if (emp.getRole().getId() != 1) {
+                tblnhanvien.addRow(new Object[]{
+                    emp.getId(),
+                    stt, // 0 - ID
+                    emp.getEmployeeCode() == null ? "Chua co thong tin" : emp.getEmployeeCode(), // 1 - Mã nhân viên
+                    emp.getEmployeeName() == null ? "Chua co thong tin" : emp.getEmployeeName(), // 2 - Tên nhân viên
+                    emp.getEmail() == null ? "Chua co thong tin" : emp.getEmail(), // 4 - Email
+                    emp.isGender() ? "Nam" : "Nu", // 7 - Giới tính (Nam/Nữ)
+                    emp.getPhoneNumber() == null ? "Chua co thong tin" : emp.getPhoneNumber(), // 3 - Số điện thoại
+                    emp.getRole().getId() == 2 ? "Nhan Vien" : "Quan Ly", // 8 - Chức vụ (Nhân viên/Quản lý)
+                    emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(), // 6 - Ngày tạo
+                    emp.getAddress() == null ? "Chua co thong tin" : emp.getAddress(), // 5 - Địa chỉ         
+                    emp.isStatus() ? "Hoat dong" : "Ngung hoat dong",
+                    new ModelAction<>(emp, new EventAction<Employees>() {
+                        @Override
+                        public void delete(Employees e) {
+                            showMessageConfirm("Xác nhận xóa nhân viên?", () -> {
+                                deleteEmployee();
+                            });
+                        }
 
-            tblnhanvien.addRow(new Object[]{
-                emp.getId(),
-                stt, // 0 - ID
-                emp.getEmployeeCode() == null ? "Chua co thong tin" : emp.getEmployeeCode(), // 1 - Mã nhân viên
-                emp.getEmployeeName() == null ? "Chua co thong tin" : emp.getEmployeeName(), // 2 - Tên nhân viên
-                emp.getEmail() == null ? "Chua co thong tin" : emp.getEmail(), // 4 - Email
-                emp.isGender() ? "Nam" : "Nu", // 7 - Giới tính (Nam/Nữ)
-                emp.getPhoneNumber() == null ? "Chua co thong tin" : emp.getPhoneNumber(), // 3 - Số điện thoại
-                emp.getRole().getId() == 2 ? "Nhan Vien" : "Quan Ly", // 8 - Chức vụ (Nhân viên/Quản lý)
-                emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(), // 6 - Ngày tạo
-                emp.getAddress() == null ? "Chua co thong tin" : emp.getAddress(), // 5 - Địa chỉ         
-                emp.isStatus() ? "Hoat dong" : "Ngung hoat dong",
-                new ModelAction<>(emp, new EventAction<Employees>() {
-                    @Override
-                    public void delete(Employees e) {
-                        showMessageConfirm("Xác nhận xóa nhân viên?", () -> {
-                            deleteEmployee();
-                        });
-                    }
+                        @Override
+                        public void update(Employees e) {
 
-                    @Override
-                    public void update(Employees e) {
+                        }
 
-                    }
-
-                    @Override
-                    public void add(Employees e) {
-                    }
-                })
-            });
-            stt++;
+                        @Override
+                        public void add(Employees e) {
+                        }
+                    })
+                });
+                stt++;
+            }
         }
     }
 
@@ -526,7 +527,7 @@ public class EmployeeManagement extends javax.swing.JPanel {
     }
 
     public void deleteEmployee() {
-        
+
         if (getSelectedRowEmployee() == -1) {
             showMessageFail("Vui lòng chọn nhân viên để xóa");
             return;
@@ -535,130 +536,128 @@ public class EmployeeManagement extends javax.swing.JPanel {
         fillTable(employeeDao.getListEmployee());
         showMessageSuccess("Xóa thành công!");
     }
-    
+
     private void importFile() {
-    JFileChooser fileChooser = new JFileChooser();
-    fileChooser.setFileFilter(new FileNameExtensionFilter("CSV & Excel Files", "csv", "xlsx"));
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(new FileNameExtensionFilter("CSV & Excel Files", "csv", "xlsx"));
 
-    int returnValue = fileChooser.showOpenDialog(null);
-    if (returnValue == JFileChooser.APPROVE_OPTION) {
-        File file = fileChooser.getSelectedFile();
-        String fileName = file.getName();
+        int returnValue = fileChooser.showOpenDialog(null);
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            String fileName = file.getName();
 
-        if (fileName.endsWith(".csv")) {
-            importCSV(file);
-        } else if (fileName.endsWith(".xlsx")) {
-            importExcel(file);
-        } else {
-            JOptionPane.showMessageDialog(null, "Định dạng tệp không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            if (fileName.endsWith(".csv")) {
+                importCSV(file);
+            } else if (fileName.endsWith(".xlsx")) {
+                importExcel(file);
+            } else {
+                JOptionPane.showMessageDialog(null, "Định dạng tệp không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
-}
 
 // Đọc file CSV
-private void importCSV(File file) {
-    try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-        DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
-        model.setRowCount(0); // Xóa dữ liệu cũ
+    private void importCSV(File file) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
+            model.setRowCount(0); // Xóa dữ liệu cũ
 
-        String line;
-        boolean isFirstLine = true;
+            String line;
+            boolean isFirstLine = true;
 
-        while ((line = reader.readLine()) != null) {
-            String[] rowData = line.split(",");
-            if (isFirstLine) {
-                isFirstLine = false; // Bỏ qua tiêu đề cột
-                continue;
+            while ((line = reader.readLine()) != null) {
+                String[] rowData = line.split(",");
+                if (isFirstLine) {
+                    isFirstLine = false; // Bỏ qua tiêu đề cột
+                    continue;
+                }
+                model.addRow(rowData);
             }
-            model.addRow(rowData);
-        }
 
-        JOptionPane.showMessageDialog(null, "Nhập CSV thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(null, "Lỗi khi nhập CSV: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Nhập CSV thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Lỗi khi nhập CSV: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
-}
 
 // Đọc file Excel (.xlsx)
-private void importExcel(File file) {
-    try (FileInputStream fis = new FileInputStream(file);
-         Workbook workbook = new XSSFWorkbook(fis)) {
+    private void importExcel(File file) {
+        try (FileInputStream fis = new FileInputStream(file); Workbook workbook = new XSSFWorkbook(fis)) {
 
-        Sheet sheet = workbook.getSheetAt(0);
-        DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
-        model.setRowCount(0); // Xóa dữ liệu cũ
+            Sheet sheet = workbook.getSheetAt(0);
+            DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
+            model.setRowCount(0); // Xóa dữ liệu cũ
 
-        boolean isFirstRow = true;
-        for (Row row : sheet) {
-            if (isFirstRow) {
-                isFirstRow = false; // Bỏ qua tiêu đề cột
-                continue;
-            }
-
-            int columnCount = row.getLastCellNum();
-            String[] rowData = new String[columnCount];
-
-            for (int i = 0; i < columnCount; i++) {
-                Cell cell = row.getCell(i, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
-                rowData[i] = cell.toString();
-            }
-            model.addRow(rowData);
-        }
-
-        JOptionPane.showMessageDialog(null, "Nhập Excel thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(null, "Lỗi khi nhập Excel: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-    }
-}
-
-
-private void exportToExcel() {
-    // Kiểm tra bảng có dữ liệu không
-    if (tblnhanvien.getRowCount() == 0) {
-        JOptionPane.showMessageDialog(null, "Bảng không có dữ liệu để xuất!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-
-    JFileChooser fileChooser = new JFileChooser();
-    fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
-    fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Excel Files", "xlsx"));
-
-    int userSelection = fileChooser.showSaveDialog(null);
-    if (userSelection == JFileChooser.APPROVE_OPTION) {
-        File fileToSave = new File(fileChooser.getSelectedFile().getAbsolutePath() + ".xlsx");
-
-        try (Workbook workbook = new XSSFWorkbook()) {
-            Sheet sheet = workbook.createSheet("NhanVien");
-            TableModel model = tblnhanvien.getModel();
-
-            // Ghi tiêu đề cột
-            Row headerRow = sheet.createRow(0);
-            for (int col = 0; col < model.getColumnCount(); col++) {
-                Cell cell = headerRow.createCell(col);
-                cell.setCellValue(model.getColumnName(col));
-            }
-
-            // Ghi dữ liệu từ bảng
-            for (int row = 0; row < model.getRowCount(); row++) {
-                Row dataRow = sheet.createRow(row + 1);
-                for (int col = 0; col < model.getColumnCount(); col++) {
-                    Cell cell = dataRow.createCell(col);
-                    Object value = model.getValueAt(row, col);
-                    cell.setCellValue(value != null ? value.toString() : ""); // Xử lý giá trị null
+            boolean isFirstRow = true;
+            for (Row row : sheet) {
+                if (isFirstRow) {
+                    isFirstRow = false; // Bỏ qua tiêu đề cột
+                    continue;
                 }
+
+                int columnCount = row.getLastCellNum();
+                String[] rowData = new String[columnCount];
+
+                for (int i = 0; i < columnCount; i++) {
+                    Cell cell = row.getCell(i, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                    rowData[i] = cell.toString();
+                }
+                model.addRow(rowData);
             }
 
-            // Ghi file
-            try (FileOutputStream fileOut = new FileOutputStream(fileToSave)) {
-                workbook.write(fileOut);
-            }
-
-            JOptionPane.showMessageDialog(null, "Xuất Excel thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Nhập Excel thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Lỗi khi xuất Excel: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Lỗi khi nhập Excel: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
-}
+
+    private void exportToExcel() {
+        // Kiểm tra bảng có dữ liệu không
+        if (tblnhanvien.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(null, "Bảng không có dữ liệu để xuất!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Excel Files", "xlsx"));
+
+        int userSelection = fileChooser.showSaveDialog(null);
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = new File(fileChooser.getSelectedFile().getAbsolutePath() + ".xlsx");
+
+            try (Workbook workbook = new XSSFWorkbook()) {
+                Sheet sheet = workbook.createSheet("NhanVien");
+                TableModel model = tblnhanvien.getModel();
+
+                // Ghi tiêu đề cột
+                Row headerRow = sheet.createRow(0);
+                for (int col = 0; col < model.getColumnCount(); col++) {
+                    Cell cell = headerRow.createCell(col);
+                    cell.setCellValue(model.getColumnName(col));
+                }
+
+                // Ghi dữ liệu từ bảng
+                for (int row = 0; row < model.getRowCount(); row++) {
+                    Row dataRow = sheet.createRow(row + 1);
+                    for (int col = 0; col < model.getColumnCount(); col++) {
+                        Cell cell = dataRow.createCell(col);
+                        Object value = model.getValueAt(row, col);
+                        cell.setCellValue(value != null ? value.toString() : ""); // Xử lý giá trị null
+                    }
+                }
+
+                // Ghi file
+                try (FileOutputStream fileOut = new FileOutputStream(fileToSave)) {
+                    workbook.write(fileOut);
+                }
+
+                JOptionPane.showMessageDialog(null, "Xuất Excel thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Lỗi khi xuất Excel: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -1053,59 +1052,61 @@ private void exportToExcel() {
     private void btnRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRestoreActionPerformed
         // TODO add your handling code here:
         importFile();
-    
+
     }//GEN-LAST:event_btnRestoreActionPerformed
 
     private void combobox3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_combobox3ActionPerformed
         // TODO add your handling code here:
-      EmployeeDAO employeeDAO = new EmployeeDAO();
+        EmployeeDAO employeeDAO = new EmployeeDAO();
 
-    // Lấy giá trị từ ComboBox
-    String selectedValue = combobox3.getSelectedItem().toString(); 
+        // Lấy giá trị từ ComboBox
+        String selectedValue = combobox3.getSelectedItem().toString();
 
-    // Xác định sắp xếp tăng dần hay giảm dần
-    boolean ascending = selectedValue.equals("A-Z"); // Nếu chọn "Từ A-Z" thì true, ngược lại false
+        // Xác định sắp xếp tăng dần hay giảm dần
+        boolean ascending = selectedValue.equals("A-Z"); // Nếu chọn "Từ A-Z" thì true, ngược lại false
 
-    // Lấy danh sách nhân viên sắp xếp theo thứ tự đã chọn
-    List<Employees> sortedEmployees = employeeDAO.getSortedEmployeesByName(ascending);
+        // Lấy danh sách nhân viên sắp xếp theo thứ tự đã chọn
+        List<Employees> sortedEmployees = employeeDAO.getSortedEmployeesByName(ascending);
 
-    // Cập nhật dữ liệu lên bảng (JTable)
-    DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
-    model.setRowCount(0); // Xóa dữ liệu cũ
+        // Cập nhật dữ liệu lên bảng (JTable)
+        DefaultTableModel model = (DefaultTableModel) tblnhanvien.getModel();
+        model.setRowCount(0); // Xóa dữ liệu cũ
 
-    int stt = 1;
-    for (Employees emp : sortedEmployees) {
-        model.addRow(new Object[]{
-            emp.getId(),
-            stt, 
-            emp.getEmployeeCode() == null ? "Chua co thong tin" : emp.getEmployeeCode(), 
-            emp.getEmployeeName() == null ? "Chua co thong tin" : emp.getEmployeeName(),
-            emp.getEmail() == null ? "Chua co thong tin" : emp.getEmail(),
-            emp.isGender() ? "Nam" : "Nu", 
-            emp.getPhoneNumber() == null ? "Chua co thong tin" : emp.getPhoneNumber(),
-            emp.getRole().getId() == 2 ? "Nhan Vien" : "Quan Ly",
-            emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(),
-            emp.getAddress() == null ? "Chua co thong tin" : emp.getAddress(),
-            emp.isStatus() ? "Hoat dong" : "Ngung hoat dong",
-            new ModelAction<>(emp, new EventAction<Employees>() {
-                @Override
-                public void delete(Employees e) {
-                    showMessageConfirm("Xác nhận xóa nhân viên?", () -> {
-                        deleteEmployee();
-                    });
-                }
+        int stt = 1;
+        for (Employees emp : sortedEmployees) {
+            model.addRow(new Object[]{
+                emp.getId(),
+                stt,
+                emp.getEmployeeCode() == null ? "Chua co thong tin" : emp.getEmployeeCode(),
+                emp.getEmployeeName() == null ? "Chua co thong tin" : emp.getEmployeeName(),
+                emp.getEmail() == null ? "Chua co thong tin" : emp.getEmail(),
+                emp.isGender() ? "Nam" : "Nu",
+                emp.getPhoneNumber() == null ? "Chua co thong tin" : emp.getPhoneNumber(),
+                emp.getRole().getId() == 2 ? "Nhan Vien" : "Quan Ly",
+                emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(),
+                emp.getAddress() == null ? "Chua co thong tin" : emp.getAddress(),
+                emp.isStatus() ? "Hoat dong" : "Ngung hoat dong",
+                new ModelAction<>(emp, new EventAction<Employees>() {
+                    @Override
+                    public void delete(Employees e) {
+                        showMessageConfirm("Xác nhận xóa nhân viên?", () -> {
+                            deleteEmployee();
+                        });
+                    }
 
-                @Override
-                public void update(Employees e) {}
+                    @Override
+                    public void update(Employees e) {
+                    }
 
-                @Override
-                public void add(Employees e) {}
-            })
-        });
-        stt++;
-    
+                    @Override
+                    public void add(Employees e) {
+                    }
+                })
+            });
+            stt++;
+
         }
-    
+
     }//GEN-LAST:event_combobox3ActionPerformed
 
     private void combobox4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_combobox4ActionPerformed
@@ -1139,28 +1140,27 @@ private void exportToExcel() {
                 emp.getCreatedAt() == null ? "Chua co thong tin" : emp.getCreatedAt(), // 6 - Ngày tạo
                 emp.getAddress() == null ? "Chua co thong tin" : emp.getAddress(), // 5 - Địa chỉ         
                 emp.isStatus() ? "Hoat dong" : "Ngung hoat dong",});
-     new ModelAction<>(emp, new EventAction<Employees>() {
-                    @Override
-                    public void delete(Employees e) {
-                        showMessageConfirm("Xác nhận xóa nhân viên?", () -> {
-                            deleteEmployee();
-                        });
-                    }
+            new ModelAction<>(emp, new EventAction<Employees>() {
+                @Override
+                public void delete(Employees e) {
+                    showMessageConfirm("Xác nhận xóa nhân viên?", () -> {
+                        deleteEmployee();
+                    });
+                }
 
-                    @Override
-                    public void update(Employees e) {
+                @Override
+                public void update(Employees e) {
 
-                    }
+                }
 
-                    @Override
-                    public void add(Employees e) {
-                    }
-                
+                @Override
+                public void add(Employees e) {
+                }
+
             });
-           
-        
+
         }
-         stt++;
+        stt++;
     }//GEN-LAST:event_combobox4ActionPerformed
 
     private void btnRestore1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRestore1ActionPerformed

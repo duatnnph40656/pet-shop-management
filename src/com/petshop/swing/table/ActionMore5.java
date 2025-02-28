@@ -11,7 +11,7 @@ import java.awt.event.ActionListener;
  *
  * @author duat
  */
-public class ActionMore4<T> extends javax.swing.JPanel {
+public class ActionMore5<T> extends javax.swing.JPanel {
 
     /**
      * Creates new form ActionMore
@@ -22,21 +22,9 @@ public class ActionMore4<T> extends javax.swing.JPanel {
         this.listener = listener;
     }
 
-    public ActionMore4(ModelAction<T> data) {
+    public ActionMore5(ModelAction<T> data) {
         initComponents();
-        cmdDelete.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                data.getEvent().delete(data.getModel());
-            }
-        });
         cmdUpdate.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                data.getEvent().update(data.getModel());
-            }
-        });
-        cmdUpdatePass.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 data.getEvent().add(data.getModel());
@@ -53,27 +41,11 @@ public class ActionMore4<T> extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        cmdDelete = new com.petshop.swing.Button();
-        cmdUpdatePass = new com.petshop.swing.Button();
         cmdUpdate = new com.petshop.swing.Button();
 
         setPreferredSize(new java.awt.Dimension(70, 40));
 
-        cmdDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-delete-20.png"))); // NOI18N
-        cmdDelete.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmdDeleteActionPerformed(evt);
-            }
-        });
-
-        cmdUpdatePass.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-password-20.png"))); // NOI18N
-        cmdUpdatePass.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmdUpdatePassActionPerformed(evt);
-            }
-        });
-
-        cmdUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-ban-20.png"))); // NOI18N
+        cmdUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/petshop/icon/icons8-select-201.png"))); // NOI18N
         cmdUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmdUpdateActionPerformed(evt);
@@ -85,33 +57,18 @@ public class ActionMore4<T> extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(cmdUpdatePass, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addContainerGap(46, Short.MAX_VALUE)
                 .addComponent(cmdUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cmdDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cmdUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cmdUpdatePass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cmdDelete, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(cmdUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void cmdDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdDeleteActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cmdDeleteActionPerformed
-
-    private void cmdUpdatePassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdUpdatePassActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cmdUpdatePassActionPerformed
 
     private void cmdUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdUpdateActionPerformed
         // TODO add your handling code here:
@@ -119,8 +76,6 @@ public class ActionMore4<T> extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private com.petshop.swing.Button cmdDelete;
     private com.petshop.swing.Button cmdUpdate;
-    private com.petshop.swing.Button cmdUpdatePass;
     // End of variables declaration//GEN-END:variables
 }

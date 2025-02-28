@@ -801,7 +801,7 @@
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Segoe UI" size="14" style="0"/>
                         </Property>
-                        <Property name="labelText" type="java.lang.String" value="Tr&#x1ecd;ng l&#x1b0;&#x1ee3;ng (KG)"/>
+                        <Property name="labelText" type="java.lang.String" value="TL (KG ho&#x1eb7;c Gram)"/>
                       </Properties>
                     </Component>
                     <Component class="com.petshop.swing.textfield.TextFieldRounded" name="txtExpiry">

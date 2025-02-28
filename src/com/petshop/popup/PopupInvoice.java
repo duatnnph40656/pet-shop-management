@@ -90,6 +90,7 @@ public class PopupInvoice extends javax.swing.JPanel {
                 code,
                 name,
                 i.getUsageOrQuantity(),
+                (i.isTypeInvoiceDetail() ? i.getServiceDuration() + " Ngày" : "Không có"),
                 Ultil.formatCurrency(price),
                 Ultil.formatCurrency(i.getTotalPrice()),
                 petName == null ? "N/A" : petName,
@@ -220,15 +221,23 @@ public class PopupInvoice extends javax.swing.JPanel {
 
         tbInvoiceDetail.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "STT", "Mã SP/DV", "Tên SP/DV", "SL", "Giá", "Tổng tiền", "Thông tin khác", "Loại hóa đơn"
+                "STT", "Mã SP/DV", "Tên SP/DV", "SL", "Ngày", "Giá", "Tổng tiền", "Thông tin khác", "Loại hóa đơn"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane1.setViewportView(tbInvoiceDetail);
         if (tbInvoiceDetail.getColumnModel().getColumnCount() > 0) {
             tbInvoiceDetail.getColumnModel().getColumn(0).setMinWidth(35);
@@ -239,8 +248,8 @@ public class PopupInvoice extends javax.swing.JPanel {
             tbInvoiceDetail.getColumnModel().getColumn(2).setMaxWidth(230);
             tbInvoiceDetail.getColumnModel().getColumn(3).setMinWidth(35);
             tbInvoiceDetail.getColumnModel().getColumn(3).setMaxWidth(35);
-            tbInvoiceDetail.getColumnModel().getColumn(4).setMinWidth(80);
-            tbInvoiceDetail.getColumnModel().getColumn(4).setMaxWidth(80);
+            tbInvoiceDetail.getColumnModel().getColumn(5).setMinWidth(80);
+            tbInvoiceDetail.getColumnModel().getColumn(5).setMaxWidth(80);
         }
 
         jLabel1.setFont(new java.awt.Font("SansSerif", 1, 18)); // NOI18N
